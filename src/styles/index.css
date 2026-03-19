@@ -1,0 +1,20 @@
+@import "./dark-theme.css";
+
+
+
+
+
+
+/* textos y tipografias */
+:root {
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+}
+
+
+
+body {
+  margin: 0;
+}
+

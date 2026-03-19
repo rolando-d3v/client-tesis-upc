@@ -1,0 +1,1130 @@
+/* ===== GOOGLE FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ===== TABLE CONTAINER ===== */
+.tableContainer {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 10px 30px -5px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ===== FILTER BAR ===== */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fdfdfe;
+  border-bottom: 1px solid #eef0f4;
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.filterInput {
+  padding: 9px 14px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #2d3748;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  min-width: 150px;
+  outline: none;
+}
+
+.filterInput:hover {
+  border-color: #c5cad4;
+}
+
+.filterInput:focus {
+  border-color: #8b1a2b;
+  box-shadow: 0 0 0 3px rgba(139, 26, 43, 0.1);
+}
+
+.filterInput::placeholder {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+  margin-left: auto;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  font-size: 14px;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 14px 9px 40px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #2d3748;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput:hover {
+  border-color: #c5cad4;
+}
+
+.searchInput:focus {
+  border-color: #8b1a2b;
+  box-shadow: 0 0 0 3px rgba(139, 26, 43, 0.1);
+}
+
+.searchInput:focus + .searchIcon,
+.searchWrapper:focus-within .searchIcon {
+  color: #8b1a2b;
+}
+
+.searchInput::placeholder {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+/* ===== TABLE WRAPPER (scroll horizontal) ===== */
+.tableWrapper {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c5cad4 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: #c5cad4;
+  border-radius: 3px;
+}
+
+/* ===== TABLE ===== */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+/* ===== THEAD ===== */
+.thead {
+  background: linear-gradient(135deg, #8b1a2b 0%, #6b1522 40%, #4a0f18 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.thead th {
+  padding: 12px 14px;
+  text-align: left;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.thead th:last-child {
+  border-right: none;
+}
+
+.thead th:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.thContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortIndicator {
+  font-size: 12px;
+  opacity: 0.85;
+  display: inline-flex;
+  transition: opacity 0.2s ease;
+}
+
+/* ===== TBODY ===== */
+.tbody tr {
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+.tbody tr:hover {
+  background-color: #f0e6e8 !important;
+}
+
+.tbody td {
+  padding: 12px 16px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: nowrap;
+  line-height: 1.5;
+  border-right: 1px solid #f0f2f5;
+}
+
+.tbody td:last-child {
+  border-right: none;
+}
+
+/* ===== CELL NUMBER (Nº column) ===== */
+.cellNumber {
+  font-weight: 600;
+  color: #4a5568;
+  text-align: center;
+}
+
+/* =============================================================
+   PER-ROW EXPAND BUTTON & CARD
+   ============================================================= */
+
+/* Expand column header — hidden on desktop */
+.expandColHeader {
+  display: none;
+}
+
+/* Expand cell — hidden on desktop */
+.expandCell {
+  display: none;
+}
+
+/* Expand button */
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e6ed;
+  background: #ffffff;
+  color: #8b1a2b;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.expandBtn:hover {
+  background: #fef7f8;
+  border-color: #8b1a2b;
+  transform: scale(1.08);
+}
+
+.expandBtn:active {
+  transform: scale(0.95);
+}
+
+.expandBtnActive {
+  background: linear-gradient(135deg, #8b1a2b, #6b1522);
+  color: #ffffff;
+  border-color: #8b1a2b;
+  box-shadow: 0 2px 8px rgba(139, 26, 43, 0.35);
+}
+
+.expandBtnActive:hover {
+  background: linear-gradient(135deg, #6b1522, #4a0f18);
+  color: #ffffff;
+}
+
+/* Rotate the + into × when expanded */
+.expandBtn svg {
+  transition: transform 0.3s ease;
+}
+
+.expandIconRotated {
+  transform: rotate(45deg);
+}
+
+/* Row that has been expanded — highlight it */
+.expandedParent {
+  background-color: #fef7f8 !important;
+  border-bottom-color: transparent;
+}
+
+/* ===== EXPANDED CARD ROW ===== */
+.cardRow {
+  background: #fdf5f6 !important;
+  border-bottom: 2px solid #e8c5ca !important;
+}
+
+.cardRow:hover {
+  background: #fdf5f6 !important;
+}
+
+.cardRow td {
+  padding: 0 !important;
+  border-right: none !important;
+}
+
+.cardContent {
+  margin: 0 16px 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e8c5ca;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(139, 26, 43, 0.08);
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 600px;
+  }
+}
+
+/* Card header stripe */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #8b1a2b 0%, #6b1522 100%);
+  color: #ffffff;
+}
+
+.cardHeaderNum {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cardCloseBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cardCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Card body with fields */
+.cardBody {
+  padding: 4px 0;
+}
+
+.cardField {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 18px;
+  border-bottom: 1px solid #f4f5f7;
+  gap: 12px;
+}
+
+.cardField:last-child {
+  border-bottom: none;
+}
+
+.cardLabel {
+  min-width: 110px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b1a2b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 2px;
+}
+
+.cardValue {
+  flex: 1;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 400;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+/* ===== BADGES (classification) ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.badgeSecreto {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.badgeReservado {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.badgeConfidencial {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.badgeDefault {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* ===== PDF/FILE BADGE ===== */
+.fileBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+}
+
+.actionExterior {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+}
+
+.actionExterior:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.35);
+  transform: translateY(-1px);
+}
+
+.actionInterior {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+}
+
+.actionInterior:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.viewBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.viewBtn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+  transform: scale(1.05);
+}
+
+/* ===== TFOOT ===== */
+.tfoot {
+  display: none;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 24px;
+  background: #fdfdfe;
+  border-top: 1px solid #eef0f4;
+  flex-wrap: wrap;
+}
+
+.paginationInfo {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  margin-right: auto;
+}
+
+.paginationInfo span {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #f8f9fb;
+  border-color: #8b1a2b;
+  color: #8b1a2b;
+}
+
+.pageBtn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  background: linear-gradient(135deg, #8b1a2b 0%, #6b1522 100%);
+  color: #ffffff;
+  border-color: #8b1a2b;
+  box-shadow: 0 2px 6px rgba(139, 26, 43, 0.3);
+}
+
+.pageBtnActive:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6b1522 0%, #4a0f18 100%);
+  color: #ffffff;
+  border-color: #6b1522;
+}
+
+.pageBtnNav {
+  font-size: 16px;
+  font-weight: 700;
+  color: #8b1a2b;
+  border-color: #e2e6ed;
+  background: #fff;
+}
+
+.pageBtnNav:hover:not(:disabled) {
+  background: #8b1a2b;
+  color: #fff;
+  border-color: #8b1a2b;
+}
+
+.pageEllipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.pageSizeSelect {
+  padding: 6px 10px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #475569;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  margin-left: 12px;
+  transition: all 0.2s ease;
+}
+
+.pageSizeSelect:hover {
+  border-color: #c5cad4;
+}
+
+.pageSizeSelect:focus {
+  border-color: #8b1a2b;
+  box-shadow: 0 0 0 3px rgba(139, 26, 43, 0.1);
+}
+
+/* ===== EMPTY STATE ===== */
+.emptyState {
+  text-align: center;
+  padding: 60px 24px;
+  color: #94a3b8;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  font-size: 15px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.emptySubtext {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* ===== RESULTS COUNT ===== */
+.resultsCount {
+  font-size: 13px;
+  color: #64748b;
+  padding: 0 24px 12px;
+  font-weight: 500;
+}
+
+.resultsCount span {
+  font-weight: 700;
+  color: #8b1a2b;
+}
+
+/* ===== SCROLL HINT (hidden on desktop) ===== */
+.scrollHint {
+  display: none;
+}
+
+.scrollHintIcon {
+  font-size: 14px;
+  animation: swipeHint 1.5s ease-in-out infinite;
+}
+
+@keyframes swipeHint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+
+/* =============================================================
+   DESKTOP (≥ 1025px) — expand button hidden
+   ============================================================= */
+/* Already handled: .expandColHeader and .expandCell = display:none */
+
+/* =============================================================
+   TABLET (577px – 1024px)
+   ============================================================= */
+@media (max-width: 1024px) {
+  .tableContainer {
+    border-radius: 12px;
+  }
+
+  .filterBar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 18px;
+  }
+
+  .filterGroup {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .filterInput {
+    min-width: 120px;
+    width: 100%;
+  }
+
+  .searchWrapper {
+    flex: 1 1 100%;
+    min-width: unset;
+    margin-left: 0;
+    order: 3;
+  }
+
+  /* Show scroll hint on tablet */
+  .scrollHint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #fef9f0;
+    color: #92400e;
+    font-size: 12px;
+    font-weight: 500;
+    border-bottom: 1px solid #fde68a;
+  }
+
+  /* Show expand button on tablet */
+  .expandColHeader {
+    display: table-cell;
+    width: 46px;
+    min-width: 46px;
+    padding: 12px 6px !important;
+    cursor: default;
+  }
+
+  .expandCell {
+    display: table-cell;
+    width: 46px;
+    min-width: 46px;
+    text-align: center;
+    padding: 8px 6px !important;
+    border-right: 1px solid #f0f2f5;
+    position: sticky;
+    left: 0;
+    background: inherit;
+    z-index: 2;
+  }
+
+  /* Sticky expand cell inherits row bg */
+  .tbody tr:nth-child(odd) .expandCell { background-color: #ffffff; }
+  .tbody tr:nth-child(even) .expandCell { background-color: #fafbfc; }
+  .tbody tr:hover .expandCell { background-color: #f0e6e8; }
+  .expandedParent .expandCell { background-color: #fef7f8 !important; }
+
+  .thead th {
+    padding: 12px 12px;
+    font-size: 10.5px;
+  }
+
+  .tbody td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .pagination {
+    gap: 4px;
+    padding: 14px 16px;
+  }
+
+  .pageBtn {
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .pageBtnNav {
+    font-size: 14px;
+  }
+
+  .paginationInfo {
+    font-size: 12px;
+  }
+
+  .pageSizeSelect {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+
+  /* Card content inside table */
+  .cardContent {
+    margin: 0 12px 12px;
+  }
+
+  .cardField {
+    padding: 8px 14px;
+  }
+
+  .cardLabel {
+    min-width: 90px;
+    font-size: 10px;
+  }
+
+  .cardValue {
+    font-size: 12px;
+  }
+}
+
+/* =============================================================
+   MOBILE (≤ 576px) — Table with scroll + per-row expand
+   ============================================================= */
+@media (max-width: 576px) {
+  .tableContainer {
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    margin: -16px;
+  }
+
+  .filterBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .filterGroup {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filterLabel {
+    font-size: 12px;
+    min-width: 80px;
+  }
+
+  .filterInput {
+    flex: 1;
+    min-width: unset;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .searchWrapper {
+    margin-left: 0;
+    min-width: unset;
+    flex: unset;
+  }
+
+  .searchInput {
+    padding: 10px 12px 10px 38px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  /* Show scroll hint on mobile */
+  .scrollHint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #fef9f0;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 500;
+    border-bottom: 1px solid #fde68a;
+  }
+
+  /** Show expand button on mobile **/
+  .expandColHeader {
+    display: table-cell;
+    width: 42px;
+    min-width: 42px;
+    padding: 10px 4px !important;
+    cursor: default;
+    position: sticky;
+    left: 0;
+    z-index: 11;
+    background: inherit;
+  }
+
+  .expandCell {
+    display: table-cell;
+    width: 42px;
+    min-width: 42px;
+    text-align: center;
+    padding: 6px 4px !important;
+    border-right: 1px solid #f0f2f5;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: inherit;
+  }
+
+  .tbody tr:nth-child(odd) .expandCell { background-color: #ffffff; }
+  .tbody tr:nth-child(even) .expandCell { background-color: #fafbfc; }
+  .tbody tr:hover .expandCell { background-color: #f0e6e8; }
+  .expandedParent .expandCell { background-color: #fef7f8 !important; }
+
+  .expandBtn {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .resultsCount {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .thead th {
+    padding: 10px 10px;
+    font-size: 10px;
+  }
+
+  .tbody td {
+    padding: 8px 10px;
+    font-size: 11.5px;
+  }
+
+  /* Card content on mobile */
+  .cardContent {
+    margin: 0 8px 10px;
+  }
+
+  .cardHeader {
+    padding: 10px 14px;
+  }
+
+  .cardHeaderNum {
+    font-size: 12px;
+  }
+
+  .cardField {
+    padding: 8px 14px;
+    gap: 8px;
+  }
+
+  .cardLabel {
+    min-width: 85px;
+    font-size: 10px;
+  }
+
+  .cardValue {
+    font-size: 12px;
+  }
+
+  /** PAGINATION — mobile **/
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 14px;
+  }
+
+  .paginationInfo {
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    font-size: 12px;
+    order: -1;
+  }
+
+  .paginationControls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .pageBtn {
+    min-width: 38px;
+    height: 38px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .pageBtnNav {
+    font-size: 18px;
+  }
+
+  .pageEllipsis {
+    min-width: 28px;
+  }
+
+  .pageTotalLabel {
+    display: none;
+  }
+
+  .pageSizeSelect {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 10px;
+    margin-left: 0;
+    text-align: center;
+  }
+}
+
+/* =============================================================
+   SMALL MOBILE (≤ 380px)
+   ============================================================= */
+@media (max-width: 380px) {
+  .filterBar {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .filterGroup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .filterLabel {
+    min-width: unset;
+  }
+
+  .thead th {
+    padding: 8px 6px;
+    font-size: 9px;
+  }
+
+  .tbody td {
+    padding: 6px 6px;
+    font-size: 10.5px;
+  }
+
+  .expandBtn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .cardLabel {
+    min-width: 70px;
+    font-size: 9px;
+  }
+
+  .cardValue {
+    font-size: 11px;
+  }
+
+  .pageBtn {
+    min-width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+}
+
+/* =============================================================
+   LOADING ROW SHIMMER
+   ============================================================= */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.loadingCell {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* =============================================================
+   PRINT STYLES
+   ============================================================= */
+@media print {
+  .filterBar,
+  .pagination,
+  .scrollHint,
+  .expandColHeader,
+  .expandCell,
+  .cardRow {
+    display: none !important;
+  }
+
+  .tableContainer {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  .tbody td {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+
+  .thead th {
+    background: #333 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
