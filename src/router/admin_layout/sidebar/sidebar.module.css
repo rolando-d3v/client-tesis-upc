@@ -1,0 +1,31 @@
+.aside {
+  background-color: rgb(63, 91, 115);
+  width: 280px;
+  padding: 80px 20px 20px 20px;
+  color: white;
+
+
+
+  .div_logo {
+    padding: 10px;
+
+  }
+
+  .list_url {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .link {
+      border-radius: 10px;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      transition: all 0.3s ease-in-out;
+     &:hover {
+        background-color: rgb(2, 96, 210);
+     }
+    }
+  }
+}

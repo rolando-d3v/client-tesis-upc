@@ -1,0 +1,131 @@
+.wrapper_screen {
+  position: relative;
+  width: 100%;
+  border: 9px solid black;
+  border-radius: 25px;
+ 
+  min-height:  calc(100vh - 16px);
+  
+  display: grid;
+  grid-template-columns: minmax(390px, 390px) auto;
+  overflow: hidden;
+
+
+
+  @media screen and (max-width: 465px) {
+    grid-template-columns: minmax(100%, 360px) auto;
+  }
+
+  .content_form {
+
+    z-index: 22;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(14px);
+    border-radius: 16px;
+
+    padding: 30px 30px 30px 30px;
+    margin: 30px 0 30px 35px;
+    display: flex;
+    min-height: 600px;
+
+    justify-content: space-around;
+    flex-direction: column;
+    border: 2px solid #2f2f2f86;
+
+    @media screen and (max-width: 465px) {
+      background-color: var(--dark);
+      border-radius: 0px;
+      margin: 0px;
+      opacity: 0.9;
+    }
+  }
+
+  .div_text {
+    z-index: 22;
+    position: fixed;
+    top: 46px;
+    right: 100px;
+    
+
+    .content_text {
+      text-align: right;
+      margin: 0px 0;
+      display: flex;
+      flex-direction: column;
+      font-size: 4.8rem;
+      line-height: 4.8rem;
+      letter-spacing: -0.04rem;
+      color: #fff;
+      width: 100%;
+      filter: drop-shadow(2px 2px 1px #000);
+      
+
+      @media screen and (max-width: 1200px) {
+        font-size: 3.2rem;
+        line-height: 3.2rem;
+      }
+
+      @media screen and (max-width: 1024px) {
+        font-size: 2.4rem;
+        line-height: 2.4rem;
+        letter-spacing: -0.2rem;
+      }
+
+      span {
+        filter: brightness(0) invert(1);
+        background-clip: text;
+      
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: animationTextColor 10s ease-in-out infinite;
+
+        @media screen and (max-width: 768px) {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+      }
+
+      span:nth-child(1) {
+        background-image: linear-gradient(90deg, #007cf0, #00dfd8);
+      }
+      span:nth-child(2) {
+       
+        background-image: linear-gradient(90deg, #000cfa, #00ff95);
+        animation-delay: 3.33s;
+      }
+      span:nth-child(3) {
+        background-image: linear-gradient(90deg, #0458ff, #f60818);
+        animation-delay: 6.66s;
+      }
+
+    }
+  }
+
+
+  
+  .video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+  /* animation */
+  @keyframes animationTextColor {
+    0% {
+      filter: brightness(0) invert(1);
+    }
+    11% {
+      filter: none;
+    }
+    33% {
+      filter: none;
+    }
+    55% {
+      filter: brightness(0) invert(1);
+    }
+  }

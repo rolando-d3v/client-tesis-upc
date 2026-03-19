@@ -1,0 +1,27 @@
+.theme {
+  min-height: 100dvh;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+   /* grid-template-rows: 60px 1fr auto; */
+
+  .diva {
+    width: 100%;
+    margin: 0 auto;
+     /* background-color: red !important; */
+     /* width: 100%; */
+     /* max-width: var(--desktop-lg); */
+  }
+    .main_x {
+      background-color: #f3f1ef;
+       /* grid-area: "MAIN"; */
+    }
+
+   /* display: grid; */
+   /* grid-template-columns: 1fr; */
+   /* grid-template-rows: 64px 1fr 300px; */
+   /* grid-template-areas: */
+     /* "HEADER" */
+     /* "MAIN" */
+     /* "FOOTER"; */
+}

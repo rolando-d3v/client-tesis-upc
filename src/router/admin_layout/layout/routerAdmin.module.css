@@ -1,0 +1,12 @@
+.admin {
+    display: flex;
+    height: 100%;
+
+
+    .main {
+        flex: 1;
+        padding: 80px 20px 20px 20px;
+        background-color: rgb(240, 240, 240);
+        overflow-y: auto;
+    }
+}
