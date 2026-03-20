@@ -1,14 +1,10 @@
-import { useEffect} from "react";
+import { useEffect } from "react";
 import { motion } from "motion/react";
-// import FooterLogin from "../footer-login/FooterLogin";
+import FooterLogin from "../footer-login/FooterLogin";
 import FormLogin from "../form-login/FormLogin";
 import css from "./layout.module.css";
 
-
-
-
 export default function LayoutLogin() {
-  
   const item1 = {
     hidden: { opacity: 0, x: -400 },
     visible: { opacity: 1, x: 0 },
@@ -22,20 +18,13 @@ export default function LayoutLogin() {
     visible: { opacity: 1, x: 0 },
   };
 
-
   const item10 = {
     hidden: { opacity: 0, x: -400 },
     visible: { opacity: 1, x: 0 },
   };
 
   return (
-    <div
-      className={css.wrapper_screen}
-      // style={{
-      //   backgroundImage:
-      //     "url(/backgroung/bolog.jpg)",
-      // }}
-    >
+    <div className={css.wrapper_screen}>
       <motion.div
         className={css.content_form}
         variants={item10}
@@ -43,12 +32,9 @@ export default function LayoutLogin() {
         animate="visible"
         transition={{ delay: 0.5, duration: 0.6 }}
       >
-        {/* <ButtonHead /> */}
         <FormLogin />
-        {/* <FooterLogin /> */}
+        <FooterLogin />
       </motion.div>
-
-    
 
       <div className={css.div_text}>
         <h1 className={css.content_text}>
@@ -86,12 +72,9 @@ export default function LayoutLogin() {
         loop
         playsInline
         src="videoBg2.mp4"
-        // src="City.mp4"
-        // src="login.mp4"
         type="video/mp4"
         autoPlay
       ></video>
-     
     </div>
   );
 }

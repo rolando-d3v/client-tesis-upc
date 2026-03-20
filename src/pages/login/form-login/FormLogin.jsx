@@ -5,7 +5,7 @@ import * as z from "zod";
 import * as FaIcons from "react-icons/fa";
 import { ToastError, ToastSuccess } from "../../../tools/Toasting";
 import css from "./form.module.css";
-import die_logo from "../../../assets/logos/die.png";
+import logo from "../../../assets/logos/defensa.png";
 import { useSelector, useDispatch } from "react-redux";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 // import {
@@ -167,7 +167,7 @@ export default function FormLogin() {
       <div className={css.header}>
         <div className={css.content_logo}>
           <div>
-            <img className={css.logo} src={die_logo} alt="logo_die" style={{width:170}} />
+            <img className={css.logo} src={logo} alt="logo_die" style={{width:170}} />
           </div>
         </div>
         <p className={css.sub_title}> Sistema de Gestión Documental</p>

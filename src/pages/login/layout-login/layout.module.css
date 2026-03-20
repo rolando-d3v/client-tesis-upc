@@ -1,10 +1,8 @@
 .wrapper_screen {
   position: relative;
-  width: 100%;
   border: 9px solid black;
-  border-radius: 25px;
- 
-  min-height:  calc(100vh - 16px);
+  border-radius: 25px; 
+  min-height:  calc(100vh - 20px);
   
   display: grid;
   grid-template-columns: minmax(390px, 390px) auto;

@@ -1,20 +1,31 @@
 @import "./dark-theme.css";
 
-
-
-
-
-
 /* textos y tipografias */
 :root {
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 }
 
-
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-}
+  padding: 0;
+  box-sizing: border-box;
 
+  /* font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  } */
+}

@@ -14,8 +14,10 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />,
-        <Toaster richColors />
+        {/* <Toaster richColors /> */}
+        <div style={{ padding: 10, minHeight: "100vh" }}>
+          <RouterProvider router={router} />
+        </div>
       </QueryClientProvider>
     </Provider>
   </StrictMode>,

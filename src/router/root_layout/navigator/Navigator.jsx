@@ -1,7 +1,7 @@
 import  { useState } from "react";
 import css from "./Navigator.module.css";
 import ListSeccion from "../list_seccion/ListaSeccion";
-import logo from "../../../assets/logo/logo.png";
+import logo from "../../../assets/logos/defensa.png";
 import * as FaIcons from "react-icons/fa6";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
