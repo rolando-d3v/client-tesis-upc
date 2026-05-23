@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 
-import usuarioAuthSlice from "./usuarioAuthSlice";
-import settingAppSlice from "./settingAppSlice";
-import cartSlice from "./cartSlice";
+import usuarioAuthSlice from "./slice/usuarioAuthSlice";
+import settingAppSlice from "./slice/settingAppSlice";
+import cartSlice from "./slice/cartSlice";
 
 
 

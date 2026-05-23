@@ -1,14 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  personal_select: null,
-  role_select: null,
-  // auth: true,
   auth: null,
-  email: null,
-  roles_user: [],
-  dni: null,
-  personal: null,
+  user: null,
+  roles_user:[]
 };
 
 export const usuarioSlice = createSlice({
@@ -16,19 +11,16 @@ export const usuarioSlice = createSlice({
   initialState,
 
   reducers: {
-    xpersonal: (state, action) => {
-      state.personal = action.payload;
-    },
     xlogin_true: (state, action) => {
       state.auth = action.payload;
     },
-    xroles_user: (state, action) => {
-      state.roles_user = action.payload;
+    xset_user: (state, action) => {
+      state.user = action.payload;
+      state.roles_user = action.payload.rol;
     },
-   
-    xlogin_false: (state, action) => {
+    xlogin_false: (state) => {
       state.auth = null;
-      sessionStorage.removeItem("TK_ECO")
+      state.user = null;
     },
   },
 });
@@ -36,14 +28,7 @@ export const usuarioSlice = createSlice({
 export const {
   xlogin_true,
   xlogin_false,
-  xpersonal,
-  xroles_user,
-
-
-
-  nivel1_nivel3,
-  xdefault_nivel_1,
-  xdefault_opciones
+  xset_user,
 } = usuarioSlice.actions;
 
 export default usuarioSlice.reducer;

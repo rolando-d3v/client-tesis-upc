@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { motion } from "motion/react";
 import FooterLogin from "../footer-login/FooterLogin";
 import FormLogin from "../form-login/FormLogin";
@@ -44,7 +43,7 @@ export default function LayoutLogin() {
             animate="visible"
             transition={{ delay: 1, duration: 1 }}
           >
-            Sistema de Gestión
+            Sistema Predictivo
           </motion.span>
           <motion.span
             variants={item2}
@@ -52,7 +51,7 @@ export default function LayoutLogin() {
             animate="visible"
             transition={{ delay: 2, duration: 1 }}
           >
-            Documental
+           de Filtración
           </motion.span>
           <motion.span
             variants={item3}
@@ -60,21 +59,16 @@ export default function LayoutLogin() {
             animate="visible"
             transition={{ delay: 3, duration: 1 }}
           >
-            "Moche"
+            Documental
           </motion.span>
         </h1>
       </div>
 
-      <video
-        className={css.video}
-        preload="auto"
-        muted
-        loop
-        playsInline
-        src="videoBg2.mp4"
-        type="video/mp4"
-        autoPlay
-      ></video>
+      <img
+        className={css.background_image}
+        src="leak_prediction_bg.png"
+        alt="Sistema de Predicción de Filtración de Documentación Confidencial"
+      />
     </div>
   );
 }

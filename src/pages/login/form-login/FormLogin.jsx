@@ -6,131 +6,77 @@ import * as FaIcons from "react-icons/fa";
 import { ToastError, ToastSuccess } from "../../../tools/Toasting";
 import css from "./form.module.css";
 import logo from "../../../assets/logos/defensa.png";
-import { useSelector, useDispatch } from "react-redux";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-// import {
-//   nivel1_nivel3,
-//   personal,
-//   login_true,
-//   xsistema_role_opciones,
-//   xdefault_nivel_3,
-//   xdefault_role,
-//   xdefault_opciones,
-//   xdefault_nivel_1,
-//   xselect_nivel1,
-// } from "../../../Redux/perSisRolSlice";
+import { useDispatch } from "react-redux";
+import { useMutation } from "@tanstack/react-query";
+import { xlogin_true, xset_user } from "../../../Redux/slice/usuarioAuthSlice";
 import { authLogin } from "../../../api/apiAuthLogin";
-import axios from "axios";
+import { useNavigate } from "react-router";
 
 
-//schema de formualrio con zod
+// Schema de formulario con zod — ahora usa email
 export const schema = z.object({
-  dni: z
+  email: z
     .string()
-    // .min(1, "dni es obligatorio") // ⬅️ opcional si lo quieres obligatorio
-    .min(8, "Minimo 8 numeros")
-    .max(8, "Maximo 8 numeros"),
+    .min(1, "Email es obligatorio")
+    .email("Email no válido"),
 
   password: z
     .string()
-    .min(1, "Password es obligatorio") // ⬅️ equivalente a required
-    .min(6, "Minimo 6 letras"),
-
-  cheked: z.boolean().optional(), // ⬅️ en yup no era required
+    .min(1, "Password es obligatorio")
+    .min(6, "Mínimo 6 caracteres"),
 });
 
-//component
+// Component
 export default function FormLogin() {
-  // const queryClient = useQueryClient();
-
-
   const [eyePass, setEyePass] = useState(false);
-
-  //Redux Dispath
-  // const { sistema } = useSelector((state) => state.perSisRolStyle);
-
   const dispatch = useDispatch();
-
-
+  const navigate = useNavigate();
 
   const {
     register,
     watch,
     handleSubmit,
-    setValue,
-    getValues,
     formState: { errors },
   } = useForm({
-    defaultValues: { campo: "prueba" },
     resolver: zodResolver(schema),
   });
 
-  // ? LOGIN AUTH ****************************************
+  // ? LOGIN AUTH — cookie httpOnly ****************************************
   const mutationLogin = useMutation({
     mutationFn: authLogin,
 
-    onSuccess: async (data) => {
-      sessionStorage.setItem("TK_ECO", data.token);
-     
-
+    onSuccess: (data) => {
+      // El token ya fue guardado como cookie httpOnly por el servidor
       dispatch(xlogin_true(true));
-      console.log(data);
+      dispatch(xset_user(data.user));
 
-      const dataPersona = await axios.get(`${API_ECO}/user/role/${data.uuid} `);
-
-      console.log(dataPersona.data);
-      console.log(dataPersona.data.role_id);
-
-      dispatch(xroles_user(dataPersona.data.usuario_role));
-      dispatch(xpersonal(dataPersona.data));
-
-      toast("Login", {
-        className: "my-classname",
-        description: "Exitoso",
-        duration: 1500,
-        position: "top-center",
-        style: {
-          background: "#000",
-          color: "white",
-        },
-        // icon: <MyIcon />,
-      });
-
-   
-        navigate("/");
+      ToastSuccess("Login exitoso ✔️");
+      navigate("/");
     },
     onError: (error) => {
-      console.log(error);
+      const msg = error?.response?.data?.msj || "Error al iniciar sesión";
+      ToastError(msg);
     },
   });
 
-  //post data in server
-  const onSubmit = async (data, e) => {
-    const pp = Number(data.numero);
-    if (pp !== resultNumber) {
-      setErrorNum(true);
-      return ToastError("Numero de suma Incorrecto ❗");
-    }
-
+  // Post data al server
+  const onSubmit = (data) => {
     const auth = {
-      dni: data.dni,
+      email: data.email,
       password: data.password,
-      // sistema: 1,
     };
 
-    // console.log(data);
-    mutationAuth.mutate(auth);
-    e.target.reset();
+    mutationLogin.mutate(auth);
   };
 
-  // MOSTRAR UN ERROR PERZONALIZADO
+  // Mostrar un error personalizado
   const errorHookForm = (err) => {
     if (err) {
       return <span className={css.error_alert}>{err}</span>;
     }
   };
 
-  //efecto de input label hacia arriba
+  // Efecto de input label hacia arriba
   useEffect(() => {
     const inputs = document.querySelectorAll(".input");
 
@@ -149,15 +95,9 @@ export default function FormLogin() {
       input.addEventListener("focus", addcl);
       input.addEventListener("blur", remcl);
     });
-
-    //limitar numero en input de password
-    var input = document.getElementById("dni");
-    input.addEventListener("input", function () {
-      if (this.value.length > 8) this.value = this.value.slice(0, 8);
-    });
   }, []);
 
-  //mostara el eye con el password
+  // Mostrar el eye con el password
   const clickEyePassword = () => {
     setEyePass(!eyePass);
   };
@@ -170,32 +110,32 @@ export default function FormLogin() {
             <img className={css.logo} src={logo} alt="logo_die" style={{width:170}} />
           </div>
         </div>
-        <p className={css.sub_title}> Sistema de Gestión Documental</p>
+        <p className={css.sub_title}> Sistema Predictivo </p>
         <p className={css.sub_title} style={{ marginBottom: 5 }}>
-          "Moche"
+          de Filtración de Documental
         </p>
       </div>
 
       <section className={`${css.section_input}`}>
         <span className={css.icon_login}>
-          <FaIcons.FaUser className="" />
+          <FaIcons.FaEnvelope />
         </span>
         <div className="div_input">
-          <label className={`${css.label_form} `}>Dni</label>
+          <label className={`${css.label_form} `}>Email</label>
           <input
             autoComplete="off"
-            className={`${css.input} ${"input"}  ${css.input_numero} `}
-            type="number"
-            name="dni"
-            id="dni"
-            {...register("dni")}
+            className={`${css.input} ${"input"} `}
+            type="email"
+            name="email"
+            id="email"
+            {...register("email")}
           />
-          {errorHookForm(errors.dni?.message)}
+          {errorHookForm(errors.email?.message)}
         </div>
       </section>
       <section className={`${css.section_input}`}>
         <span className={css.icon_login}>
-          <FaIcons.FaKey className="" />
+          <FaIcons.FaKey />
         </span>
         <div className="control-input">
           <label htmlFor="password" className={`${css.label_form} `}>
@@ -220,7 +160,7 @@ export default function FormLogin() {
       </section>
     
       <div className={css.wrapper_button}>
-        {watch("dni") ? (
+        {watch("email") ? (
           <button type="submit" className={`${css.__login}  ${css.__checked} `}>
             Iniciar Sesión
           </button>

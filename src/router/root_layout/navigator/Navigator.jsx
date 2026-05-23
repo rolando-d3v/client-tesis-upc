@@ -5,7 +5,7 @@ import logo from "../../../assets/logos/defensa.png";
 import * as FaIcons from "react-icons/fa6";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { xlogin_false } from "../../../Redux/usuarioAuthSlice";
+import { xlogin_false } from "../../../Redux/slice/usuarioAuthSlice";
 // import { useAllSeccion } from "../../../api_ecommerce/apiSeccion";
 
 const ROUTES = [
