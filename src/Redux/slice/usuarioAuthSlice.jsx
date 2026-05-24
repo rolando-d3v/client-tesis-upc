@@ -21,6 +21,7 @@ export const usuarioSlice = createSlice({
     xlogin_false: (state) => {
       state.auth = null;
       state.user = null;
+      state.roles_user = [];
     },
   },
 });

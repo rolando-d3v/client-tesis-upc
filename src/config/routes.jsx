@@ -1,7 +1,8 @@
 import { createBrowserRouter } from "react-router";
-import LayoutLogin from "../pages/login/layout-login/LayoutLogin";
+import LayoutLogin from "../modules/auth/pages/login/layout-login/LayoutLogin";
 import { PrivateRoute, PublicRoute } from "./PrivateRoutes";
 import MainLayout from "../router/admin_layout/layout/MainLayout";
+import TablaPage from "../modules/auth/pages/tabla/Tabla";
 
 const NoFount = () => {
   return <div>Fount 404</div>;
@@ -23,10 +24,33 @@ const ComingSoon = ({ title }) => (
 
 export const router = createBrowserRouter([
   {
-    path: "/login",
-    element: <PublicRoute element={<LayoutLogin />} />,
+    element: <PublicRoute />,
+    children: [
+      {
+        path: "/login",
+        element: <LayoutLogin />,
+        // { path: "/register", element: <RegisterUserPage /> },
+        // { path: "/recover", element: <RecoverPage /> },
+      },
+    ],
   },
 
+  {
+    element: <PrivateRoute />,
+    children: [
+      {
+        element: <MainLayout />,
+        children: [
+          {
+            path: "/",
+            element: <ComingSoon title="Gestión de Colegios" />,
+          },
+          { path: "/dashboard", element: <ComingSoon title="Dashboard" /> },
+       
+        ],
+      },
+    ],
+  },
   {
     element: <PrivateRoute allowedRoles={[1]} />,
     children: [
@@ -37,9 +61,10 @@ export const router = createBrowserRouter([
             path: "/",
             element: <ComingSoon title="Gestión de Colegios" />,
           },
+          { path: "/dashboard", element: <ComingSoon title="Dashboard" /> },
           // {
-          //   path: "/super-admin/role-opcion",
-          //   element: <RoleOpcionPage />,
+          //   path: "/tabla",
+          //   element: <TablaPage />,
           // },
         ],
       },
@@ -52,8 +77,12 @@ export const router = createBrowserRouter([
         element: <MainLayout />,
         children: [
           {
-            path: "/super-admin/colegios",
+            path: "/user",
             element: <ComingSoon title="Gestión de Colegios" />,
+          },
+          {
+            path: "/user/tabla",
+            element: <TablaPage />,
           },
           // {
           //   path: "/super-admin/role-opcion",

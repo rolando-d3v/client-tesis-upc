@@ -3,8 +3,8 @@ import { Link } from "react-router";
 
 export default function SidebarAdmin() {
   const url = [
-    { id: 1, url: "/admin/usuarios", name: "Usuarios" },
-    { id: 2, url: "/admin/productos", name: "Productos" },
+    { id: 1, url: "/user", name: "Usuarios" },
+    { id: 2, url: "/user/tabla", name: "Productos" },
     { id: 3, url: "/admin/lista-productos", name: "Lista Productos" },
     { id: 4, url: "/admin/secciones-categorias", name: "Seccion y Categorias" },
   ];

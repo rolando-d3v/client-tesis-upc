@@ -3,13 +3,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import * as FaIcons from "react-icons/fa";
-import { ToastError, ToastSuccess } from "../../../tools/Toasting";
+import { ToastError, ToastSuccess } from "../../../../../tools/Toasting";
 import css from "./form.module.css";
-import logo from "../../../assets/logos/defensa.png";
+import logo from "../../../../../assets/logos/defensa.png";
 import { useDispatch } from "react-redux";
-import { useMutation } from "@tanstack/react-query";
-import { xlogin_true, xset_user } from "../../../Redux/slice/usuarioAuthSlice";
-import { authLogin } from "../../../api/apiAuthLogin";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { xlogin_true, xset_user } from "../../../../../Redux/slice/usuarioAuthSlice";
+import { authLogin } from "../../../../../api/apiAuthLogin";
 import { useNavigate } from "react-router";
 
 
@@ -31,6 +31,7 @@ export default function FormLogin() {
   const [eyePass, setEyePass] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -49,6 +50,9 @@ export default function FormLogin() {
       // El token ya fue guardado como cookie httpOnly por el servidor
       dispatch(xlogin_true(true));
       dispatch(xset_user(data.user));
+
+      // Invalidar la query de verify para que AuthProvider tenga datos frescos
+      queryClient.invalidateQueries({ queryKey: ["auth", "verify"] });
 
       ToastSuccess("Login exitoso ✔️");
       navigate("/");
