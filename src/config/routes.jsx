@@ -3,6 +3,9 @@ import LayoutLogin from "../modules/auth/pages/login/layout-login/LayoutLogin";
 import { PrivateRoute, PublicRoute } from "./PrivateRoutes";
 import MainLayout from "../router/admin_layout/layout/MainLayout";
 import TablaPage from "../modules/auth/pages/tabla/Tabla";
+import DashboardAnomalias from "../modules/anomalias/pages/DashboardAnomalias";
+import TablaAnomalias from "../modules/anomalias/pages/TablaAnomalias";
+import TimelineAnomalias from "../modules/anomalias/pages/TimelineAnomalias";
 
 const NoFount = () => {
   return <div>Fount 404</div>;
@@ -46,7 +49,9 @@ export const router = createBrowserRouter([
             element: <ComingSoon title="Gestión de Colegios" />,
           },
           { path: "/dashboard", element: <ComingSoon title="Dashboard" /> },
-       
+          { path: "/anomalias", element: <DashboardAnomalias /> },
+          { path: "/anomalias/tabla", element: <TablaAnomalias /> },
+          { path: "/anomalias/timeline", element: <TimelineAnomalias /> },
         ],
       },
     ],

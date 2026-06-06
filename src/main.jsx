@@ -17,9 +17,9 @@ createRoot(document.getElementById("root")).render(
       <QueryClientProvider client={queryClient}>
         <Toaster richColors />
         <AuthProvider>
-          <div style={{ padding: 10, minHeight: "100vh" }}>
-            <RouterProvider router={router} />
-          </div>
+        <div style={{ padding: 10, minHeight: "100vh" }}>
+          <RouterProvider router={router} />
+        </div>
         </AuthProvider>
       </QueryClientProvider>
     </Provider>
