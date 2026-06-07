@@ -74,6 +74,7 @@ export default function ScatterScores({ data = [] }) {
           fill="rgba(148,163,184,0.15)"
           stroke="rgba(148,163,184,0.3)"
           strokeWidth={0.5}
+          isAnimationActive={false}
         />
         <Scatter
           name="Anomalía"
@@ -81,7 +82,7 @@ export default function ScatterScores({ data = [] }) {
           fill="#f87171"
           stroke="#f87171"
           strokeWidth={0.5}
-          style={{ filter: "drop-shadow(0 0 4px rgba(248,113,113,0.4))" }}
+          isAnimationActive={false}
         />
       </ScatterChart>
     </ResponsiveContainer>

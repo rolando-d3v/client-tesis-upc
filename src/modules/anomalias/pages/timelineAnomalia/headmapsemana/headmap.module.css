@@ -1,0 +1,100 @@
+/* ============================================================
+   Heatmap Bubble Chart — CSS Modules
+   Recharts ScatterChart × 7 días
+   ============================================================ */
+
+.heatmapWrapper {
+  position: relative;
+}
+
+/* Contenedor de los 7 gráficos apilados */
+.bubbleChartContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-x: auto;
+  /* height: 50vh; */
+  min-width: 380px;
+}
+
+/* ---- Tooltip (glassmorphism dark) ---- */
+.bubbleTooltip {
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(15, 16, 22, 0.95);
+  border: 1px solid rgba(192, 132, 252, 0.25);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 0, 0, 0.08);
+  /* box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(192, 132, 252, 0.08); */
+  min-width: 120px;
+  text-align: center;
+}
+
+.bubbleTooltipDay {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #c084fc;
+  margin-bottom: 0.1rem;
+}
+
+.bubbleTooltipHour {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+
+.bubbleTooltipCount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.bubbleCountNumber {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.bubbleCountLabel {
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ---- Leyenda ---- */
+.heatmapLegend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding: 0 0.25rem;
+}
+
+.legendLabel {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.2px;
+}
+
+.legendGradient {
+  display: flex;
+  gap: 3px;
+}
+
+.legendSwatch {
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  transition: transform 0.15s ease;
+}
+
+.legendSwatch:hover {
+  transform: scaleY(1.5);
+}

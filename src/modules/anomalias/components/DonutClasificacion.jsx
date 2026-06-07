@@ -44,7 +44,6 @@ export default function DonutClasificacion({ data = [] }) {
             <Cell
               key={`cell-${index}`}
               fill={COLORS[index % COLORS.length]}
-              style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}
             />
           ))}
         </Pie>

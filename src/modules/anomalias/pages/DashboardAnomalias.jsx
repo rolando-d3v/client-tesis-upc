@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import "../anomalias.css";
 
@@ -9,12 +10,61 @@ import BarrasOficinas from "../components/BarrasOficinas";
 import AreaHoras from "../components/AreaHoras";
 import ScatterScores from "../components/ScatterScores";
 import UploadCSV from "../components/UploadCSV";
-import { subirCSVAnomalias } from "../../../api/apiAnomalias";
+import {
+  subirCSVAnomalias,
+  getResumen,
+  getPorClasificacion,
+  getPorHora,
+  getPorOficina,
+  getScores,
+} from "../../../api/apiAnomalias";
 
 export default function DashboardAnomalias() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [uploaded, setUploaded] = useState(false);
+
+  // Filtro global de fechas desde Redux
+  const { fechaInicio, fechaFin } = useSelector(
+    (state) => state.FILTRO_FECHAS
+  );
+  const filtros = { fechaInicio, fechaFin };
+
+  // Cargar datos desde BD (con filtro de fecha)
+  const fetchDashboard = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [resumen, clasificacion, porHora, porOficina, scores] =
+        await Promise.all([
+          getResumen(filtros),
+          getPorClasificacion(filtros),
+          getPorHora(filtros),
+          getPorOficina(filtros),
+          getScores(filtros),
+        ]);
+
+      // Solo mostrar si hay datos
+      if (resumen.total_registros > 0) {
+        setData({
+          resumen,
+          anomalias_por_clasificacion: clasificacion,
+          anomalias_por_hora: porHora,
+          anomalias_por_oficina: porOficina,
+          scores_data: scores,
+        });
+      }
+    } catch {
+      // BD vacía o error — no hay datos aún
+    } finally {
+      setLoading(false);
+    }
+  }, [fechaInicio, fechaFin]);
+
+  // Cargar al montar y cuando cambien las fechas
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
 
   const handleUpload = async (file) => {
     try {
@@ -22,6 +72,7 @@ export default function DashboardAnomalias() {
       toast.info("Procesando CSV con Isolation Forest...");
       const resultado = await subirCSVAnomalias(file);
       setData(resultado);
+      setUploaded(true);
       toast.success(
         `✅ Análisis completo: ${resultado.resumen.total_anomalias} anomalías detectadas`
       );

@@ -1,11 +1,12 @@
 import { createBrowserRouter } from "react-router";
 import LayoutLogin from "../modules/auth/pages/login/layout-login/LayoutLogin";
 import { PrivateRoute, PublicRoute } from "./PrivateRoutes";
-import MainLayout from "../router/admin_layout/layout/MainLayout";
+import MainLayout from "../layout/admin_layout/layout/MainLayout";
 import TablaPage from "../modules/auth/pages/tabla/Tabla";
 import DashboardAnomalias from "../modules/anomalias/pages/DashboardAnomalias";
 import TablaAnomalias from "../modules/anomalias/pages/TablaAnomalias";
-import TimelineAnomalias from "../modules/anomalias/pages/TimelineAnomalias";
+import TimelineAnomalias from "../modules/anomalias/pages/timelineAnomalia/TimelineAnomalias";
+
 
 const NoFount = () => {
   return <div>Fount 404</div>;
@@ -13,11 +14,6 @@ const NoFount = () => {
 
 const ComingSoon = ({ title }) => (
   <div style={{ padding: "2rem" }}>
-    <h2>{title}</h2>
-    <p style={{ color: "var(--text)", marginTop: "0.5rem" }}>
-      Esta sección está en desarrollo...
-    </p>
-
     <h2>{title}</h2>
     <p style={{ color: "var(--text)", marginTop: "0.5rem" }}>
       Esta sección está en desarrollo...

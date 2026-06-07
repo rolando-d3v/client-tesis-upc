@@ -459,66 +459,201 @@
   border-color: rgba(192, 132, 252, 0.5);
 }
 
-/* ---- Heatmap ---- */
-.heatmap-grid {
-  display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
-  gap: 3px;
-  padding: 0.5rem;
-}
-
-.heatmap-header {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #94a3b8;
-  text-align: center;
-  padding: 0.35rem;
-}
-
-.heatmap-row-label {
-  font-size: 0.7rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.5rem;
-}
-
-.heatmap-cell {
-  aspect-ratio: 1;
-  border-radius: 4px;
-  min-height: 22px;
-  transition: all 0.2s ease;
-  cursor: default;
+/* ---- Heatmap v2 — Premium Design ---- */
+.heatmap-wrapper {
   position: relative;
 }
 
-.heatmap-cell:hover {
-  transform: scale(1.15);
-  z-index: 2;
+.heatmap-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0.25rem;
 }
 
-.heatmap-cell.level-0 { background: rgba(148, 163, 184, 0.05); }
-.heatmap-cell.level-1 { background: rgba(192, 132, 252, 0.15); }
-.heatmap-cell.level-2 { background: rgba(192, 132, 252, 0.3); }
-.heatmap-cell.level-3 { background: rgba(192, 132, 252, 0.5); }
-.heatmap-cell.level-4 { background: rgba(248, 113, 113, 0.5); }
-.heatmap-cell.level-5 { background: rgba(248, 113, 113, 0.75); }
+.heatmap-grid-v2 {
+  display: grid;
+  grid-template-columns: 52px repeat(7, 1fr);
+  gap: 0;
+  min-width: 380px;
+}
 
-.heatmap-legend {
+/* Esquina vacía */
+.heatmap-corner {
+  grid-column: 1;
+}
+
+/* Headers de días */
+.heatmap-day-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  margin-top: 0.75rem;
-  font-size: 0.72rem;
-  color: #64748b;
+  justify-content: center;
+  padding: 0.5rem 0.25rem 0.65rem;
 }
 
-.heatmap-legend-cell {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
+.heatmap-day-header .day-short {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.heatmap-day-header.weekend .day-short {
+  color: #c084fc;
+}
+
+/* Filas de hora */
+.heatmap-row {
+  display: contents;
+}
+
+.heatmap-hour-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.6rem;
+  height: 100%;
+}
+
+.heatmap-hour-label span {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Celdas */
+.heatmap-cell-v2 {
+  background: var(--cell-bg, rgba(148, 163, 184, 0.04));
+  border-radius: 4px;
+  margin: 1.5px;
+  aspect-ratio: 1.6;
+  min-height: 18px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: crosshair;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heatmap-cell-v2:hover {
+  transform: scale(1.2);
+  z-index: 3;
+  box-shadow:
+    0 0 0 2px rgba(192, 132, 252, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.heatmap-cell-v2.has-data:hover {
+  box-shadow:
+    0 0 0 2px rgba(192, 132, 252, 0.5),
+    0 0 12px rgba(192, 132, 252, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.cell-count {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* Tooltip flotante */
+.heatmap-tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(15, 16, 22, 0.95);
+  border: 1px solid rgba(192, 132, 252, 0.25);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(192, 132, 252, 0.08);
+  pointer-events: none;
+  z-index: 100;
+  min-width: 120px;
+  text-align: center;
+  animation: tooltipIn 0.15s ease forwards;
+}
+
+@keyframes tooltipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+}
+
+.heatmap-tooltip-day {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #c084fc;
+  margin-bottom: 0.1rem;
+}
+
+.heatmap-tooltip-hour {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+
+.heatmap-tooltip-count {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.heatmap-tooltip-count .count-number {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.heatmap-tooltip-count .count-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Leyenda v2 */
+.heatmap-legend-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding: 0 0.25rem;
+}
+
+.heatmap-legend-v2 .legend-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #64748b;
+  letter-spacing: 0.2px;
+}
+
+.legend-gradient {
+  display: flex;
+  gap: 3px;
+}
+
+.legend-swatch {
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  transition: transform 0.15s ease;
+}
+
+.legend-swatch:hover {
+  transform: scaleY(1.5);
 }
 
 /* ---- Filtros ---- */

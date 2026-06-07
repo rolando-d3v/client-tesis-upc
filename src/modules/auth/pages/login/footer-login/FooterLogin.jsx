@@ -5,7 +5,7 @@ export default function FooterLogin() {
 
   return (
     <div className={css.footer}>
-      <section>
+      <section className={css.section} >
         <div className={css.content_title}>
           
             <span className={css.text}>

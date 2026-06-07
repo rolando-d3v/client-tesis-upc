@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router";
+import { useSelector } from "react-redux";
 import "../anomalias.css";
 import { getDetalle } from "../../../api/apiAnomalias";
 
@@ -27,23 +28,37 @@ export default function TablaAnomalias() {
   const [filterClasif, setFilterClasif] = useState("");
   const limit = 20;
 
-  const fetchDetalle = async (p) => {
-    try {
-      setLoading(true);
-      const result = await getDetalle(p, limit);
-      setData(result.data || []);
-      setTotalPages(result.total_pages || 0);
-      setTotal(result.total || 0);
-    } catch {
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filtro global de fechas desde Redux
+  const { fechaInicio, fechaFin } = useSelector(
+    (state) => state.FILTRO_FECHAS
+  );
 
+  const fetchDetalle = useCallback(
+    async (p) => {
+      try {
+        setLoading(true);
+        const result = await getDetalle(p, limit, { fechaInicio, fechaFin });
+        setData(result.data || []);
+        setTotalPages(result.total_pages || 0);
+        setTotal(result.total || 0);
+      } catch {
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fechaInicio, fechaFin]
+  );
+
+  // Re-fetch cuando cambien las fechas o la página
   useEffect(() => {
     fetchDetalle(page);
-  }, [page]);
+  }, [page, fetchDetalle]);
+
+  // Resetear a página 1 cuando cambian las fechas
+  useEffect(() => {
+    setPage(1);
+  }, [fechaInicio, fechaFin]);
 
   const filteredData = filterClasif
     ? data.filter((d) => d.clasificacion === filterClasif)
@@ -134,7 +149,7 @@ export default function TablaAnomalias() {
                   <td>{item.tipo_documento}</td>
                   <td>{item.destino}</td>
                   <td className={getScoreClass(item.score)}>
-                    {item.score.toFixed(4)}
+                    {item.score?.toFixed(4)}
                   </td>
                 </tr>
               ))}

@@ -8,24 +8,35 @@
 }
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  font-size: 16px;
+
+  @media (width < 768px) {
+    font-size: 15px;
+  }
 }
 
 body {
+  
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 
-  /* font: 18px/145% var(--sans);
+  /* /* font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg); */
 
 
   @media (max-width: 1024px) {
     font-size: 16px;
-  } */
+  }
 }
+
+/* Sonner: evitar que el contenedor ocupe espacio en el layout */
+/* [data-sonner-toaster] {
+  position: fixed !important;
+} */

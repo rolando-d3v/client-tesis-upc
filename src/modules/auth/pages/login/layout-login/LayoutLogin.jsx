@@ -3,6 +3,7 @@ import FooterLogin from "../footer-login/FooterLogin";
 import FormLogin from "../form-login/FormLogin";
 import css from "./layout.module.css";
 
+
 export default function LayoutLogin() {
   const item1 = {
     hidden: { opacity: 0, x: -400 },
@@ -51,7 +52,7 @@ export default function LayoutLogin() {
             animate="visible"
             transition={{ delay: 2, duration: 1 }}
           >
-           de Filtración
+            de Filtración
           </motion.span>
           <motion.span
             variants={item3}

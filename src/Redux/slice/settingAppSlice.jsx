@@ -8,7 +8,6 @@ const initialState = {
   estado_modal_full: false,
   estado_modal_jefe: false,
   estado_url_doc: "",
-  isDarkMode: localStorage.getItem("isDarkMode") === "true" ? true : false,
 };
 
 
@@ -41,7 +40,6 @@ const settingAppSlice = createSlice({
     },
     toggleDarkMode: (state) => {
       const isDarkMode = !state.isDarkMode;
-      localStorage.setItem("isDarkMode", isDarkMode);
       // Cookies.set('isDarkMode', isDarkMode)
       state.isDarkMode = isDarkMode;
     },
