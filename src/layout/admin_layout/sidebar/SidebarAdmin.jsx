@@ -14,6 +14,7 @@ import {
   FaCalendar,
   FaPowerOff,
   FaEraser,
+  FaFileCsv
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -26,6 +27,12 @@ export default function SidebarAdmin() {
   );
 
   const anomaliasLinks = [
+    {
+      id: 9,
+      url: "/carga_anomalias",
+      name: "Cargar CSV",
+      icon: <FaFileCsv />,
+    },
     {
       id: 10,
       url: "/anomalias",

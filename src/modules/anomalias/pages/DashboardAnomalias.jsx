@@ -1,7 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router";
 import { useSelector } from "react-redux";
-import { toast } from "sonner";
 import "../anomalias.css";
 
 import CardResumen from "../components/CardResumen";
@@ -9,21 +7,16 @@ import DonutClasificacion from "../components/DonutClasificacion";
 import BarrasOficinas from "../components/BarrasOficinas";
 import AreaHoras from "../components/AreaHoras";
 import ScatterScores from "../components/ScatterScores";
-import UploadCSV from "../components/UploadCSV";
 import {
-  subirCSVAnomalias,
-  getResumen,
-  getPorClasificacion,
-  getPorHora,
-  getPorOficina,
-  getScores,
+  useResumenAnomalias,
+  usePorClasificacionAnomalias,
+  usePorHoraAnomalias,
+  usePorOficinaAnomalias,
+  useScoresAnomalias,
 } from "../../../api/apiAnomalias";
 
 export default function DashboardAnomalias() {
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-  const [uploaded, setUploaded] = useState(false);
 
   // Filtro global de fechas desde Redux
   const { fechaInicio, fechaFin } = useSelector(
@@ -31,58 +24,31 @@ export default function DashboardAnomalias() {
   );
   const filtros = { fechaInicio, fechaFin };
 
-  // Cargar datos desde BD (con filtro de fecha)
-  const fetchDashboard = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [resumen, clasificacion, porHora, porOficina, scores] =
-        await Promise.all([
-          getResumen(filtros),
-          getPorClasificacion(filtros),
-          getPorHora(filtros),
-          getPorOficina(filtros),
-          getScores(filtros),
-        ]);
+  // Consultas con React Query
+  const resumenQuery = useResumenAnomalias(filtros);
+  const clasificacionQuery = usePorClasificacionAnomalias(filtros);
+  const porHoraQuery = usePorHoraAnomalias(filtros);
+  const porOficinaQuery = usePorOficinaAnomalias(filtros);
+  const scoresQuery = useScoresAnomalias(filtros);
 
-      // Solo mostrar si hay datos
-      if (resumen.total_registros > 0) {
-        setData({
-          resumen,
-          anomalias_por_clasificacion: clasificacion,
-          anomalias_por_hora: porHora,
-          anomalias_por_oficina: porOficina,
-          scores_data: scores,
-        });
+  const loading =
+    resumenQuery.isLoading ||
+    clasificacionQuery.isLoading ||
+    porHoraQuery.isLoading ||
+    porOficinaQuery.isLoading ||
+    scoresQuery.isLoading;
+
+  const hasData = resumenQuery.data && resumenQuery.data.total_registros > 0;
+
+  const data = hasData
+    ? {
+        resumen: resumenQuery.data,
+        anomalias_por_clasificacion: clasificacionQuery.data || [],
+        anomalias_por_hora: porHoraQuery.data || [],
+        anomalias_por_oficina: porOficinaQuery.data || [],
+        scores_data: scoresQuery.data || [],
       }
-    } catch {
-      // BD vacía o error — no hay datos aún
-    } finally {
-      setLoading(false);
-    }
-  }, [fechaInicio, fechaFin]);
-
-  // Cargar al montar y cuando cambien las fechas
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
-
-  const handleUpload = async (file) => {
-    try {
-      setLoading(true);
-      toast.info("Procesando CSV con Isolation Forest...");
-      const resultado = await subirCSVAnomalias(file);
-      setData(resultado);
-      setUploaded(true);
-      toast.success(
-        `✅ Análisis completo: ${resultado.resumen.total_anomalias} anomalías detectadas`
-      );
-    } catch (error) {
-      console.error(error);
-      toast.error("Error al procesar el archivo CSV");
-    } finally {
-      setLoading(false);
-    }
-  };
+    : null;
 
   const resumen = data?.resumen;
 
@@ -95,6 +61,9 @@ export default function DashboardAnomalias() {
 
       {/* Navegación entre dashboards */}
       <nav className="dashboard-nav">
+        <Link to="/carga_anomalias" className={location.pathname === "/carga_anomalias" ? "active" : ""}>
+          📥 Cargar CSV
+        </Link>
         <Link to="/anomalias" className={location.pathname === "/anomalias" ? "active" : ""}>
           📊 Resumen Ejecutivo
         </Link>
@@ -106,15 +75,11 @@ export default function DashboardAnomalias() {
         </Link>
       </nav>
 
-      {/* Upload CSV */}
-      <UploadCSV onUpload={handleUpload} loading={loading} />
-
       {/* Processing overlay */}
       {loading && (
         <div className="processing-overlay">
           <div className="spinner" />
-          <p>Ejecutando Pipeline Isolation Forest</p>
-          <p className="processing-sub">Limpiando datos, generando features, prediciendo anomalías...</p>
+          <p>Cargando datos del Dashboard...</p>
         </div>
       )}
 
@@ -123,8 +88,11 @@ export default function DashboardAnomalias() {
         <div className="empty-state">
           <div className="empty-icon">🤖</div>
           <p>
-            Sube un archivo CSV con registros de trazabilidad para iniciar el análisis
-            de anomalías con Isolation Forest.
+            No hay datos cargados aún. Por favor, ve a la sección de{" "}
+            <Link to="/carga_anomalias" style={{ color: "#c084fc", textDecoration: "underline", fontWeight: "bold" }}>
+              Cargar CSV
+            </Link>{" "}
+            para subir un archivo de trazabilidad y comenzar el análisis.
           </p>
         </div>
       )}

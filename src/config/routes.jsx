@@ -6,6 +6,7 @@ import TablaPage from "../modules/auth/pages/tabla/Tabla";
 import DashboardAnomalias from "../modules/anomalias/pages/DashboardAnomalias";
 import TablaAnomalias from "../modules/anomalias/pages/TablaAnomalias";
 import TimelineAnomalias from "../modules/anomalias/pages/timelineAnomalia/TimelineAnomalias";
+import CargaAnomalias from "../modules/anomalias/pages/carga_csv_anomalias/CargaAnomalias";
 
 
 const NoFount = () => {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
           },
           { path: "/dashboard", element: <ComingSoon title="Dashboard" /> },
           { path: "/anomalias", element: <DashboardAnomalias /> },
+          { path: "/carga_anomalias", element: <CargaAnomalias /> },
           { path: "/anomalias/tabla", element: <TablaAnomalias /> },
           { path: "/anomalias/timeline", element: <TimelineAnomalias /> },
         ],

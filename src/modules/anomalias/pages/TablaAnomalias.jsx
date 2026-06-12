@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { useSelector } from "react-redux";
 import "../anomalias.css";
-import { getDetalle } from "../../../api/apiAnomalias";
+import { useDetalleAnomalias } from "../../../api/apiAnomalias";
 
 function getBadgeClass(clasificacion) {
   const c = clasificacion?.toLowerCase();
@@ -20,11 +20,7 @@ function getScoreClass(score) {
 
 export default function TablaAnomalias() {
   const location = useLocation();
-  const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [filterClasif, setFilterClasif] = useState("");
   const limit = 20;
 
@@ -33,32 +29,20 @@ export default function TablaAnomalias() {
     (state) => state.FILTRO_FECHAS
   );
 
-  const fetchDetalle = useCallback(
-    async (p) => {
-      try {
-        setLoading(true);
-        const result = await getDetalle(p, limit, { fechaInicio, fechaFin });
-        setData(result.data || []);
-        setTotalPages(result.total_pages || 0);
-        setTotal(result.total || 0);
-      } catch {
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [fechaInicio, fechaFin]
-  );
-
-  // Re-fetch cuando cambien las fechas o la página
-  useEffect(() => {
-    fetchDetalle(page);
-  }, [page, fetchDetalle]);
-
   // Resetear a página 1 cuando cambian las fechas
   useEffect(() => {
     setPage(1);
   }, [fechaInicio, fechaFin]);
+
+  // Consulta con React Query
+  const { data: result, isLoading: loading } = useDetalleAnomalias(page, limit, {
+    fechaInicio,
+    fechaFin,
+  });
+
+  const data = result?.data || [];
+  const totalPages = result?.total_pages || 0;
+  const total = result?.total || 0;
 
   const filteredData = filterClasif
     ? data.filter((d) => d.clasificacion === filterClasif)
@@ -73,6 +57,9 @@ export default function TablaAnomalias() {
 
       {/* Navegación */}
       <nav className="dashboard-nav">
+        <Link to="/carga_anomalias" className={location.pathname === "/carga_anomalias" ? "active" : ""}>
+          📥 Cargar CSV
+        </Link>
         <Link to="/anomalias" className={location.pathname === "/anomalias" ? "active" : ""}>
           📊 Resumen Ejecutivo
         </Link>

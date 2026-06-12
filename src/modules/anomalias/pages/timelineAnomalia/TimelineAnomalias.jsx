@@ -1,44 +1,27 @@
-import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router";
 import { useSelector } from "react-redux";
 import styles from "./time.module.css";
 import LineaDias from "../../components/LineaDias";
 import HeatmapSemana from "./headmapsemana/HeatmapSemana";
-import { getPorDia, getHeatmap } from "../../../../api/apiAnomalias";
+import { usePorDiaAnomalias, useHeatmapAnomalias } from "../../../../api/apiAnomalias";
 
 export default function TimelineAnomalias() {
   const location = useLocation();
-  const [porDia, setPorDia] = useState([]);
-  const [heatmap, setHeatmap] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   // Filtro global de fechas desde Redux
   const { fechaInicio, fechaFin } = useSelector(
     (state) => state.FILTRO_FECHAS
   );
+  const filtros = { fechaInicio, fechaFin };
 
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const filtros = { fechaInicio, fechaFin };
-      const [diasRes, heatmapRes] = await Promise.all([
-        getPorDia(filtros),
-        getHeatmap(filtros),
-      ]);
-      setPorDia(diasRes || []);
-      setHeatmap(heatmapRes || []);
-    } catch {
-      setPorDia([]);
-      setHeatmap([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [fechaInicio, fechaFin]);
+  // Consultas con React Query
+  const porDiaQuery = usePorDiaAnomalias(filtros);
+  const heatmapQuery = useHeatmapAnomalias(filtros);
 
-  // Cargar al montar y cuando cambien las fechas
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const loading = porDiaQuery.isLoading || heatmapQuery.isLoading;
+
+  const porDia = porDiaQuery.data || [];
+  const heatmap = heatmapQuery.data || [];
 
   const hasData = porDia.length > 0 || heatmap.length > 0;
 
@@ -51,6 +34,9 @@ export default function TimelineAnomalias() {
 
       {/* Navegación */}
       <nav className="dashboard-nav">
+        <Link to="/carga_anomalias" className={location.pathname === "/carga_anomalias" ? "active" : ""}>
+          📥 Cargar CSV
+        </Link>
         <Link to="/anomalias" className={location.pathname === "/anomalias" ? "active" : ""}>
           📊 Resumen Ejecutivo
         </Link>
