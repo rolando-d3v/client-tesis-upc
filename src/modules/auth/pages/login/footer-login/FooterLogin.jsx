@@ -9,7 +9,7 @@ export default function FooterLogin() {
         <div className={css.content_title}>
           
             <span className={css.text}>
-              Ejército del Perú
+              Sistema de Filtración Documental
             </span>
    
          

@@ -116,7 +116,7 @@ export default function FormLogin() {
         </div>
         <p className={css.sub_title}> Sistema Predictivo </p>
         <p className={css.sub_title} style={{ marginBottom: 5 }}>
-          de Filtración de Documental
+          de Filtración Documental
         </p>
       </div>
 
