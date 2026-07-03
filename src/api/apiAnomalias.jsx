@@ -169,3 +169,21 @@ export const useHeatmapAnomalias = (filtros = {}) => {
   });
 };
 
+// ============================================================
+// CALIDAD DEL DATASET (ICD)
+// ============================================================
+
+export const getCalidadDataset = async () => {
+  const response = await api.get("/anomalias/calidad-dataset");
+  return response.data;
+};
+
+// Hook de Consulta para calidad del dataset (ICD original + procesado)
+export const useCalidadDataset = () => {
+  return useQuery({
+    queryKey: ["anomalias_calidad_dataset"],
+    queryFn: () => getCalidadDataset(),
+    staleTime: 1000 * 30,
+  });
+};
+

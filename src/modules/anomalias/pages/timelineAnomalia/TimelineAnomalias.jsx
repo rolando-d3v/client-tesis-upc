@@ -32,28 +32,14 @@ export default function TimelineAnomalias() {
         Distribución temporal — Tendencias por día y mapa de calor hora × día de la semana
       </p>
 
-      {/* Navegación */}
-      <nav className="dashboard-nav">
-        <Link to="/carga_anomalias" className={location.pathname === "/carga_anomalias" ? "active" : ""}>
-          📥 Cargar CSV
-        </Link>
-        <Link to="/anomalias" className={location.pathname === "/anomalias" ? "active" : ""}>
-          📊 Resumen Ejecutivo
-        </Link>
-        <Link to="/anomalias/tabla" className={location.pathname === "/anomalias/tabla" ? "active" : ""}>
-          📋 Tabla Anomalías
-        </Link>
-        <Link to="/anomalias/timeline" className={location.pathname === "/anomalias/timeline" ? "active" : ""}>
-          📅 Análisis Temporal
-        </Link>
-      </nav>
+  
 
       {loading ? (
         <div className="loading-container">
           <div className="spinner" />
           <p>Cargando datos temporales...</p>
         </div>
-      ) : !hasData ? (
+      ) : !hasData    ? (
         <div className="empty-state">
           <div className="empty-icon">📅</div>
           <p>

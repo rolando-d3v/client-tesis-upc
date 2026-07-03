@@ -1,12 +1,12 @@
 .aside {
-  background: linear-gradient(180deg, #1a2332 0%, #0f1923 100%);
+  background: #ffffff;
   width: 280px;
   padding: 80px 16px 20px;
-  color: #e2e8f0;
+  color: var(--text);
   height: calc(100vh - 20px);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(148, 163, 184, 0.08);
+  border-right: 1px solid var(--border);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
@@ -14,16 +14,16 @@
 
 .divLogo {
   padding: 8px 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--text-h);
 }
 
 .divider {
   border: none;
-  border-top: 1px solid rgba(148, 163, 184, 0.08);
+  border-top: 1px solid var(--border);
   margin: 8px 12px;
 }
 
@@ -39,7 +39,7 @@
   align-items: center;
   gap: 10px;
   border-radius: 8px;
-  color: #94a3b8;
+  color: var(--text);
   padding: 10px 12px;
   text-decoration: none;
   font-size: 0.9rem;
@@ -53,13 +53,13 @@
 }
 
 .link:hover {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #e2e8f0;
+  background-color: var(--accent-bg);
+  color: var(--accent);
 }
 
 .linkActive {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background-color: var(--accent-bg);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -74,8 +74,11 @@
 
 .sectionTitle {
   font-size: 0.68rem;
-  opacity: 0.7;
+  color: #94a3b8;
   padding-top: 12px;
+  padding-left: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 .spacer {
@@ -84,17 +87,17 @@
 }
 
 .logoutBtn {
-  color: #f87171;
+  color: #ef4444;
   margin-top: 8px;
 }
 
 .logoutBtn:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
 }
 
 .logoutIcon {
-  color: #f87171;
+  color: #ef4444;
 }
 
 /* ============================================================
@@ -116,8 +119,8 @@
 
 .filterTitle {
   font-size: 0.7rem;
-  font-weight: 600;
-  color: #94a3b8;
+  font-weight: 700;
+  color: var(--text-h);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -125,8 +128,8 @@
 .filterBadge {
   font-size: 0.58rem;
   font-weight: 700;
-  color: #a78bfa;
-  background: rgba(167, 139, 250, 0.12);
+  color: var(--accent);
+  background: var(--accent-bg);
   padding: 2px 7px;
   border-radius: 20px;
   letter-spacing: 0.4px;
@@ -143,10 +146,10 @@
 .filterInput {
   width: 100%;
   padding: 7px 10px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: rgba(15, 23, 42, 0.6);
-  color: #e2e8f0;
+  background: var(--code-bg);
+  color: var(--text-h);
   font-size: 0.78rem;
   font-family: inherit;
   outline: none;
@@ -154,14 +157,14 @@
 }
 
 .filterInput:focus {
-  border-color: rgba(167, 139, 250, 0.5);
-  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
 }
 
-/* Icono de calendario personalizado para dark theme */
+/* Icono de calendario personalizado */
 .filterInput::-webkit-calendar-picker-indicator {
-  filter: invert(0.6);
   cursor: pointer;
+  opacity: 0.6;
 }
 
 .filterBtnTotal {
@@ -172,10 +175,10 @@
   width: 100%;
   padding: 8px 12px;
   margin-top: 4px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(167, 139, 250, 0.12) 100%);
-  color: #a78bfa;
+  background: var(--code-bg);
+  color: var(--text);
   font-size: 0.78rem;
   font-weight: 600;
   font-family: inherit;
@@ -184,7 +187,7 @@
 }
 
 .filterBtnTotal:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(167, 139, 250, 0.2) 100%);
-  border-color: rgba(167, 139, 250, 0.3);
-  color: #c4b5fd;
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }

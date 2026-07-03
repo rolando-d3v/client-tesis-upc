@@ -1,19 +1,21 @@
 import { Link, useLocation } from "react-router";
 import { useSelector } from "react-redux";
-import "../anomalias.css";
+import "./dashboard.css";
 
-import CardResumen from "../components/CardResumen";
-import DonutClasificacion from "../components/DonutClasificacion";
-import BarrasOficinas from "../components/BarrasOficinas";
-import AreaHoras from "../components/AreaHoras";
-import ScatterScores from "../components/ScatterScores";
+import CardResumen from "../../../components/CardResumen";
+import CardCalidadDataset from "../../../components/CardCalidadDataset";
+import DonutClasificacion from "../../../components/DonutClasificacion";
+import BarrasOficinas from "../../../components/BarrasOficinas";
+import AreaHoras from "../../../components/AreaHoras";
+import ScatterScores from "../../../components/ScatterScores";
 import {
   useResumenAnomalias,
   usePorClasificacionAnomalias,
   usePorHoraAnomalias,
   usePorOficinaAnomalias,
   useScoresAnomalias,
-} from "../../../api/apiAnomalias";
+  useCalidadDataset,
+} from "../../../../../api/apiAnomalias";
 
 export default function DashboardAnomalias() {
   const location = useLocation();
@@ -30,6 +32,7 @@ export default function DashboardAnomalias() {
   const porHoraQuery = usePorHoraAnomalias(filtros);
   const porOficinaQuery = usePorOficinaAnomalias(filtros);
   const scoresQuery = useScoresAnomalias(filtros);
+  const calidadQuery = useCalidadDataset();
 
   const loading =
     resumenQuery.isLoading ||
@@ -59,22 +62,7 @@ export default function DashboardAnomalias() {
         Pipeline Isolation Forest — Detección de anomalías en trazabilidad de documentos
       </p>
 
-      {/* Navegación entre dashboards */}
-      <nav className="dashboard-nav">
-        <Link to="/carga_anomalias" className={location.pathname === "/carga_anomalias" ? "active" : ""}>
-          📥 Cargar CSV
-        </Link>
-        <Link to="/anomalias" className={location.pathname === "/anomalias" ? "active" : ""}>
-          📊 Resumen Ejecutivo
-        </Link>
-        <Link to="/anomalias/tabla" className={location.pathname === "/anomalias/tabla" ? "active" : ""}>
-          📋 Tabla Anomalías
-        </Link>
-        <Link to="/anomalias/timeline" className={location.pathname === "/anomalias/timeline" ? "active" : ""}>
-          📅 Análisis Temporal
-        </Link>
-      </nav>
-
+   
       {/* Processing overlay */}
       {loading && (
         <div className="processing-overlay">
@@ -127,6 +115,14 @@ export default function DashboardAnomalias() {
               sub="En anomalías detectadas"
             />
           </div>
+
+          {/* ICD — Índice de Calidad del Dataset */}
+          {calidadQuery.data && (
+            <CardCalidadDataset
+              original={calidadQuery.data.calidad_dataset_original}
+              procesado={calidadQuery.data.calidad_dataset_procesado}
+            />
+          )}
 
           {/* Gráficos fila 1: Donut + Barras */}
           <div className="charts-grid">

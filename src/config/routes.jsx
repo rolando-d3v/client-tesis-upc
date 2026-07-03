@@ -3,8 +3,8 @@ import LayoutLogin from "../modules/auth/pages/login/layout-login/LayoutLogin";
 import { PrivateRoute, PublicRoute } from "./PrivateRoutes";
 import MainLayout from "../layout/admin_layout/layout/MainLayout";
 import TablaPage from "../modules/auth/pages/tabla/Tabla";
-import DashboardAnomalias from "../modules/anomalias/pages/DashboardAnomalias";
-import TablaAnomalias from "../modules/anomalias/pages/TablaAnomalias";
+import DashboardAnomaliasPage from "../modules/anomalias/pages/dashboard_page/layout/DashboardAnomaliasPage";
+import TablaAnomaliasPage from "../modules/anomalias/pages/tabla_anomalias_page/TablaAnomaliaPage";
 import TimelineAnomalias from "../modules/anomalias/pages/timelineAnomalia/TimelineAnomalias";
 import CargaAnomalias from "../modules/anomalias/pages/carga_csv_anomalias/CargaAnomalias";
 
@@ -46,9 +46,9 @@ export const router = createBrowserRouter([
             element: <ComingSoon title="Gestión de Colegios" />,
           },
           { path: "/dashboard", element: <ComingSoon title="Dashboard" /> },
-          { path: "/anomalias", element: <DashboardAnomalias /> },
+          { path: "/anomalias", element: <DashboardAnomaliasPage /> },
           { path: "/carga_anomalias", element: <CargaAnomalias /> },
-          { path: "/anomalias/tabla", element: <TablaAnomalias /> },
+          { path: "/anomalias/tabla", element: <TablaAnomaliasPage /> },
           { path: "/anomalias/timeline", element: <TimelineAnomalias /> },
         ],
       },
