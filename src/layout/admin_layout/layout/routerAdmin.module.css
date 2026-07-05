@@ -1,7 +1,9 @@
 .admin {
     display: flex;
     height: calc(100vh - 20px);
-    
+    border: 8px solid #000;
+    border-radius: 24px;
+    overflow: hidden;
     
     .main {
         flex: 1;

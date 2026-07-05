@@ -230,7 +230,7 @@ export default function HeatmapSemana({ data = [] }) {
             dayData={dataByDay[i]}
             dayLabel={dia}
             isWeekend={i >= 5}
-            // showXTicks={i === 6}
+            showXTicks={i === 6}
             maxCount={maxCount}
             domain={domain}
           />

@@ -1,4 +1,5 @@
 import styles from "./sidebar.module.css";
+import logo from "../../../assets/logos/machine.png";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { xlogin_false } from "../../../Redux/slice/usuarioAuthSlice";
@@ -14,7 +15,7 @@ import {
   FaCalendar,
   FaPowerOff,
   FaEraser,
-  FaFileCsv
+  FaFileCsv,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -22,9 +23,7 @@ export default function SidebarAdmin() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { fechaInicio, fechaFin } = useSelector(
-    (state) => state.FILTRO_FECHAS
-  );
+  const { fechaInicio, fechaFin } = useSelector((state) => state.FILTRO_FECHAS);
 
   const anomaliasLinks = [
     {
@@ -53,6 +52,27 @@ export default function SidebarAdmin() {
     },
   ];
 
+  const anomaliasEventos = [
+    {
+      id: 1,
+      url: "/carga_anomalias",
+      name: "Cargar CSV",
+      icon: <FaFileCsv />,
+    },
+    {
+      id: 2,
+      url: "/anomalias",
+      name: "Dashboard Anomalías",
+      icon: <FaChartLine />,
+    },
+    {
+      id: 3,
+      url: "/anomalias/tabla",
+      name: "Tabla Anomalías",
+      icon: <FaTable />,
+    },
+  ];
+
   const handleLogout = async () => {
     try {
       await logoutAuth();
@@ -71,7 +91,10 @@ export default function SidebarAdmin() {
 
   return (
     <aside className={styles.aside}>
-      <div className={styles.divLogo}>Panel Administrador</div>
+      <div className={styles.divLogo}>
+        <img src={logo} alt="logo_machine" />
+        <span>Sistema Predictivo</span>
+      </div>
 
       <hr className={styles.divider} />
 
@@ -119,10 +142,29 @@ export default function SidebarAdmin() {
 
       <hr className={styles.divider} />
 
-      <div className={styles.sectionTitle}>Isolation Forest</div>
+      <div className={styles.sectionTitle}>Trazabilidad</div>
 
       <div className={styles.listUrl}>
         {anomaliasLinks.map((link) => (
+          <Link
+            key={link.id}
+            className={`${styles.link} ${
+              location.pathname === link.url ? styles.linkActive : ""
+            }`}
+            to={link.url}
+          >
+            <span className={styles.icon}>{link.icon}</span>
+            {link.name}
+          </Link>
+        ))}
+      </div>
+
+      <hr className={styles.divider} />
+
+      <div className={styles.sectionTitle}  >Eventos</div>
+
+      <div className={styles.listUrl}>
+        {anomaliasEventos?.map((link) => (
           <Link
             key={link.id}
             className={`${styles.link} ${

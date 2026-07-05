@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import UploadCSV from "../../components/UploadCSV";
+import UploadCSV from "../../components/upload_csv/UploadCSV";
 import { useSubirCSVAnomalias } from "../../../../api/apiAnomalias";
 import styles from "./carga.module.css";
-import "../../anomalias.css"; // Se mantiene para estilos de componentes internos como UploadCSV
 
 export default function CargaAnomalias() {
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ export default function CargaAnomalias() {
   };
 
   return (
-    <div className={styles.anomaliasPage}>
+    <div className={styles.content}>
       <h1>📥 Carga de Registros de Trazabilidad</h1>
       <p className={styles.pageSubtitle}>
         Sube un archivo CSV para entrenar el modelo Isolation Forest y analizar anomalías en la base de datos.

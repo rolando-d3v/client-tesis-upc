@@ -1,8 +1,8 @@
 .aside {
-  background: #ffffff;
+  background: var(--bg-sidebar);
   width: 280px;
-  padding: 80px 16px 20px;
-  color: var(--text);
+  padding: 20px 16px 15px;
+  color: var(--text-sidebar);
   height: calc(100vh - 20px);
   display: flex;
   flex-direction: column;
@@ -13,12 +13,33 @@
 }
 
 .divLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 8px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-h);
+  margin-bottom: 8px;
+}
+
+.divLogo img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.divLogo span {
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  color: var(--text-sidebar);
+  background: linear-gradient(135deg, #ffffff 30%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .divider {
@@ -39,7 +60,7 @@
   align-items: center;
   gap: 10px;
   border-radius: 8px;
-  color: var(--text);
+  color: var(--text-sidebar);
   padding: 10px 12px;
   text-decoration: none;
   font-size: 0.9rem;
@@ -106,6 +127,7 @@
 .filterSection {
   padding: 4px 8px 8px;
   display: flex;
+   color: var(--text-sidebar);
   flex-direction: column;
   gap: 6px;
 }
@@ -120,7 +142,7 @@
 .filterTitle {
   font-size: 0.7rem;
   font-weight: 700;
-  color: var(--text-h);
+   color: var(--text-sidebar);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -139,7 +161,7 @@
 .filterLabel {
   font-size: 0.65rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-sidebar);
   margin-top: 2px;
 }
 
@@ -149,7 +171,7 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--code-bg);
-  color: var(--text-h);
+  /* color: var(--text-sidebar); */
   font-size: 0.78rem;
   font-family: inherit;
   outline: none;

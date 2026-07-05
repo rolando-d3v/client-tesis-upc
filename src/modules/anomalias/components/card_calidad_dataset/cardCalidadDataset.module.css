@@ -1,0 +1,304 @@
+/* ============================================================
+   ICD — Índice de Calidad del Dataset
+   ============================================================ */
+
+.icd_card {
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.icd_card:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.icd_title_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.icd_title_row h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-h);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.icd_title_row h3 span {
+  font-size: 1.1rem;
+}
+
+/* ---- ICD Tabs ---- */
+.icd_tabs {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--code-bg);
+  padding: 0.25rem;
+  border-radius: 10px;
+}
+
+.icd_tabs button {
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Inter', var(--sans);
+}
+
+.icd_tabs button:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.icd_tabs button.active {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+}
+
+/* ---- ICD Panels Grid ---- */
+.icd_panels {
+  display: grid;
+  gap: 1rem;
+}
+
+.dual {
+  grid-template-columns: 1fr 1fr;
+}
+
+.single {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 800px) {
+  .dual {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- ICD Panel ---- */
+.icd_panel {
+  padding: 1.15rem;
+  border-radius: 14px;
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  transition: border-color 0.3s ease;
+}
+
+.icd_panel:hover {
+  border-color: var(--accent-border);
+}
+
+.icd_panel_header {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.icd_panel_meta {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.icd_panel_body {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 600px) {
+  .icd_panel_body {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.icd_circle_container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icd_circular_progress {
+  animation: icdFadeIn 0.6s ease forwards;
+}
+
+@keyframes icdFadeIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.icd_empty {
+  color: #475569;
+  font-size: 0.82rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* ---- ICD Metrics List ---- */
+.icd_metrics_list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.icd_metric_row {
+  animation: icdSlideIn 0.5s ease forwards;
+  opacity: 0;
+}
+
+.icd_metric_row:nth-child(1) { animation-delay: 0.15s; }
+.icd_metric_row:nth-child(2) { animation-delay: 0.25s; }
+.icd_metric_row:nth-child(3) { animation-delay: 0.35s; }
+.icd_metric_row:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes icdSlideIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.icd_metric_header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.icd_metric_icon {
+  font-size: 0.72rem;
+}
+
+.icd_metric_label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.icd_metric_value {
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Metric Bar ---- */
+.icd_metric_bar_track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.icd_metric_bar_fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icd_metric_desc {
+  font-size: 0.62rem;
+  color: #64748b;
+  margin-top: 0.1rem;
+}
+
+/* ---- ICD Comparison Footer ---- */
+.icd_comparison_footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.icd_comparison_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.icd_comparison_label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.icd_comparison_value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+.icd_comparison_arrow {
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.icd_comparison_delta {
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.delta_positive {
+  color: #059669;
+  background: rgba(52, 211, 153, 0.15);
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+}
+
+.delta_negative {
+  color: #dc2626;
+  background: rgba(248, 113, 113, 0.15);
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate_in {
+  animation: fadeInUp 0.5s ease forwards;
+}

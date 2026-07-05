@@ -6,15 +6,16 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import styles from "./donutClasificacion.module.css";
 
 const COLORS = ["#f87171", "#fb923c", "#38bdf8", "#facc15", "#a78bfa", "#34d399"];
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="custom-tooltip">
-        <p className="tooltip-label">{payload[0].name}</p>
-        <p className="tooltip-value">{payload[0].value} anomalías</p>
+      <div className={styles.custom_tooltip}>
+        <p className={styles.tooltip_label}>{payload[0].name}</p>
+        <p className={styles.tooltip_value}>{payload[0].value} anomalías</p>
       </div>
     );
   }

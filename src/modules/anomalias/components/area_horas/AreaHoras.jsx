@@ -1,35 +1,36 @@
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import styles from "./areaHoras.module.css";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="custom-tooltip">
-        <p className="tooltip-label">{label}</p>
-        <p className="tooltip-value">{payload[0].value} anomalías</p>
+      <div className={styles.custom_tooltip}>
+        <p className={styles.tooltip_label}>{label}:00 hrs</p>
+        <p className={styles.tooltip_value}>{payload[0].value} anomalías</p>
       </div>
     );
   }
   return null;
 };
 
-export default function LineaDias({ data = [] }) {
+export default function AreaHoras({ data = [] }) {
   if (!data.length) return null;
 
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
         <defs>
-          <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#818cf8" />
-            <stop offset="100%" stopColor="#c084fc" />
+          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#818cf8" stopOpacity={0.2} />
+            <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid
@@ -38,13 +39,11 @@ export default function LineaDias({ data = [] }) {
           vertical={false}
         />
         <XAxis
-          dataKey="fecha"
+          dataKey="hora"
           tick={{ fill: "#64748b", fontSize: 10 }}
           axisLine={{ stroke: "rgba(148,163,184,0.1)" }}
           tickLine={false}
-          angle={-45}
-          textAnchor="end"
-          height={60}
+          tickFormatter={(tick) => `${tick}:00`}
         />
         <YAxis
           tick={{ fill: "#64748b", fontSize: 11 }}
@@ -52,15 +51,15 @@ export default function LineaDias({ data = [] }) {
           tickLine={false}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Line
+        <Area
           type="monotone"
           dataKey="cantidad"
-          stroke="url(#lineGradient)"
-          strokeWidth={2.5}
-          dot={{ fill: "#c084fc", r: 3.5, strokeWidth: 0 }}
-          activeDot={{ r: 6, fill: "#c084fc", stroke: "#fff", strokeWidth: 2 }}
+          stroke="#818cf8"
+          strokeWidth={2}
+          fillOpacity={1}
+          fill="url(#areaGradient)"
         />
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   );
 }

@@ -6,15 +6,15 @@ import css from "./layout.module.css";
 
 export default function LayoutLogin() {
   const item1 = {
-    hidden: { opacity: 0, x: -400 },
+    hidden: { opacity: 0, x: -150 },
     visible: { opacity: 1, x: 0 },
   };
   const item2 = {
-    hidden: { opacity: 0, x: -800 },
+    hidden: { opacity: 0, x: -150 },
     visible: { opacity: 1, x: 0 },
   };
   const item3 = {
-    hidden: { opacity: 0, x: -1500 },
+    hidden: { opacity: 0, x: -150 },
     visible: { opacity: 1, x: 0 },
   };
 
@@ -40,25 +40,28 @@ export default function LayoutLogin() {
         <h1 className={css.content_text}>
           <motion.span
             variants={item1}
+            className={css.text_span}
             initial="hidden"
             animate="visible"
-            transition={{ delay: 1, duration: 1 }}
-          >
+            transition={{ delay: 0.8, duration: 0.8 }}
+            >
             Sistema Predictivo
           </motion.span>
           <motion.span
+            className={css.text_span}
             variants={item2}
             initial="hidden"
             animate="visible"
-            transition={{ delay: 2, duration: 1 }}
-          >
+            transition={{ delay: 1.1, duration: 0.8 }}
+            >
             de Filtración
           </motion.span>
           <motion.span
+            className={css.text_span}
             variants={item3}
             initial="hidden"
             animate="visible"
-            transition={{ delay: 3, duration: 1 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
           >
             Documental
           </motion.span>

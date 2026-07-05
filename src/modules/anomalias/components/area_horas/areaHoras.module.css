@@ -1,0 +1,20 @@
+.custom_tooltip {
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+
+.tooltip_label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip_value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-h);
+}

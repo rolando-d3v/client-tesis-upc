@@ -1,17 +1,16 @@
 import { Link, useLocation } from "react-router";
 import { useSelector } from "react-redux";
-import "./dashboard.css";
+import style from "./dashboard.module.css";
 
-import CardResumen from "../../../components/CardResumen";
-import CardCalidadDataset from "../../../components/CardCalidadDataset";
-import DonutClasificacion from "../../../components/DonutClasificacion";
-import BarrasOficinas from "../../../components/BarrasOficinas";
-import AreaHoras from "../../../components/AreaHoras";
-import ScatterScores from "../../../components/ScatterScores";
+
+import CardResumen from "../../../components/card_resumen/CardResumen";
+import CardCalidadDataset from "../../../components/card_calidad_dataset/CardCalidadDataset";
+import DonutClasificacion from "../../../components/donut_clasificacion/DonutClasificacion";
+import BarrasOficinas from "../../../components/barras_oficinas/BarrasOficinas";
+import ScatterScores from "../../../components/scatter_scores/ScatterScores";
 import {
   useResumenAnomalias,
   usePorClasificacionAnomalias,
-  usePorHoraAnomalias,
   usePorOficinaAnomalias,
   useScoresAnomalias,
   useCalidadDataset,
@@ -29,7 +28,6 @@ export default function DashboardAnomalias() {
   // Consultas con React Query
   const resumenQuery = useResumenAnomalias(filtros);
   const clasificacionQuery = usePorClasificacionAnomalias(filtros);
-  const porHoraQuery = usePorHoraAnomalias(filtros);
   const porOficinaQuery = usePorOficinaAnomalias(filtros);
   const scoresQuery = useScoresAnomalias(filtros);
   const calidadQuery = useCalidadDataset();
@@ -37,7 +35,6 @@ export default function DashboardAnomalias() {
   const loading =
     resumenQuery.isLoading ||
     clasificacionQuery.isLoading ||
-    porHoraQuery.isLoading ||
     porOficinaQuery.isLoading ||
     scoresQuery.isLoading;
 
@@ -47,7 +44,6 @@ export default function DashboardAnomalias() {
     ? {
         resumen: resumenQuery.data,
         anomalias_por_clasificacion: clasificacionQuery.data || [],
-        anomalias_por_hora: porHoraQuery.data || [],
         anomalias_por_oficina: porOficinaQuery.data || [],
         scores_data: scoresQuery.data || [],
       }
@@ -56,25 +52,25 @@ export default function DashboardAnomalias() {
   const resumen = data?.resumen;
 
   return (
-    <div className="anomalias-page">
+    <div className={style['anomalias-page']}>
       <h1>🔍 Sistema de Detección de Filtración de Info Clasificada</h1>
-      <p className="page-subtitle">
+      <p className={style['page-subtitle']}>
         Pipeline Isolation Forest — Detección de anomalías en trazabilidad de documentos
       </p>
 
    
       {/* Processing overlay */}
       {loading && (
-        <div className="processing-overlay">
-          <div className="spinner" />
+        <div className={style['processing-overlay']}>
+          <div className={style.spinner} />
           <p>Cargando datos del Dashboard...</p>
         </div>
       )}
 
       {/* Estado vacío */}
       {!data && !loading && (
-        <div className="empty-state">
-          <div className="empty-icon">🤖</div>
+        <div className={style['empty-state']}>
+          <div className={style['empty-icon']}>🤖</div>
           <p>
             No hay datos cargados aún. Por favor, ve a la sección de{" "}
             <Link to="/carga_anomalias" style={{ color: "#c084fc", textDecoration: "underline", fontWeight: "bold" }}>
@@ -89,7 +85,7 @@ export default function DashboardAnomalias() {
       {data && (
         <>
           {/* Cards de resumen */}
-          <div className="cards-grid">
+          <div className={style['cards-grid']}>
             <CardResumen
               icon="total"
               label="Total Registros"
@@ -125,28 +121,20 @@ export default function DashboardAnomalias() {
           )}
 
           {/* Gráficos fila 1: Donut + Barras */}
-          <div className="charts-grid">
-            <div className="chart-card">
+          <div className={style['charts-grid']}>
+            <div className={style['chart-card']}>
               <h3><span>🍩</span> Anomalías por Clasificación</h3>
               <DonutClasificacion data={data.anomalias_por_clasificacion} />
             </div>
-            <div className="chart-card">
+            <div className={style['chart-card']}>
               <h3><span>📊</span> Top Oficinas con más Anomalías</h3>
               <BarrasOficinas data={data.anomalias_por_oficina} />
             </div>
           </div>
 
-          {/* Gráficos fila 2: Area chart (full width) */}
-          <div className="charts-grid full-width">
-            <div className="chart-card">
-              <h3><span>📈</span> Anomalías por Hora del Día</h3>
-              <AreaHoras data={data.anomalias_por_hora} />
-            </div>
-          </div>
-
           {/* Gráficos fila 3: Scatter (full width) */}
-          <div className="charts-grid full-width">
-            <div className="chart-card">
+          <div className={`${style['charts-grid']} ${style['full-width']}`}>
+            <div className={style['chart-card']}>
               <h3><span>🔴</span> Score de Anomalía por Registro</h3>
               <p style={{ color: "#64748b", fontSize: "0.78rem", marginTop: "-0.5rem", marginBottom: "0.75rem" }}>
                 Puntos rojos = anomalías detectadas | Puntos grises = registros normales

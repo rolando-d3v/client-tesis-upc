@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import "../anomalias.css";
+import styles from "./uploadCSV.module.css";
 
 export default function UploadCSV({ onUpload, loading = false }) {
   const [file, setFile] = useState(null);
@@ -29,9 +29,9 @@ export default function UploadCSV({ onUpload, loading = false }) {
   };
 
   return (
-    <div className="upload-section">
+    <div className={styles.upload_section}>
       <div
-        className={`upload-area ${dragging ? "dragging" : ""}`}
+        className={`${styles.upload_area} ${dragging ? styles.dragging : ""}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
@@ -40,9 +40,9 @@ export default function UploadCSV({ onUpload, loading = false }) {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
       >
-        <div className="upload-icon">📄</div>
+        <div className={styles.upload_icon}>📄</div>
         <p>Arrastra tu archivo CSV aquí o haz clic para seleccionar</p>
-        <p className="upload-hint">
+        <p className={styles.upload_hint}>
           Formato: registro_trazabilidad.csv (32 columnas)
         </p>
 
@@ -55,7 +55,7 @@ export default function UploadCSV({ onUpload, loading = false }) {
         />
 
         {file && (
-          <div className="file-selected">
+          <div className={styles.file_selected}>
             📎 {file.name} ({(file.size / 1024).toFixed(1)} KB)
           </div>
         )}
@@ -64,13 +64,13 @@ export default function UploadCSV({ onUpload, loading = false }) {
       {file && (
         <div style={{ textAlign: "center", marginTop: "0.75rem" }}>
           <button
-            className="upload-btn"
+            className={styles.upload_btn}
             onClick={handleSubmit}
             disabled={loading}
           >
             {loading ? (
               <>
-                <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2, marginBottom: 0 }} />
+                <span className={styles.spinner} style={{ width: 16, height: 16, borderWidth: 2, marginBottom: 0 }} />
                 Procesando...
               </>
             ) : (

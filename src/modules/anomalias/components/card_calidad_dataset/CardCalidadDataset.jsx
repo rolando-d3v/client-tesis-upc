@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../anomalias.css";
+import styles from "./cardCalidadDataset.module.css";
 
 /**
  * Componente premium para mostrar el Índice de Calidad del Dataset (ICD).
@@ -36,7 +36,7 @@ function CircularProgress({ value, size = 110, strokeWidth = 8 }) {
   const color = getScoreColor(value);
 
   return (
-    <svg width={size} height={size} className="icd-circular-progress">
+    <svg width={size} height={size} className={styles.icd_circular_progress}>
       {/* Background circle */}
       <circle
         cx={size / 2}
@@ -97,24 +97,24 @@ function MetricBar({ metricKey, value }) {
   const color = getScoreColor(value);
 
   return (
-    <div className="icd-metric-row">
-      <div className="icd-metric-header">
-        <span className="icd-metric-icon">{config.icon}</span>
-        <span className="icd-metric-label">{config.label}</span>
-        <span className="icd-metric-value" style={{ color }}>
+    <div className={styles.icd_metric_row}>
+      <div className={styles.icd_metric_header}>
+        <span className={styles.icd_metric_icon}>{config.icon}</span>
+        <span className={styles.icd_metric_label}>{config.label}</span>
+        <span className={styles.icd_metric_value} style={{ color }}>
           {value}%
         </span>
       </div>
-      <div className="icd-metric-bar-track">
+      <div className={styles.icd_metric_bar_track}>
         <div
-          className="icd-metric-bar-fill"
+          className={styles.icd_metric_bar_fill}
           style={{
             width: `${value}%`,
             background: getScoreGradient(value),
           }}
         />
       </div>
-      <div className="icd-metric-desc">{config.desc}</div>
+      <div className={styles.icd_metric_desc}>{config.desc}</div>
     </div>
   );
 }
@@ -122,29 +122,29 @@ function MetricBar({ metricKey, value }) {
 function DatasetPanel({ data, label, emoji }) {
   if (!data) {
     return (
-      <div className="icd-panel">
-        <div className="icd-panel-header">
+      <div className={styles.icd_panel}>
+        <div className={styles.icd_panel_header}>
           <span>{emoji}</span> {label}
         </div>
-        <div className="icd-empty">Sin datos disponibles</div>
+        <div className={styles.icd_empty}>Sin datos disponibles</div>
       </div>
     );
   }
 
   return (
-    <div className="icd-panel">
-      <div className="icd-panel-header">
+    <div className={styles.icd_panel}>
+      <div className={styles.icd_panel_header}>
         <span>{emoji}</span> {label}
       </div>
-      <div className="icd-panel-meta">
+      <div className={styles.icd_panel_meta}>
         {data.total_registros?.toLocaleString()} registros × {data.total_columnas} columnas
       </div>
 
-      <div className="icd-panel-body">
-        <div className="icd-circle-container">
+      <div className={styles.icd_panel_body}>
+        <div className={styles.icd_circle_container}>
           <CircularProgress value={data.icd} />
         </div>
-        <div className="icd-metrics-list">
+        <div className={styles.icd_metrics_list}>
           {Object.keys(METRIC_CONFIG).map((key) => (
             <MetricBar key={key} metricKey={key} value={data[key] ?? 0} />
           ))}
@@ -163,26 +163,26 @@ export default function CardCalidadDataset({ original, procesado }) {
   if (!hasOriginal && !hasProcesado) return null;
 
   return (
-    <div className="icd-card animate-in">
-      <div className="icd-title-row">
+    <div className={`${styles.icd_card} ${styles.animate_in}`}>
+      <div className={styles.icd_title_row}>
         <h3>
           <span>📋</span> Índice de Calidad del Dataset (ICD)
         </h3>
-        <div className="icd-tabs">
+        <div className={styles.icd_tabs}>
           <button
-            className={activeTab === "ambos" ? "active" : ""}
+            className={activeTab === "ambos" ? styles.active : ""}
             onClick={() => setActiveTab("ambos")}
           >
             Comparar
           </button>
           <button
-            className={activeTab === "original" ? "active" : ""}
+            className={activeTab === "original" ? styles.active : ""}
             onClick={() => setActiveTab("original")}
           >
             Original
           </button>
           <button
-            className={activeTab === "procesado" ? "active" : ""}
+            className={activeTab === "procesado" ? styles.active : ""}
             onClick={() => setActiveTab("procesado")}
           >
             Procesado
@@ -190,7 +190,7 @@ export default function CardCalidadDataset({ original, procesado }) {
         </div>
       </div>
 
-      <div className={`icd-panels ${activeTab === "ambos" ? "dual" : "single"}`}>
+      <div className={`${styles.icd_panels} ${activeTab === "ambos" ? styles.dual : styles.single}`}>
         {(activeTab === "ambos" || activeTab === "original") && (
           <DatasetPanel data={original} label="Dataset Original (CSV)" emoji="📄" />
         )}
@@ -201,27 +201,27 @@ export default function CardCalidadDataset({ original, procesado }) {
 
       {/* ICD comparison summary */}
       {activeTab === "ambos" && hasOriginal && hasProcesado && (
-        <div className="icd-comparison-footer">
-          <div className="icd-comparison-item">
-            <span className="icd-comparison-label">ICD Original</span>
-            <span className="icd-comparison-value" style={{ color: getScoreColor(original.icd) }}>
+        <div className={styles.icd_comparison_footer}>
+          <div className={styles.icd_comparison_item}>
+            <span className={styles.icd_comparison_label}>ICD Original</span>
+            <span className={styles.icd_comparison_value} style={{ color: getScoreColor(original.icd) }}>
               {original.icd}%
             </span>
           </div>
-          <div className="icd-comparison-arrow">→</div>
-          <div className="icd-comparison-item">
-            <span className="icd-comparison-label">ICD Procesado</span>
-            <span className="icd-comparison-value" style={{ color: getScoreColor(procesado.icd) }}>
+          <div className={styles.icd_comparison_arrow}>→</div>
+          <div className={styles.icd_comparison_item}>
+            <span className={styles.icd_comparison_label}>ICD Procesado</span>
+            <span className={styles.icd_comparison_value} style={{ color: getScoreColor(procesado.icd) }}>
               {procesado.icd}%
             </span>
           </div>
-          <div className="icd-comparison-delta">
+          <div className={styles.icd_comparison_delta}>
             {procesado.icd >= original.icd ? (
-              <span className="delta-positive">
+              <span className={styles.delta_positive}>
                 ▲ +{(procesado.icd - original.icd).toFixed(2)}%
               </span>
             ) : (
-              <span className="delta-negative">
+              <span className={styles.delta_negative}>
                 ▼ {(procesado.icd - original.icd).toFixed(2)}%
               </span>
             )}

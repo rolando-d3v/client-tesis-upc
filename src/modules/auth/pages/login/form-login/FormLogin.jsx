@@ -5,7 +5,7 @@ import * as z from "zod";
 import * as FaIcons from "react-icons/fa";
 import { ToastError, ToastSuccess } from "../../../../../tools/Toasting";
 import css from "./form.module.css";
-import logo from "../../../../../assets/logos/defensa.png";
+import logo from "../../../../../assets/logos/machine.png";
 import { useDispatch } from "react-redux";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { xlogin_true, xset_user } from "../../../../../Redux/slice/usuarioAuthSlice";
