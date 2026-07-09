@@ -16,6 +16,11 @@ import {
   FaPowerOff,
   FaEraser,
   FaFileCsv,
+  FaUsers,
+  FaClock,
+  FaShieldHalved,
+  FaBrain,
+  FaUserShield,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -55,21 +60,45 @@ export default function SidebarAdmin() {
   const anomaliasEventos = [
     {
       id: 1,
-      url: "/carga_anomalias",
-      name: "Cargar CSV",
+      url: "/carga_eventos",
+      name: "Cargar CSV Eventos",
       icon: <FaFileCsv />,
     },
     {
       id: 2,
-      url: "/anomalias",
-      name: "Dashboard Anomalías",
+      url: "/eventos/dashboard-ejecutivo",
+      name: "Resumen Ejecutivo",
       icon: <FaChartLine />,
     },
     {
       id: 3,
-      url: "/anomalias/tabla",
-      name: "Tabla Anomalías",
-      icon: <FaTable />,
+      url: "/eventos/usuarios",
+      name: "Por Usuario",
+      icon: <FaUsers />,
+    },
+    {
+      id: 4,
+      url: "/eventos/temporal",
+      name: "Actividad Temporal",
+      icon: <FaClock />,
+    },
+    {
+      id: 5,
+      url: "/eventos/clasificacion",
+      name: "Clasificación Doc.",
+      icon: <FaShieldHalved />,
+    },
+    {
+      id: 6,
+      url: "/eventos/deteccion",
+      name: "Motor Detección",
+      icon: <FaBrain />,
+    },
+    {
+      id: 7,
+      url: "/eventos/perfiles",
+      name: "Perfiles Usuario",
+      icon: <FaUserShield />,
     },
   ];
 

@@ -1,0 +1,12 @@
+.container { width: 100%; }
+.kpis { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.kpiCard { flex: 1; min-width: 120px; padding: 1rem; border-radius: 10px; background: rgba(30,30,46,0.7); border: 1px solid var(--border); text-align: center; }
+.kpiValue { display: block; font-size: 1.5rem; font-weight: 800; color: #f97316; }
+.kpiLabel { font-size: 0.72rem; color: #94a3b8; }
+.tableWrap { overflow-x: auto; max-height: 350px; overflow-y: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.table th { padding: 0.55rem 0.6rem; text-align: left; color: #94a3b8; font-weight: 600; border-bottom: 1px solid var(--border); font-size: 0.7rem; text-transform: uppercase; position: sticky; top: 0; background: #1e1e2e; }
+.table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: #e2e8f0; }
+.table tr:hover td { background: rgba(249,115,22,0.06); }
+.nombre { font-weight: 600; }
+.hora { font-family: monospace; font-weight: 600; color: #f97316; }

@@ -1,0 +1,16 @@
+.tableWrap { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.table th { padding: 0.55rem 0.6rem; text-align: left; color: #94a3b8; font-weight: 600; border-bottom: 1px solid var(--border); font-size: 0.68rem; text-transform: uppercase; position: sticky; top: 0; background: #1e1e2e; z-index: 1; }
+.table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1; }
+.table tr:hover td { background: rgba(124,58,237,0.05); }
+.rowFuera td { background: rgba(234,179,8,0.06); }
+.hora { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #e2e8f0; }
+.score { font-weight: 700; color: #f97316; }
+.tipoDoc { font-size: 0.7rem; color: #94a3b8; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { padding: 2px 8px; border-radius: 5px; font-size: 0.68rem; font-weight: 600; }
+.badgeVista { background: rgba(56,189,248,0.12); color: #38bdf8; }
+.badgeDescargar { background: rgba(249,115,22,0.12); color: #f97316; }
+.badgeEditar { background: rgba(234,179,8,0.12); color: #eab308; }
+.badgeEliminar { background: rgba(239,68,68,0.15); color: #ef4444; }
+.badgeCopia { background: rgba(192,132,252,0.12); color: #c084fc; }
+.empty { color: #64748b; text-align: center; padding: 1.5rem; font-size: 0.82rem; }

@@ -1,0 +1,3 @@
+.container { display: flex; flex-direction: column; gap: 1.5rem; }
+.section { background: rgba(30,30,46,0.6); border-radius: 14px; padding: 1.25rem; border: 1px solid var(--border); }
+.subtitle { font-size: 0.88rem; font-weight: 700; color: #e2e8f0; margin-bottom: 1rem; }

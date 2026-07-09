@@ -1,0 +1,16 @@
+.container { width: 100%; }
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.table th { padding: 0.6rem 0.6rem; text-align: left; color: #94a3b8; font-weight: 600; border-bottom: 1px solid var(--border); font-size: 0.7rem; text-transform: uppercase; white-space: nowrap; }
+.table td { padding: 0.55rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: #e2e8f0; }
+.table tr:hover td { background: rgba(124,58,237,0.06); }
+.rowSelected td { background: rgba(124,58,237,0.12) !important; }
+.nombre { font-weight: 600; white-space: nowrap; }
+.score { font-weight: 700; color: #f97316; }
+.btnDetalle { padding: 0.3rem 0.6rem; border-radius: 6px; border: 1px solid var(--accent-border); background: var(--accent-bg); color: var(--accent); font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btnDetalle:hover { background: var(--accent); color: #fff; }
+.detallePanel { margin-top: 1rem; padding: 1.25rem; border-radius: 12px; background: rgba(30,30,46,0.8); border: 1px solid var(--accent-border); animation: fadeIn 0.3s ease; }
+.detallePanel h4 { font-size: 0.9rem; color: #e2e8f0; margin-bottom: 1rem; }
+.loading { color: #94a3b8; font-size: 0.85rem; }
+.empty { color: #64748b; text-align: center; padding: 2rem; font-size: 0.85rem; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
