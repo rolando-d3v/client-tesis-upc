@@ -37,8 +37,8 @@ export default function RadarRiesgo({ usuarios = [] }) {
       </div>
       <ResponsiveContainer width="100%" height={380}>
         <RadarChart data={radarData}>
-          <PolarGrid stroke="rgba(255,255,255,0.08)" />
-          <PolarAngleAxis dataKey="dimension" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+          <PolarGrid stroke="rgba(0,0,0,0.1)" />
+          <PolarAngleAxis dataKey="dimension" tick={{ fill: "#475569", fontSize: 11 }} />
           <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#64748b", fontSize: 9 }} />
           {selectedUsers.map((idx, i) => {
             const u = usuarios[idx];
@@ -47,8 +47,8 @@ export default function RadarRiesgo({ usuarios = [] }) {
               <Radar key={idx} name={u.nombre} dataKey={u.nombre} stroke={COLORES[i]} fill={COLORES[i]} fillOpacity={0.15} strokeWidth={2} />
             );
           })}
-          <Tooltip contentStyle={{ background: "#1e1e2e", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0" }} />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Tooltip contentStyle={{ background: "rgba(255, 255, 255, 0.95)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#1e293b", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: "#475569" }} />
         </RadarChart>
       </ResponsiveContainer>
     </div>

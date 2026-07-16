@@ -30,13 +30,13 @@ export default function HeatmapEventos({ data = [] }) {
   return (
     <ResponsiveContainer width="100%" height={320}>
       <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 40 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
         <XAxis type="number" dataKey="x" domain={[0, 23]} tickCount={24}
           tickFormatter={(v) => `${v}:00`}
-          tick={{ fill: "#94a3b8", fontSize: 10 }} label={{ value: "Hora", position: "bottom", fill: "#64748b", fontSize: 11 }} />
+          tick={{ fill: "#475569", fontSize: 10 }} label={{ value: "Hora", position: "bottom", fill: "#475569", fontSize: 11 }} />
         <YAxis type="number" dataKey="y" domain={[0, 6]} tickCount={7}
           tickFormatter={(v) => DIAS[v] || ""}
-          tick={{ fill: "#94a3b8", fontSize: 11 }} />
+          tick={{ fill: "#475569", fontSize: 11 }} />
         <ZAxis type="number" dataKey="z" range={[20, 400]} />
         <Tooltip content={<CustomTooltip />} />
         <Scatter data={chartData} fill="#c084fc" fillOpacity={0.7}>

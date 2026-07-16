@@ -1,3 +1,105 @@
-.container { display: flex; flex-direction: column; gap: 1.5rem; }
-.section { background: rgba(30,30,46,0.6); border-radius: 14px; padding: 1.25rem; border: 1px solid var(--border); }
-.subtitle { font-size: 0.88rem; font-weight: 700; color: #e2e8f0; margin-bottom: 1rem; }
+.container { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1.5rem; 
+}
+.section { 
+  background: var(--bg-card, rgba(255,255,255,0.85)); 
+  border-radius: 14px; 
+  padding: 1.5rem; 
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px -1px rgba(0,0,0,0.05), 0 2px 14px -1px rgba(0,0,0,0.03); 
+}
+.subtitle { 
+  font-size: 1rem; 
+  font-weight: 700; 
+  color: var(--text-h, #111827); 
+  margin-bottom: 1rem; 
+}
+.tabsContainer {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+.tabsContainer::-webkit-scrollbar {
+  height: 4px;
+}
+.tabsContainer::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.02);
+}
+.tabsContainer::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 4px;
+}
+.tabBtn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.tabBtn.active {
+  background: var(--accent, #3b82f6);
+  color: #fff;
+  border-color: var(--accent, #3b82f6);
+}
+.tabBtn:hover:not(.active) {
+  border-color: var(--accent, #3b82f6);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.select {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.select:hover {
+  border-color: var(--accent);
+}
+.scrollWrapper {
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem; /* space for scrollbar */
+}
+
+/* Custom scrollbar styling for the wrapper */
+.scrollWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollWrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+.scrollWrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+.scrollWrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}

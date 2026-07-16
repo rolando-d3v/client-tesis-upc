@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import styles from "../eventosPage.module.css";
+import styles from "./deteccion.module.css";
 import RadarRiesgo from "../../componentes/RadarRiesgo/RadarRiesgo";
 import ScatterDeteccion from "../../componentes/ScatterDeteccion/ScatterDeteccion";
 import TablaAlertas from "../../componentes/TablaAlertas/TablaAlertas";
@@ -27,7 +27,7 @@ export default function Dashboard5Deteccion() {
 
       {!hasData && !loading && (
         <div className={styles.emptyState}><div className={styles.emptyIcon}>🤖</div>
-          <p>No hay datos. Ve a <Link to="/carga_eventos" style={{ color: "#c084fc", textDecoration: "underline", fontWeight: "bold" }}>Cargar CSV</Link> primero.</p>
+          <p>No hay datos. Ve a <Link to="/carga_eventos" className={styles.emptyLink}>Cargar CSV</Link> primero.</p>
         </div>
       )}
 
@@ -36,7 +36,7 @@ export default function Dashboard5Deteccion() {
           <div className={styles.chartsGrid}>
             <div className={styles.chartCard}>
               <h3><span>🎯</span> Radar de Riesgo (6 dimensiones)</h3>
-              <p style={{ color: "#64748b", fontSize: "0.75rem", marginTop: "-0.5rem", marginBottom: "0.5rem" }}>
+              <p className={styles.chartHelper}>
                 Selecciona hasta 4 usuarios para comparar perfiles
               </p>
               <RadarRiesgo usuarios={data.radar_usuarios} />
@@ -44,14 +44,24 @@ export default function Dashboard5Deteccion() {
             <div className={styles.chartCard}>
               <h3><span>📊</span> Distribución de Niveles de Riesgo</h3>
               {distData.length > 0 && (
-                <ResponsiveContainer width="100%" height={280}>
+                <ResponsiveContainer width="100%" height="90%" >
                   <PieChart>
                     <Pie data={distData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={3}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+                        const RADIAN = Math.PI / 180;
+                        const radius = innerRadius + (outerRadius - innerRadius) * 1.4;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        return (
+                          <text x={x} y={y} fill="#475569" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={11} fontWeight={500}>
+                            {`${name} ${(percent * 100).toFixed(0)}%`}
+                          </text>
+                        );
+                      }}>
                       {distData.map((entry, i) => (<Cell key={i} fill={COLORES_DIST[entry.name] || "#818cf8"} />))}
                     </Pie>
-                    <Tooltip contentStyle={{ background: "#1e1e2e", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0" }} />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: "rgba(255, 255, 255, 0.95)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#1e293b", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }} />
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#475569" }} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -61,7 +71,7 @@ export default function Dashboard5Deteccion() {
           <div className={`${styles.chartsGrid} ${styles.fullWidth}`}>
             <div className={styles.chartCard}>
               <h3><span>🔴</span> Score IF vs Volumen (MB) por Usuario</h3>
-              <p style={{ color: "#64748b", fontSize: "0.75rem", marginTop: "-0.5rem", marginBottom: "0.5rem" }}>
+              <p className={styles.chartHelper}>
                 🟢 Bajo | 🟡 Medio | 🟠 Alto | 🔴 Crítico — tamaño = cantidad de eventos
               </p>
               <ScatterDeteccion data={data.scatter_data} />
@@ -69,7 +79,7 @@ export default function Dashboard5Deteccion() {
           </div>
 
           {data.alertas?.length > 0 && (
-            <div className={styles.chartCard} style={{ marginTop: "1.5rem" }}>
+            <div className={styles.chartCard}>
               <h3><span>⚠️</span> Tabla de Alertas (Score ≥ {10})</h3>
               <TablaAlertas data={data.alertas} />
             </div>

@@ -21,11 +21,21 @@ export default function TablaFueraHorario({ data = [], kpi = {} }) {
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
-              <tr><th>Usuario</th><th>Fecha</th><th>Hora</th><th>Evento</th><th>Documento</th><th>Clasificación</th><th>MB</th></tr>
+              <tr>
+                <th>N°</th>
+                <th>Usuario</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Evento</th>
+                <th>Documento</th>
+                <th>Clasificación</th>
+                <th>MB</th>
+              </tr>
             </thead>
             <tbody>
               {data.map((ev, i) => (
                 <tr key={i}>
+                  <td>{i + 1}</td>
                   <td className={styles.nombre}>{ev.usuario}</td>
                   <td>{ev.fecha}</td>
                   <td className={styles.hora}>{ev.hora}</td>

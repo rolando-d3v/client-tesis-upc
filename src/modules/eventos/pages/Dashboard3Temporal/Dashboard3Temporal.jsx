@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import styles from "../eventosPage.module.css";
+import styles from "./dash3.module.css";
 import HeatmapEventos from "../../componentes/HeatmapEventos/HeatmapEventos";
 import HistogramaHoras from "../../componentes/HistogramaHoras/HistogramaHoras";
 import TablaFueraHorario from "../../componentes/TablaFueraHorario/TablaFueraHorario";
@@ -17,32 +17,50 @@ export default function Dashboard3Temporal() {
       <h1>⏰ Dashboard 3 — Actividad Temporal</h1>
       <p className={styles.subtitle}>Análisis de acceso fuera de horario (08:00-16:00) — variable más sensible</p>
 
-      {loading && (<div className={styles.overlay}><div className={styles.spinner} /><p>Cargando...</p></div>)}
+      {loading && (
+        <div className={styles.overlay}>
+          <div className={styles.spinner} />
+          <p>Cargando...</p>
+        </div>
+      )}
 
       {!hasData && !loading && (
-        <div className={styles.emptyState}><div className={styles.emptyIcon}>⏰</div>
-          <p>No hay datos. Ve a <Link to="/carga_eventos" style={{ color: "#c084fc", textDecoration: "underline", fontWeight: "bold" }}>Cargar CSV</Link> primero.</p>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>⏰</div>
+          <p>
+            No hay datos. Ve a{" "}
+            <Link to="/carga_eventos" className={styles.emptyLink}>
+              Cargar CSV
+            </Link>{" "}
+            primero.
+          </p>
         </div>
       )}
 
       {hasData && (
         <>
           <div className={styles.chartsGrid}>
-            <div className={styles.chartCard}>
-              <h3><span>🗓️</span> Heatmap Día × Hora</h3>
+            <div className={styles.chartCardHeatmap}>
+              <h3>
+                <span>🗓️</span> Heatmap Día × Hora
+              </h3>
               <HeatmapEventos data={heatmapQ.data} />
             </div>
-            <div className={styles.chartCard}>
-              <h3><span>📊</span> Distribución por Hora (0-23h)</h3>
-              <p style={{ color: "#64748b", fontSize: "0.75rem", marginTop: "-0.5rem", marginBottom: "0.5rem" }}>
-                🟣 En horario (08-16h) | 🟠 Fuera de horario
-              </p>
+          </div>
+          <div className={styles.chartsGrid}>
+            <div className={styles.chartCardHistogram}>
+              <h3>
+                <span>📊</span> Distribución por Hora (0-23h)
+              </h3>
+              <p className={styles.chartLegend}>🟣 En horario (08-16h) | 🟠 Fuera de horario</p>
               <HistogramaHoras data={histQ.data} />
             </div>
           </div>
           <div className={`${styles.chartsGrid} ${styles.fullWidth}`}>
-            <div className={styles.chartCard}>
-              <h3><span>🌙</span> Eventos Fuera de Horario</h3>
+            <div className={styles.chartCardFuera}>
+              <h3>
+                <span>🌙</span> Eventos Fuera de Horario
+              </h3>
               <TablaFueraHorario data={fueraQ.data?.tabla} kpi={fueraQ.data?.kpi} />
             </div>
           </div>

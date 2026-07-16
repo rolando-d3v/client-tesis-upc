@@ -1,7 +1,18 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import styles from "./TopRiesgo.module.css";
 
-const COLORES_NIVEL = { critico: "#ef4444", alto: "#f97316", medio: "#eab308", bajo: "#22c55e" };
+const COLORES_NIVEL = {
+  critico: "var(--color-critico, #ef4444)",
+  alto: "var(--color-alto, #f97316)",
+  medio: "var(--color-medio, #eab308)",
+  bajo: "var(--color-bajo, #22c55e)",
+};
+
+const formatYAxisTick = (tick) => {
+  if (!tick) return "";
+  const cleanName = tick.includes("@") ? tick.split("@")[0] : tick;
+  return cleanName.length > 20 ? `${cleanName.substring(0, 17)}...` : cleanName;
+};
 
 export default function TopRiesgo({ topUsuarios = [], topDocumentos = [] }) {
   return (
@@ -9,15 +20,28 @@ export default function TopRiesgo({ topUsuarios = [], topDocumentos = [] }) {
       <div className={styles.section}>
         <h4 className={styles.subtitle}>👤 Top 10 Usuarios por Riesgo</h4>
         {topUsuarios.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topUsuarios} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-              <YAxis dataKey="nombre" type="category" width={120} tick={{ fill: "#e2e8f0", fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: "#1e1e2e", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0" }} />
+          <ResponsiveContainer width="100%" height="90%" >
+            <BarChart data={topUsuarios} layout="vertical" margin={{ left: 5, right: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
+              <XAxis type="number" tick={{ fill: "var(--text)", fontSize: 11 }} />
+              <YAxis 
+                dataKey="nombre" 
+                type="category" 
+                width={150} 
+                tick={{ fill: "var(--text)", fontSize: 11 }} 
+                tickFormatter={formatYAxisTick}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  background: "var(--bg)", 
+                  border: "1px solid var(--border)", 
+                  borderRadius: 8, 
+                  color: "var(--text)" 
+                }} 
+              />
               <Bar dataKey="score_riesgo" radius={[0, 6, 6, 0]} name="Score Riesgo">
                 {topUsuarios.map((entry, i) => (
-                  <Cell key={i} fill={COLORES_NIVEL[entry.nivel_riesgo] || "#818cf8"} />
+                  <Cell key={i} fill={COLORES_NIVEL[entry.nivel_riesgo] || "var(--accent)"} />
                 ))}
               </Bar>
             </BarChart>

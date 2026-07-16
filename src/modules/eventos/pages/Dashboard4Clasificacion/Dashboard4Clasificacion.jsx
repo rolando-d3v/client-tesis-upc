@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import styles from "../eventosPage.module.css";
+import styles from "./clasifi.module.css";
 import ClasificacionDocumental from "../../componentes/ClasificacionDocumental/ClasificacionDocumental";
 import VolumenMB from "../../componentes/VolumenMB/VolumenMB";
 import { useD4Clasificacion } from "../../../../api/apiEventos";
@@ -19,7 +19,7 @@ export default function Dashboard4Clasificacion() {
 
       {!hasData && !loading && (
         <div className={styles.emptyState}><div className={styles.emptyIcon}>📄</div>
-          <p>No hay datos. Ve a <Link to="/carga_eventos" style={{ color: "#c084fc", textDecoration: "underline", fontWeight: "bold" }}>Cargar CSV</Link> primero.</p>
+          <p>No hay datos. Ve a <Link to="/carga_eventos" className={styles.emptyLink}>Cargar CSV</Link> primero.</p>
         </div>
       )}
 
@@ -32,7 +32,7 @@ export default function Dashboard4Clasificacion() {
               porTipoDocumento={data.por_tipo_documento}
             />
           </div>
-          <div className={styles.animateIn} style={{ marginTop: "1.5rem" }}>
+          <div className={styles.animateIn}>
             <VolumenMB mbPorDia={data.mb_por_dia} mbPorOficina={data.mb_por_oficina} />
           </div>
         </>

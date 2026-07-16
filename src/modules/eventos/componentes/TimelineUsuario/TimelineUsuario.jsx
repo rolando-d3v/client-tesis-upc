@@ -1,8 +1,10 @@
 import styles from "./TimelineUsuario.module.css";
 
 const BADGE_EVENTO = {
-  VISTA: styles.badgeVista, DESCARGAR: styles.badgeDescargar,
-  EDITAR: styles.badgeEditar, ELIMINAR: styles.badgeEliminar,
+  VISTA: styles.badgeVista,
+  DESCARGAR: styles.badgeDescargar,
+  EDITAR: styles.badgeEditar,
+  ELIMINAR: styles.badgeEliminar,
   GUARDAR_COPIA: styles.badgeCopia,
 };
 
@@ -14,16 +16,27 @@ export default function TimelineUsuario({ data = [] }) {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Fecha</th><th>Hora</th><th>Evento</th><th>Documento</th><th>Clasificación</th>
-            <th>Tipo Doc</th><th>Tamaño</th><th>Score</th><th>Fuera Hr</th>
+            <th>N°</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Evento</th>
+            <th>Documento</th>
+            <th>Clasificación</th>
+            <th>Tipo Doc</th>
+            <th>Tamaño</th>
+            <th>Score</th>
+            <th>Fuera Hr</th>
           </tr>
         </thead>
         <tbody>
           {data.map((ev, i) => (
             <tr key={i} className={ev.fuera_horario ? styles.rowFuera : ""}>
+              <td>{i + 1}</td>
               <td>{ev.fecha}</td>
               <td className={styles.hora}>{ev.hora}</td>
-              <td><span className={`${styles.badge} ${BADGE_EVENTO[ev.evento] || ""}`}>{ev.evento}</span></td>
+              <td>
+                <span className={`${styles.badge} ${BADGE_EVENTO[ev.evento] || ""}`}>{ev.evento}</span>
+              </td>
               <td>{ev.id_documento}</td>
               <td>{ev.clasificacion}</td>
               <td className={styles.tipoDoc}>{ev.tipo_documento}</td>

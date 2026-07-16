@@ -26,11 +26,11 @@ export default function ScatterDeteccion({ data = [] }) {
   return (
     <ResponsiveContainer width="100%" height={350}>
       <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis type="number" dataKey="score_if" name="Score IF" tick={{ fill: "#94a3b8", fontSize: 11 }}
-          label={{ value: "Score Isolation Forest", position: "bottom", fill: "#64748b", fontSize: 11 }} />
-        <YAxis type="number" dataKey="total_mb" name="MB" tick={{ fill: "#94a3b8", fontSize: 11 }}
-          label={{ value: "Total MB", angle: -90, position: "insideLeft", fill: "#64748b", fontSize: 11 }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+        <XAxis type="number" dataKey="score_if" name="Score IF" tick={{ fill: "#475569", fontSize: 11 }}
+          label={{ value: "Score Isolation Forest", position: "bottom", fill: "#334155", fontSize: 11 }} />
+        <YAxis type="number" dataKey="total_mb" name="MB" tick={{ fill: "#475569", fontSize: 11 }}
+          label={{ value: "Total MB", angle: -90, position: "insideLeft", fill: "#334155", fontSize: 11 }} />
         <ZAxis type="number" dataKey="n_eventos" range={[40, 300]} />
         <Tooltip content={<CustomTooltip />} />
         <Scatter name="Bajo" data={normales} fill="#22c55e" fillOpacity={0.6} />

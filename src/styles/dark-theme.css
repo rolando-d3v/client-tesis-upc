@@ -13,6 +13,11 @@
   --shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
 
+  --color-critico: #ef4444;
+  --color-alto: #f97316;
+  --color-medio: #eab308;
+  --color-bajo: #22c55e;
+
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color: var(--text);

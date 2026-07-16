@@ -1,10 +1,10 @@
 import styles from "./SemaforoRiesgo.module.css";
 
 const NIVEL_CONFIG = {
-  critico: { emoji: "🔴", color: "#ef4444", label: "Crítico" },
-  alto: { emoji: "🟠", color: "#f97316", label: "Alto" },
-  medio: { emoji: "🟡", color: "#eab308", label: "Medio" },
-  bajo: { emoji: "🟢", color: "#22c55e", label: "Bajo" },
+  critico: { emoji: "🔴", color: "var(--color-critico, #ef4444)", label: "Crítico" },
+  alto: { emoji: "🟠", color: "var(--color-alto, #f97316)", label: "Alto" },
+  medio: { emoji: "🟡", color: "var(--color-medio, #eab308)", label: "Medio" },
+  bajo: { emoji: "🟢", color: "var(--color-bajo, #22c55e)", label: "Bajo" },
 };
 
 export default function SemaforoRiesgo({ data = [] }) {

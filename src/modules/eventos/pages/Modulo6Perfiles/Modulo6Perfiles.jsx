@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import styles from "../eventosPage.module.css";
+import styles from "./perfil.module.css";
 import PerfilUsuarioEWMA from "../../componentes/PerfilUsuarioEWMA/PerfilUsuarioEWMA";
 import { useM6Perfiles } from "../../../../api/apiEventos";
 
@@ -20,7 +20,7 @@ export default function Modulo6Perfiles() {
 
       {!hasData && !loading && (
         <div className={styles.emptyState}><div className={styles.emptyIcon}>⭐</div>
-          <p>No hay datos. Ve a <Link to="/carga_eventos" style={{ color: "#c084fc", textDecoration: "underline", fontWeight: "bold" }}>Cargar CSV</Link> primero.</p>
+          <p>No hay datos. Ve a <Link to="/carga_eventos" className={styles.emptyLink}>Cargar CSV</Link> primero.</p>
         </div>
       )}
 

@@ -1,3 +1,29 @@
-.empty { color: #64748b; text-align: center; padding: 2rem; font-size: 0.85rem; }
-.tooltip { background: #1e1e2e; border: 1px solid #334155; border-radius: 8px; padding: 0.5rem 0.75rem; color: #e2e8f0; font-size: 0.78rem; }
-.tooltip p { margin: 0.15rem 0; }
+.empty {
+  color: var(--text, #4b5563);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.85rem;
+}
+
+.tooltip {
+  background: var(--bg-card, rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-h, #1e293b);
+  font-size: 0.78rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip p {
+  margin: 0.15rem 0;
+}
+
+.tooltip p:first-child {
+  color: var(--accent);
+}
+
+.tooltip p:last-child {
+  color: var(--color-alto, #f97316);
+  font-weight: 600;
+}

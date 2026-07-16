@@ -1,0 +1,575 @@
+/* ============================================================
+   EVENTOS DASHBOARD — Premium Executive Dashboard Styles
+   ============================================================ */
+
+:root {
+  --color-critico: #f43f5e; /* Rose / Red */
+  --color-alto: #fb923c; /* Orange */
+  --color-medio: #fbbf24; /* Amber / Yellow */
+  --color-bajo: #10b981; /* Emerald / Green */
+
+  --accent: #7c3aed; /* Purple from dark-theme.css */
+  --accent-light: #a78bfa;
+  --border: var(--border, #e5e7eb);
+  --text-primary: var(--text-h, #111827);
+  --text-secondary: var(--text, #4b5563);
+  --bg-card: rgba(255, 255, 255, 0.85);
+
+  /* Fallbacks for variables if they are missing in the parent context */
+  --bg: #f9fafb;
+}
+
+.page {
+  font-family: "Inter", sans-serif;
+  padding: 1.5rem;
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+.page h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent) 0%, #818cf8 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.4s ease;
+}
+
+.chartCard {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  animation: fadeInUp 0.5s ease;
+  backdrop-filter: blur(8px);
+  margin-bottom: 1.5rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+.chartCard h3 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chartCard h3 span {
+  font-size: 1.1rem;
+}
+
+.chartCardAlert {
+  background: rgba(254, 242, 242, 0.9); /* soft light red background for high alert contrast */
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  animation:
+    fadeInUp 0.5s ease,
+    pulseAlert 3s ease-in-out infinite;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  color: var(--text-primary);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.05);
+}
+
+.chartCardAlert::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #eab308 100%);
+}
+
+.chartCardAlert h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #b91c1c; /* Crimson / Dark Red for high contrast readability */
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chartCardAlert h3 span {
+  font-size: 1.1rem;
+  animation: shake 2s ease-in-out infinite;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.emptyState p {
+  color: var(--text-secondary);
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.emptyStateLink {
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.emptyStateLink:hover {
+  color: var(--accent-light);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  color: var(--text-primary);
+}
+
+.overlay p {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(124, 58, 237, 0.15);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+/* Custom Table Styles (Fallback / General) */
+.tableContainer {
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+
+/* Scrollbar styling */
+.tableContainer::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.tableHeaderRow {
+  border-bottom: 1px solid var(--border);
+  background: var(--code-bg, #f3f4f6);
+}
+
+.th {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  color: var(--text-primary);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: var(--code-bg, #f3f4f6);
+  z-index: 2;
+}
+
+.tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.tr:hover {
+  background-color: var(--accent-bg, rgba(124, 58, 237, 0.04));
+}
+
+.td {
+  padding: 0.6rem 0.5rem;
+  color: var(--text-secondary);
+}
+
+.tdMonospace {
+  padding: 0.6rem 0.5rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.tdUser {
+  padding: 0.6rem 0.5rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tdScore {
+  padding: 0.6rem 0.5rem;
+  color: var(--color-alto);
+  font-weight: 700;
+}
+
+/* ============================================================
+   TIMELINE CARD — Critical Events Timeline Styles
+   ============================================================ */
+
+.chartCardTimeline {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  animation: fadeInUp 0.5s ease;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+.chartCardTimeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%);
+}
+
+.chartCardTimeline h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chartCardTimeline h3 span {
+  font-size: 1.1rem;
+}
+
+/* Timeline Table Container */
+.timelineTableContainer {
+  overflow-x: auto;
+  max-height: 500px;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.timelineTableContainer::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.timelineTableContainer::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 0 10px 10px 0;
+}
+
+.timelineTableContainer::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.2);
+  border-radius: 3px;
+}
+
+.timelineTableContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.4);
+}
+
+/* Timeline Table */
+.timelineTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.timelineTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.timelineTable th {
+  padding: 0.75rem 0.75rem;
+  text-align: left;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--code-bg, #f3f4f6);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.timelineTable td {
+  padding: 0.75rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.timelineTable th:first-child,
+.timelineTable td:first-child {
+  padding-left: 1.25rem;
+  position: relative; /* relative positioning here so ::before anchors to the first cell */
+}
+
+.timelineTable th:last-child,
+.timelineTable td:last-child {
+  padding-right: 1.25rem;
+  text-align: right;
+}
+
+/* Timeline Rows */
+.timelineRow {
+  transition: all 0.2s ease;
+  /* removed position: relative to prevent layout break in table */
+}
+
+.timelineRow td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.timelineRow:hover {
+  background: var(--accent-bg, rgba(124, 58, 237, 0.04));
+}
+
+.timelineRow:hover td:first-child::before {
+  opacity: 1;
+}
+
+.timelineRow:nth-child(even) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.timelineRow:nth-child(even):hover {
+  background: var(--accent-bg, rgba(124, 58, 237, 0.04));
+}
+
+/* Timeline Cells specific overrides */
+.timelineTdDate {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.timelineTdTime {
+  color: var(--accent);
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.timelineTdUser {
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.timelineTdEvent {
+  color: var(--text-secondary);
+}
+
+/* Score Badge */
+.scoreBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.scoreCritico {
+  background: rgba(244, 63, 94, 0.15);
+  color: #e11d48;
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.scoreAlto {
+  background: rgba(249, 115, 22, 0.15);
+  color: #ea580c;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.scoreMedio {
+  background: rgba(234, 179, 8, 0.15);
+  color: #ca8a04;
+  border: 1px solid rgba(234, 179, 8, 0.25);
+}
+
+.scoreBajo {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Clasificacion Badges */
+.clasificacionBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.clasificacionSecreto {
+  background: rgba(244, 63, 94, 0.12);
+  color: #e11d48;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.clasificacionReservado {
+  background: rgba(249, 115, 22, 0.12);
+  color: #ea580c;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.clasificacionConfidencial {
+  background: rgba(202, 138, 4, 0.12);
+  color: #ca8a04;
+  border: 1px solid rgba(202, 138, 4, 0.2);
+}
+
+.clasificacionComun {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Timeline Counter */
+.timelineCounter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.timelineCounterText {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.timelineCounterBadge {
+  background: var(--accent-bg, rgba(124, 58, 237, 0.1));
+  color: var(--accent);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseAlert {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px -4px rgba(239, 68, 68, 0.15);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(8deg);
+  }
+}
+
+.animateIn {
+  animation: fadeInUp 0.5s ease forwards;
+}

@@ -7,10 +7,10 @@ export default function HistogramaHoras({ data = [] }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="hora" tick={{ fill: "#94a3b8", fontSize: 10 }} interval={1} />
-        <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
-        <Tooltip contentStyle={{ background: "#1e1e2e", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0" }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+        <XAxis dataKey="hora" tick={{ fill: "#475569", fontSize: 10 }} interval={1} />
+        <YAxis tick={{ fill: "#475569", fontSize: 11 }} />
+        <Tooltip contentStyle={{ background: "rgba(255, 255, 255, 0.95)", border: "1px solid #e2e8f0", borderRadius: 8, color: "#1e293b", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }} />
         <Bar dataKey="total" radius={[4, 4, 0, 0]} name="Eventos">
           {data.map((entry, i) => (
             <Cell key={i} fill={entry.fuera_horario ? "#f97316" : "#818cf8"} />

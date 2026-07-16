@@ -1,12 +1,131 @@
-.container { width: 100%; }
-.kpis { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
-.kpiCard { flex: 1; min-width: 120px; padding: 1rem; border-radius: 10px; background: rgba(30,30,46,0.7); border: 1px solid var(--border); text-align: center; }
-.kpiValue { display: block; font-size: 1.5rem; font-weight: 800; color: #f97316; }
-.kpiLabel { font-size: 0.72rem; color: #94a3b8; }
-.tableWrap { overflow-x: auto; max-height: 350px; overflow-y: auto; }
-.table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.table th { padding: 0.55rem 0.6rem; text-align: left; color: #94a3b8; font-weight: 600; border-bottom: 1px solid var(--border); font-size: 0.7rem; text-transform: uppercase; position: sticky; top: 0; background: #1e1e2e; }
-.table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: #e2e8f0; }
-.table tr:hover td { background: rgba(249,115,22,0.06); }
-.nombre { font-weight: 600; }
-.hora { font-family: monospace; font-weight: 600; color: #f97316; }
+.container {
+  width: 100%;
+}
+
+.kpis {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.kpiCard {
+  flex: 1;
+  min-width: 120px;
+  padding: 1.1rem 1rem;
+  border-radius: 10px;
+  background: var(--bg-card, rgba(255, 255, 255, 0.85));
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  text-align: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.kpiCard:hover {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.1);
+  transform: translateY(-2px);
+}
+
+.kpiCard:first-child {
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.kpiCard:nth-child(2) {
+  border-color: rgba(192, 132, 252, 0.3);
+}
+
+.kpiCard:nth-child(2) .kpiValue {
+  color: #c084fc;
+}
+
+.kpiCard:last-child {
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+.kpiCard:last-child .kpiValue {
+  color: #818cf8;
+}
+
+.kpiValue {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f97316;
+}
+
+.kpiLabel {
+  font-size: 0.72rem;
+  color: var(--text, #4b5563);
+  margin-top: 0.2rem;
+  display: block;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  max-height: 500px;
+  height: 500px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(249, 115, 22, 0.15);
+  background: #ffffff;
+}
+
+.tableWrap::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tableWrap::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.tableWrap::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.2);
+  border-radius: 3px;
+}
+
+.tableWrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(249, 115, 22, 0.4);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.table th {
+  padding: 0.55rem 0.6rem;
+  text-align: left;
+  color: var(--text-h, #1e293b);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.15);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  background: var(--code-bg, #f3f4f6);
+  z-index: 2;
+}
+
+.table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text, #4b5563);
+}
+
+.table tr:hover td {
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.nombre {
+  font-weight: 600;
+  color: var(--text-h, #1e293b);
+}
+
+.hora {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  color: #f97316;
+}
