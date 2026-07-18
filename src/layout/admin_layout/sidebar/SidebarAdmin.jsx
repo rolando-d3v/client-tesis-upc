@@ -125,10 +125,10 @@ export default function SidebarAdmin() {
         <span>Sistema Predictivo</span>
       </div>
 
-      <hr className={styles.divider} />
+      {/* <hr className={styles.divider} /> */}
 
       {/* ---- Filtro de Fechas ---- */}
-      <div className={styles.filterSection}>
+      {/* <div className={styles.filterSection}>
         <div className={styles.filterHeader}>
           <span className={styles.filterTitle}>Filtrar por Fecha</span>
           {tieneFiltroDeFecha && (
@@ -167,11 +167,11 @@ export default function SidebarAdmin() {
           <FaEraser />
           Total
         </button>
-      </div>
+      </div> */}
 
       <hr className={styles.divider} />
 
-      <div className={styles.sectionTitle}>Trazabilidad</div>
+      <div className={styles.sectionTitle}>Trazabilidad de documentos</div>
 
       <div className={styles.listUrl}>
         {anomaliasLinks.map((link) => (
@@ -190,7 +190,7 @@ export default function SidebarAdmin() {
 
       <hr className={styles.divider} />
 
-      <div className={styles.sectionTitle}  >Eventos</div>
+      <div className={styles.sectionTitle}  >Eventos de usuarios</div>
 
       <div className={styles.listUrl}>
         {anomaliasEventos?.map((link) => (

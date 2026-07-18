@@ -5,6 +5,7 @@ import SemaforoRiesgo from "../../componentes/SemaforoRiesgo/SemaforoRiesgo";
 import TopRiesgo from "../../componentes/TopRiesgo/TopRiesgo";
 import TablaAlertas from "../../componentes/TablaAlertas/TablaAlertas";
 import { useD1Resumen, useD1Semaforo, useD1TopRiesgo, useD1Alertas, useD1Timeline } from "../../../../api/apiEventos";
+import { FaRobot, FaTrafficLight, FaExclamationTriangle, FaStopwatch } from "react-icons/fa";
 
 const getScoreClass = (score) => {
   if (score >= 8) return styles.scoreCritico;
@@ -36,7 +37,7 @@ export default function Dashboard1Ejecutivo() {
 
   return (
     <div className={styles.page}>
-      <h1>🔍 Dashboard de evento de usuarios</h1>
+      <h1>Dashboard de evento de usuarios</h1>
       <p className={styles.subtitle}>Estado general del sistema predictivo de eventos y comportamiento del usuario</p>
 
       {loading && (
@@ -48,7 +49,7 @@ export default function Dashboard1Ejecutivo() {
 
       {!hasData && !loading && (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🤖</div>
+          <div className={styles.emptyIcon}><FaRobot /></div>
           <p>
             No hay datos cargados. Ve a{" "}
             <Link to="/carga_eventos" className={styles.emptyStateLink}>
@@ -98,6 +99,12 @@ export default function Dashboard1Ejecutivo() {
               value={resumen.score_riesgo_promedio?.toFixed(1)}
               sub="Score global"
             />
+          </div>
+        
+
+          <h6>Cantidad de registro por eventos</h6>
+          <br />
+          <div className={styles.cardsGrid}>
             <CardResumenEventos icon="vista" label="Vistas" value={resumen.n_vistas?.toLocaleString()} />
             <CardResumenEventos icon="descarga" label="Descargas" value={resumen.n_descargas?.toLocaleString()} />
             <CardResumenEventos icon="editar" label="Editados" value={resumen.n_editados?.toLocaleString()} />
@@ -107,7 +114,7 @@ export default function Dashboard1Ejecutivo() {
 
           <div className={styles.chartCard}>
             <h3>
-              <span>🚦</span> Semáforo de Riesgo por Usuario
+              <span><FaTrafficLight /></span> Semáforo de Riesgo por Usuario
             </h3>
             <SemaforoRiesgo data={semaforoQ.data} />
           </div>
@@ -121,7 +128,7 @@ export default function Dashboard1Ejecutivo() {
           {alertasQ.data?.length > 0 && (
             <div className={styles.chartCardAlert}>
               <h3>
-                <span>⚠️</span> Alertas Activas
+                <span><FaExclamationTriangle /></span> Alertas Activas
               </h3>
               <TablaAlertas data={alertasQ.data} />
             </div>
@@ -131,15 +138,11 @@ export default function Dashboard1Ejecutivo() {
           {timelineQ.data?.length > 0 && (
             <div className={styles.chartCardTimeline}>
               <h3>
-                <span>⏱️</span> Timeline de Eventos Críticos
+                <span><FaStopwatch /></span> Timeline de Eventos Críticos
               </h3>
               <div className={styles.timelineCounter}>
-                <span className={styles.timelineCounterText}>
-                  Mostrando eventos críticos ordenados por fecha
-                </span>
-                <span className={styles.timelineCounterBadge}>
-                  {timelineQ.data.length} eventos
-                </span>
+                <span className={styles.timelineCounterText}>Mostrando eventos críticos ordenados por fecha</span>
+                <span className={styles.timelineCounterBadge}>{timelineQ.data.length} eventos</span>
               </div>
               <div className={styles.timelineTableContainer}>
                 <table className={styles.timelineTable}>

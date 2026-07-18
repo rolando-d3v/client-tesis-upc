@@ -11,9 +11,9 @@ export default function Modulo6Perfiles() {
 
   return (
     <div className={styles.page}>
-      <h1>⭐ Módulo 6 — Evaluación Incremental</h1>
+      <h1>Módulo perfiles de usuario</h1>
       <p className={styles.subtitle}>
-        Perfiles de usuario con EWMA — el sistema detecta el momento exacto en que alguien se desvía de su comportamiento habitual
+        El sistema detecta el momento en que un usuario se desvía de su comportamiento habitual. <br /> ¿Cómo está evolucionando el riesgo de este usuario con el tiempo?
       </p>
 
       {loading && (<div className={styles.overlay}><div className={styles.spinner} /><p>Cargando...</p></div>)}

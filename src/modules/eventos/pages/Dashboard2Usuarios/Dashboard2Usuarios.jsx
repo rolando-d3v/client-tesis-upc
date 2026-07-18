@@ -11,7 +11,7 @@ export default function Dashboard2Usuarios() {
 
   return (
     <div className={styles.page}>
-      <h1>👤 Dashboard 2 — Comportamiento por Usuario</h1>
+      <h1>Dashboard 2 — Comportamiento por Usuario</h1>
       <p className={styles.subtitle}>Perfil de comportamiento por usuario — panel principal de la tesis</p>
 
       {loading && (

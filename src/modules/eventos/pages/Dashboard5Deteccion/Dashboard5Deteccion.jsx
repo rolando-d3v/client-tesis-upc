@@ -20,7 +20,7 @@ export default function Dashboard5Deteccion() {
 
   return (
     <div className={styles.page}>
-      <h1>🤖 Dashboard 5 — Motor de Detección de Anomalías</h1>
+      <h1>Módulo de Motor de Detección de Anomalías</h1>
       <p className={styles.subtitle}>Score Híbrido: Reglas (40%) + Isolation Forest (60%)</p>
 
       {loading && (<div className={styles.overlay}><div className={styles.spinner} /><p>Cargando...</p></div>)}

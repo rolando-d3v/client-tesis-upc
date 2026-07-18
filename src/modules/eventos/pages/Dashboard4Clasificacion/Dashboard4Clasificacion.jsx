@@ -12,7 +12,7 @@ export default function Dashboard4Clasificacion() {
 
   return (
     <div className={styles.page}>
-      <h1>📄 Dashboard 4 — Clasificación Documental y Volumen</h1>
+      <h1>Dashboard 4 — Clasificación Documental y Volumen</h1>
       <p className={styles.subtitle}>Análisis de qué se accede y cuánto pesa — verificar volumen/tipo inusual</p>
 
       {loading && (<div className={styles.overlay}><div className={styles.spinner} /><p>Cargando...</p></div>)}

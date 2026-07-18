@@ -106,3 +106,34 @@
   font-weight: 700; 
   color: var(--color-alto, #f97316); 
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.pageBtn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card, rgba(255,255,255,0.85));
+  color: var(--text, #4b5563);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pageBtn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text-h, #111827);
+}
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pageInfo {
+  font-size: 0.75rem;
+  color: var(--text, #4b5563);
+  font-weight: 600;
+}

@@ -27,7 +27,7 @@ export default function CargaCSVEventos() {
 
   return (
     <div className={styles.page}>
-      <h1>📥 Carga de Dataset de Eventos</h1>
+      <h1>Carga de Dataset de Eventos</h1>
       <p className={styles.subtitle}>
         Sube el archivo CSV de eventos de usuarios para ejecutar el pipeline de detección de riesgo
         (ETL → Score de Reglas → Isolation Forest → Perfiles EWMA)

@@ -2,7 +2,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { useState } from "react";
 import styles from "./RadarRiesgo.module.css";
 
-const COLORES = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#38bdf8", "#c084fc", "#818cf8", "#f472b6"];
+const COLORES = ["#ff0404ff", "#22c55e", "#eab308", "#38bdf8", "#c084fc", "#818cf8", "#f472b6"];
 
 export default function RadarRiesgo({ usuarios = [] }) {
   const [selectedUsers, setSelectedUsers] = useState([0, 1]);
@@ -27,7 +27,7 @@ export default function RadarRiesgo({ usuarios = [] }) {
   return (
     <div className={styles.container}>
       <div className={styles.userSelector}>
-        {usuarios.slice(0, 10).map((u, idx) => (
+        {usuarios.slice(0, 20).map((u, idx) => (
           <button key={idx} className={`${styles.userBtn} ${selectedUsers.includes(idx) ? styles.active : ""}`}
             style={selectedUsers.includes(idx) ? { borderColor: COLORES[selectedUsers.indexOf(idx)] } : {}}
             onClick={() => toggleUser(idx)}>
@@ -35,7 +35,7 @@ export default function RadarRiesgo({ usuarios = [] }) {
           </button>
         ))}
       </div>
-      <ResponsiveContainer width="100%" height={380}>
+      <ResponsiveContainer width="100%" height={600}>
         <RadarChart data={radarData}>
           <PolarGrid stroke="rgba(0,0,0,0.1)" />
           <PolarAngleAxis dataKey="dimension" tick={{ fill: "#475569", fontSize: 11 }} />

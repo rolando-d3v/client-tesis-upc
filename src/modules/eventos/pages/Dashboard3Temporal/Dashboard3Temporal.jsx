@@ -14,7 +14,7 @@ export default function Dashboard3Temporal() {
 
   return (
     <div className={styles.page}>
-      <h1>⏰ Dashboard 3 — Actividad Temporal</h1>
+      <h1>Dashboard 3 — Actividad Temporal</h1>
       <p className={styles.subtitle}>Análisis de acceso fuera de horario (08:00-16:00) — variable más sensible</p>
 
       {loading && (

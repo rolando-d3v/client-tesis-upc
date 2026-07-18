@@ -27,7 +27,7 @@ export default function CargaAnomalias() {
 
   return (
     <div className={styles.content}>
-      <h1>📥 Carga de Registros de Trazabilidad</h1>
+      <h1>Carga de Registros de Trazabilidad</h1>
       <p className={styles.pageSubtitle}>
         Sube un archivo CSV para entrenar el modelo Isolation Forest y analizar anomalías en la base de datos.
       </p>

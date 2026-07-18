@@ -33,7 +33,7 @@ export default function TimelineAnomalias() {
 
   return (
     <div className={styles.content_time_semana}>
-      <h1>📅 Análisis Temporal de Anomalías</h1>
+      <h1>Análisis Temporal de Anomalías</h1>
       <p className={styles.page_subtitle}>
         Distribución temporal — Tendencias por día y mapa de calor hora × día de
         la semana

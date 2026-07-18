@@ -53,7 +53,7 @@ export default function DashboardAnomalias() {
 
   return (
     <div className={style['anomalias-page']}>
-      <h1>🔍 Sistema de Detección de Filtración de Info Clasificada</h1>
+      <h1>Sistema de Detección de Filtración de Info Clasificada</h1>
       <p className={style['page-subtitle']}>
         Pipeline Isolation Forest — Detección de anomalías en trazabilidad de documentos
       </p>

@@ -2,13 +2,15 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useState, useMemo } from "react";
 import styles from "./PerfilUsuarioEWMA.module.css";
 
-const COLORES = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#38bdf8", "#c084fc", "#818cf8", "#f472b6"];
+const COLORES = ["#f85151ff", "#38a525ff", "#7f65f2ff", "#38bdf8", "#c084fc", "#818cf8", "#f472b6"];
 
 export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) {
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const topUsers = useMemo(() =>
-    perfiles.slice(0, 10).map(p => ({ user_id: p.user_id, nombre: p.nombre })),
+    perfiles.slice(0, 50).map(p => ({ user_id: p.user_id, nombre: p.nombre })),
     [perfiles]
   );
 
@@ -29,6 +31,10 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
       return item;
     });
   }, [selectedUsers, ewmaTemporal, topUsers]);
+
+  const totalPages = Math.ceil(perfiles.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentPerfiles = perfiles.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className={styles.container}>
@@ -65,12 +71,13 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead><tr>
-              <th>Nivel</th><th>Usuario</th><th>Oficina</th><th>Eventos</th>
+              <th>N°</th><th>Nivel</th><th>Usuario</th><th>Oficina</th><th>Eventos</th>
               <th>Media Ev/Hr</th><th>Std</th><th>Media MB/Día</th><th>% Secreto</th><th>EWMA</th><th>Score</th>
             </tr></thead>
             <tbody>
-              {perfiles.map((p, i) => (
+              {currentPerfiles.map((p, i) => (
                 <tr key={i}>
+                  <td>{startIndex + i + 1}</td>
                   <td>{p.nivel_riesgo === "critico" ? "🔴" : p.nivel_riesgo === "alto" ? "🟠" : p.nivel_riesgo === "medio" ? "🟡" : "🟢"}</td>
                   <td className={styles.nombre}>{p.nombre}</td>
                   <td>{p.oficina}</td>
@@ -86,6 +93,25 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            <button 
+              className={styles.pageBtn} 
+              disabled={currentPage === 1} 
+              onClick={() => setCurrentPage(prev => prev - 1)}
+            >
+              Anterior
+            </button>
+            <span className={styles.pageInfo}>Página {currentPage} de {totalPages}</span>
+            <button 
+              className={styles.pageBtn} 
+              disabled={currentPage === totalPages} 
+              onClick={() => setCurrentPage(prev => prev + 1)}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
