@@ -36,8 +36,8 @@ export default function Dashboard1Ejecutivo() {
 
   return (
     <div className={styles.page}>
-      <h1>🔍 Dashboard 1 — Resumen Ejecutivo</h1>
-      <p className={styles.subtitle}>Estado general del sistema de detección de riesgo</p>
+      <h1>🔍 Dashboard de evento de usuarios</h1>
+      <p className={styles.subtitle}>Estado general del sistema predictivo de eventos y comportamiento del usuario</p>
 
       {loading && (
         <div className={styles.overlay}>
