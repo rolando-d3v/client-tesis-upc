@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "./apiRestMachine";
 
 /**
@@ -77,14 +77,39 @@ export const getHeatmap = async (filtros = {}) => {
   return response.data;
 };
 
+export const getFueraHorario = async (filtros = {}) => {
+  const response = await api.get(`/anomalias/fuera-horario${buildFechaParams(filtros)}`);
+  return response.data;
+};
+
+export const getTrazabilidadDocumento = async (idDocumento) => {
+  if (!idDocumento) return null;
+  const response = await api.get(`/anomalias/trazabilidad-documento/${idDocumento}`);
+  return response.data;
+};
+
 // ============================================================
 // REACT QUERY CUSTOM HOOKS
 // ============================================================
 
 // Hook de Mutación para subir CSV
 export const useSubirCSVAnomalias = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: subirCSVAnomalias,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["anomalias_resumen"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_por_clasificacion"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_por_hora"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_por_oficina"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_por_estado"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_scores"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_detalle"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_por_dia"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_heatmap"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_calidad_dataset"] });
+      queryClient.invalidateQueries({ queryKey: ["anomalias_fuera_horario"] });
+    },
   });
 };
 
@@ -186,4 +211,24 @@ export const useCalidadDataset = () => {
     staleTime: 1000 * 30,
   });
 };
+
+// Hook de Consulta para anomalías fuera de horario laboral (08:00 - 16:00)
+export const useFueraHorarioAnomalias = (filtros = {}) => {
+  return useQuery({
+    queryKey: ["anomalias_fuera_horario", filtros],
+    queryFn: () => getFueraHorario(filtros),
+    staleTime: 1000 * 30,
+  });
+};
+
+// Hook de Consulta para trazabilidad secuencial de un documento específico
+export const useTrazabilidadDocumento = (idDocumento) => {
+  return useQuery({
+    queryKey: ["trazabilidad_documento", idDocumento],
+    queryFn: () => getTrazabilidadDocumento(idDocumento),
+    enabled: Boolean(idDocumento),
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
 

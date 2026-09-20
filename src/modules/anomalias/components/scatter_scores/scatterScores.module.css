@@ -62,3 +62,55 @@
   color: #64748b;
   max-width: 220px;
 }
+
+.raw_note {
+  margin: 5px 0 0 0;
+  font-size: 0.68rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.container {
+  width: 100%;
+}
+
+.top_strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.scale_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.scale_badge strong {
+  color: #e2e8f0;
+}
+
+.umbral_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  color: #f87171;
+}
+
+.umbral_badge strong {
+  color: #ef4444;
+}

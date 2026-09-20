@@ -11,10 +11,26 @@ import styles from "./areaHoras.module.css";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    const item = payload[0].payload;
+    const esFuera = item?.fuera_horario;
+    const horaTexto = String(label).includes(":") ? `${label} hrs` : `${label}:00 hrs`;
     return (
       <div className={styles.custom_tooltip}>
-        <p className={styles.tooltip_label}>{label}:00 hrs</p>
+        <p className={styles.tooltip_label}>{horaTexto}</p>
         <p className={styles.tooltip_value}>{payload[0].value} anomalías</p>
+        {esFuera !== undefined && (
+          <span
+            style={{
+              fontSize: "0.72rem",
+              fontWeight: 600,
+              display: "inline-block",
+              marginTop: "0.25rem",
+              color: esFuera ? "#ea580c" : "#4f46e5",
+            }}
+          >
+            {esFuera ? "🌙 Fuera de horario (08–16)" : "☀️ Horario laboral"}
+          </span>
+        )}
       </div>
     );
   }
@@ -43,7 +59,7 @@ export default function AreaHoras({ data = [] }) {
           tick={{ fill: "#64748b", fontSize: 10 }}
           axisLine={{ stroke: "rgba(148,163,184,0.1)" }}
           tickLine={false}
-          tickFormatter={(tick) => `${tick}:00`}
+          tickFormatter={(tick) => String(tick).includes(":") ? tick : `${tick}:00`}
         />
         <YAxis
           tick={{ fill: "#64748b", fontSize: 11 }}

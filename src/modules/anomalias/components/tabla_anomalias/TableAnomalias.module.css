@@ -1,0 +1,70 @@
+.btnTrazabilidad {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btnTrazabilidad:hover:not(:disabled) {
+  background: #8b1a2b;
+  color: #ffffff;
+  border-color: #8b1a2b;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px rgba(139, 26, 43, 0.25);
+}
+
+.btnTrazabilidad:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btnTrazabilidad:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+.btnIcon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.btnText {
+  letter-spacing: -0.01em;
+}
+
+.docCell {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.docCell:hover .docNum {
+  color: #8b1a2b;
+  text-decoration: underline;
+}
+
+.docNum {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 13px;
+  transition: color 0.15s ease;
+}
+
+.docId {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}

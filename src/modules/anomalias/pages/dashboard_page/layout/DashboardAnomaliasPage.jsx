@@ -135,9 +135,9 @@ export default function DashboardAnomalias() {
           {/* Gráficos fila 3: Scatter (full width) */}
           <div className={`${style['charts-grid']} ${style['full-width']}`}>
             <div className={style['chart-card']}>
-              <h3><span>🔴</span> Score de Anomalía por Registro</h3>
+              <h3><span>🔴</span> Score de Anomalía por Registro (0 a 1)</h3>
               <p style={{ color: "#64748b", fontSize: "0.78rem", marginTop: "-0.5rem", marginBottom: "0.75rem" }}>
-                Puntos rojos = anomalías detectadas | Puntos grises = registros normales
+                Escala normalizada: 0.0 (normal) a 1.0 (máxima anomalía) | Puntos rojos = anomalías detectadas | Puntos grises = registros normales
               </p>
               <ScatterScores data={data.scores_data} />
             </div>

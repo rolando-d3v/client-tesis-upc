@@ -1,7 +1,9 @@
 import SimpleTable from "./SimpleTable";
 import { useDetalleAnomalias } from "../../../../api/apiAnomalias";
 import { useSelector } from "react-redux";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import ModalTrazabilidad from "../modal_trazabilidad/ModalTrazabilidad";
+import styles from "./TableAnomalias.module.css";
 
 function getBadgeClass(clasificacion) {
   const c = clasificacion?.toLowerCase();
@@ -12,8 +14,17 @@ function getBadgeClass(clasificacion) {
 }
 
 function getScoreClass(score) {
-  if (score < -0.05) return "score-cell critical";
-  if (score < -0.02) return "score-cell warning";
+  const num = Number(score);
+  if (isNaN(num)) return "score-cell low";
+  // Escala normalizada [0, 1] (0 = Normal, 1 = Máx. Anomalía)
+  if (num >= 0 && num <= 1.05) {
+    if (num >= 0.85) return "score-cell critical";
+    if (num >= 0.70) return "score-cell warning";
+    return "score-cell low";
+  }
+  // Retrocompatibilidad con scores raw negativos de Isolation Forest
+  if (num < -0.05) return "score-cell critical";
+  if (num < -0.02) return "score-cell warning";
   return "score-cell low";
 }
 
@@ -21,13 +32,14 @@ function TableAnomalias() {
   // Filtro global de fechas desde Redux
   const { fechaInicio, fechaFin } = useSelector((state) => state.FILTRO_FECHAS);
 
+  // Estado para modal de trazabilidad { id, num }
+  const [selectedDoc, setSelectedDoc] = useState(null);
+
   // Consultar un límite alto para poder buscar/ordenar/paginar en cliente de forma fluida
   const { data: result, isLoading: loading } = useDetalleAnomalias(1, 1000, {
     fechaInicio,
     fechaFin,
   });
-
-  console.log("result", result);
 
   const datax = result?.data || [];
 
@@ -36,6 +48,55 @@ function TableAnomalias() {
       {
         header: "ID Registro",
         accessorKey: "id_registro",
+      },
+      {
+        header: "N° Documento",
+        accessorKey: "numero_doc",
+        cell: (info) => {
+          const numDoc = info.getValue();
+          const idDoc = info.row.original.id_documento;
+          return (
+            <div
+              className={styles.docCell}
+              onClick={() => {
+                if (idDoc) {
+                  setSelectedDoc({ id: idDoc, num: numDoc });
+                }
+              }}
+              title={idDoc ? "Clic para ver trazabilidad del documento" : ""}
+            >
+              <span className={styles.docNum}>{numDoc ? `#${numDoc}` : "-"}</span>
+              <span className={styles.docId}>ID: {idDoc || "-"}</span>
+            </div>
+          );
+        },
+      },
+      {
+        header: "Trazabilidad",
+        id: "ver_trazabilidad",
+        cell: ({ row }) => {
+          const idDoc = row.original.id_documento;
+          const numDoc = row.original.numero_doc;
+          return (
+            <button
+              type="button"
+              className={styles.btnTrazabilidad}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedDoc({ id: idDoc, num: numDoc });
+              }}
+              disabled={!idDoc}
+              title={
+                idDoc
+                  ? `Ver trazabilidad completa del documento #${numDoc || idDoc}`
+                  : "Sin ID de documento"
+              }
+            >
+              <span className={styles.btnIcon}>🗺️</span>
+              <span className={styles.btnText}>Ver Flujo</span>
+            </button>
+          );
+        },
       },
       {
         header: "Usuario",
@@ -125,6 +186,14 @@ function TableAnomalias() {
   return (
     <div>
       <SimpleTable datax={datax} columns={columns} />
+
+      {selectedDoc && (
+        <ModalTrazabilidad
+          idDocumento={selectedDoc.id}
+          numeroDoc={selectedDoc.num}
+          onClose={() => setSelectedDoc(null)}
+        />
+      )}
     </div>
   );
 }
