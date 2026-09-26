@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "react-router";
 import { useSelector } from "react-redux";
 import styles from "./time.module.css";
@@ -5,6 +6,8 @@ import LineaDias from "../../components/linea_dias/LineaDias";
 import AreaHoras from "../../components/area_horas/AreaHoras";
 import HeatmapSemana from "./headmapsemana/HeatmapSemana";
 import GraficoFueraHorario from "../../components/grafico_fuera_horario/GraficoFueraHorario";
+import ModalDetalleTemporal from "../../components/modal_detalle_temporal/ModalDetalleTemporal";
+import ModalTrazabilidad from "../../components/modal_trazabilidad/ModalTrazabilidad";
 import {
   usePorDiaAnomalias,
   useHeatmapAnomalias,
@@ -18,6 +21,11 @@ export default function TimelineAnomalias() {
   // Filtro global de fechas desde Redux
   const { fechaInicio, fechaFin } = useSelector((state) => state.FILTRO_FECHAS);
   const filtros = { fechaInicio, fechaFin };
+
+  // Estado para modal de detalle temporal (Horas, Días, Heatmap)
+  const [selectedPunto, setSelectedPunto] = useState(null);
+  // Estado para modal de trazabilidad de expediente
+  const [selectedDoc, setSelectedDoc] = useState(null);
 
   // Consultas con React Query
   const porDiaQuery = usePorDiaAnomalias(filtros);
@@ -64,18 +72,18 @@ export default function TimelineAnomalias() {
       ) : (
         <>
           {/* Fila 1: Dos diagramas en grid de 2 columnas (Hora del Día y Por Día) */}
-         <div className={`${styles.charts_grid} ${styles.full_width}`}>
+          <div className={`${styles.charts_grid} ${styles.full_width}`}>
             <div className={styles.chart_card}>
               <h3>
                 <span>📈</span> Anomalías por Hora del Día
               </h3>
-              <AreaHoras data={porHora} />
+              <AreaHoras data={porHora} onSelectPunto={setSelectedPunto} />
             </div>
             <div className={styles.chart_card}>
               <h3>
                 <span>📈</span> Anomalías por Día
               </h3>
-              <LineaDias data={porDia} />
+              <LineaDias data={porDia} onSelectPunto={setSelectedPunto} />
             </div>
           </div>
 
@@ -102,10 +110,29 @@ export default function TimelineAnomalias() {
               >
                 Intensidad de anomalías por hora del día y día de la semana
               </p>
-              <HeatmapSemana data={heatmap} />
+              <HeatmapSemana data={heatmap} onSelectPunto={setSelectedPunto} />
             </div>
           </div>
         </>
+      )}
+
+      {/* Modal de Detalle Temporal interactivo (para los 3 gráficos) */}
+      {selectedPunto && (
+        <ModalDetalleTemporal
+          punto={selectedPunto}
+          filtrosGlobales={filtros}
+          onClose={() => setSelectedPunto(null)}
+          onSelectDoc={(doc) => setSelectedDoc(doc)}
+        />
+      )}
+
+      {/* Modal de Trazabilidad del Documento */}
+      {selectedDoc && (
+        <ModalTrazabilidad
+          idDocumento={selectedDoc.id}
+          numeroDoc={selectedDoc.num}
+          onClose={() => setSelectedDoc(null)}
+        />
       )}
     </div>
   );

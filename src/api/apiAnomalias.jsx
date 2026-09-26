@@ -63,6 +63,9 @@ export const getDetalle = async (page = 1, limit = 20, filtros = {}) => {
   params.append("limit", limit);
   if (filtros.fechaInicio) params.append("fecha_inicio", filtros.fechaInicio);
   if (filtros.fechaFin) params.append("fecha_fin", filtros.fechaFin);
+  if (filtros.hora != null) params.append("hora", filtros.hora);
+  if (filtros.fecha != null) params.append("fecha", filtros.fecha);
+  if (filtros.dia_semana != null) params.append("dia_semana", filtros.dia_semana);
   const response = await api.get(`/anomalias/detalle?${params}`);
   return response.data;
 };
@@ -88,6 +91,12 @@ export const getTrazabilidadDocumento = async (idDocumento) => {
   return response.data;
 };
 
+export const getRarezaEstadistica = async (idRegistro) => {
+  if (!idRegistro) return null;
+  const response = await api.get(`/anomalias/rareza-estadistica/${idRegistro}`);
+  return response.data;
+};
+
 // ============================================================
 // REACT QUERY CUSTOM HOOKS
 // ============================================================
@@ -109,6 +118,7 @@ export const useSubirCSVAnomalias = () => {
       queryClient.invalidateQueries({ queryKey: ["anomalias_heatmap"] });
       queryClient.invalidateQueries({ queryKey: ["anomalias_calidad_dataset"] });
       queryClient.invalidateQueries({ queryKey: ["anomalias_fuera_horario"] });
+      queryClient.invalidateQueries({ queryKey: ["trazabilidad_documento"] });
     },
   });
 };
@@ -227,6 +237,16 @@ export const useTrazabilidadDocumento = (idDocumento) => {
     queryKey: ["trazabilidad_documento", idDocumento],
     queryFn: () => getTrazabilidadDocumento(idDocumento),
     enabled: Boolean(idDocumento),
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+// Hook de Consulta para rareza estadística y explicabilidad XAI
+export const useRarezaEstadistica = (idRegistro) => {
+  return useQuery({
+    queryKey: ["rareza_estadistica", idRegistro],
+    queryFn: () => getRarezaEstadistica(idRegistro),
+    enabled: Boolean(idRegistro),
     staleTime: 1000 * 60 * 5,
   });
 };

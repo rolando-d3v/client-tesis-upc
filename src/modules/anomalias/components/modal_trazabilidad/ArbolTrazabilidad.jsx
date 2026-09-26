@@ -1,27 +1,35 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import styles from "./ArbolTrazabilidad.module.css";
 
-// Medidas y dimensiones base del layout
-const ROOT_W = 240;
-const ROOT_H = 72;
-const L1_W = 250;
-const L1_H = 62;
-const L2_W = 280;
-const L2_H = 56;
+// Medidas y dimensiones base del layout DAG (Movimiento: 410x250, Origen: 400x450)
+const ORIGIN_W = 400;
+const ORIGIN_H = 450;
+const STEP_W = 410;
+const STEP_H = 250;
 
-const GAP_X1 = 120;
-const GAP_X2 = 120;
-const ITEM_GAP_Y = 18;
-const GROUP_GAP_Y = 38;
+const GAP_X = 95;
+const GAP_Y = 32;
 const PADDING_X = 60;
 const PADDING_Y = 60;
 
-export default function ArbolTrazabilidad({
-  info = {},
-  pasos = [],
-  activePaso = null,
-  onSelectPaso = null,
-}) {
+function formatDateTime(dateStr) {
+  if (!dateStr || dateStr === "-") return { fecha: "-", hora: "" };
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return { fecha: String(dateStr), hora: "" };
+    const pad = (n) => String(n).padStart(2, "0");
+    const fecha = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+    const hora = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    return { fecha, hora };
+  } catch {
+    return { fecha: String(dateStr), hora: "" };
+  }
+}
+
+const isExteriorPaso = (p) =>
+  Boolean(p?.es_exterior || (p?.destino && String(p.destino).toLowerCase().includes("exterior")));
+
+export default function ArbolTrazabilidad({ info = {}, pasos = [], activePaso = null, onSelectPaso = null }) {
   const containerRef = useRef(null);
   const [pan, setPan] = useState({ x: 60, y: 50 });
   const [zoom, setZoom] = useState(1);
@@ -42,7 +50,7 @@ export default function ArbolTrazabilidad({
       setInternalSelectedPaso(p);
       if (onSelectPaso) onSelectPaso(p);
     },
-    [onSelectPaso]
+    [onSelectPaso],
   );
 
   // Auto-ocultar hint a los 4 segundos
@@ -51,153 +59,255 @@ export default function ArbolTrazabilidad({
     return () => clearTimeout(timer);
   }, []);
 
-  // 1. Agrupar los pasos cronológicamente por oficina de origen
-  const groups = useMemo(() => {
-    if (!pasos || pasos.length === 0) return [];
-    const map = new Map();
-
-    pasos.forEach((p, idx) => {
-      const officeKey = p.oficina_origen || "Oficina Inicial";
-      if (!map.has(officeKey)) {
-        map.set(officeKey, {
-          id: `group-${idx}-${officeKey}`,
-          oficina: officeKey,
-          primerPaso: p.paso,
-          tieneAnomalia: false,
-          maxScore: 0,
-          items: [],
-        });
-      }
-      const g = map.get(officeKey);
-      g.items.push(p);
-      if (p.es_anomalo) g.tieneAnomalia = true;
-      if (p.score > g.maxScore) g.maxScore = p.score;
-    });
-
-    return Array.from(map.values());
-  }, [pasos]);
-
   // Conteos para filtros
   const totalAnomalias = useMemo(() => pasos.filter((p) => p.es_anomalo).length, [pasos]);
-  const totalExterior = useMemo(() => pasos.filter((p) => p.es_exterior).length, [pasos]);
+  const totalExterior = useMemo(() => pasos.filter(isExteriorPaso).length, [pasos]);
 
-  // 2. Calcular coordenadas y layout geométrico del árbol
+  // 1. Motor de Layout DAG: Reconstrucción fiel del flujo causal de la trazabilidad
   const layout = useMemo(() => {
-    if (groups.length === 0) return null;
+    if (!pasos || pasos.length === 0) return null;
 
-    const x0 = PADDING_X;
-    const x1 = x0 + ROOT_W + GAP_X1;
-    const x2 = x1 + L1_W + GAP_X2;
+    const nodes = [];
+    const nodeMap = new Map();
+    const childrenMap = new Map();
 
-    let currentY = PADDING_Y;
-    const l1Nodes = [];
-    const l2Nodes = [];
-    const l1Connections = [];
+    // Nodo 0: Documento de Origen (Root)
+    const rootNode = {
+      id: "ROOT",
+      type: "ROOT",
+      column: 0,
+      width: ORIGIN_W,
+      height: ORIGIN_H,
+      x: PADDING_X,
+      y: 0,
+      centerY: 0,
+      data: info,
+    };
+    nodeMap.set("ROOT", rootNode);
+    childrenMap.set("ROOT", []);
 
-    // Posicionar nodos de nivel 2 y agrupar para nivel 1
-    groups.forEach((group) => {
-      const itemCount = group.items.length;
-      const groupHeight =
-        itemCount * L2_H + (itemCount - 1) * ITEM_GAP_Y;
-      const effectiveHeight = Math.max(groupHeight, L1_H);
+    // Construcción de nodos de pasos con inferencia de dependencias de custodia
+    pasos.forEach((p, idx) => {
+      const id = p.id_registro || p.paso || `step-${idx + 1}`;
+      const height = STEP_H;
 
-      const groupL2Positions = [];
-
-      group.items.forEach((item, j) => {
-        const itemY = currentY + j * (L2_H + ITEM_GAP_Y);
-        const l2Node = {
-          item,
-          x: x2,
-          y: itemY,
-          width: L2_W,
-          height: L2_H,
-          centerY: itemY + L2_H / 2,
-        };
-        groupL2Positions.push(l2Node);
-        l2Nodes.push(l2Node);
-      });
-
-      // Centro vertical del nodo L1 = promedio del primer y último hijo L2
-      const firstL2CenterY = groupL2Positions[0].centerY;
-      const lastL2CenterY =
-        groupL2Positions[groupL2Positions.length - 1].centerY;
-      const l1CenterY = (firstL2CenterY + lastL2CenterY) / 2;
-      const l1Y = l1CenterY - L1_H / 2;
-
-      const l1Node = {
-        group,
-        x: x1,
-        y: l1Y,
-        width: L1_W,
-        height: L1_H,
-        centerY: l1CenterY,
-        l2Nodes: groupL2Positions,
-      };
-      l1Nodes.push(l1Node);
-
-      // Conectores entre L1 y cada L2 de este grupo
-      const midX2 = x1 + L1_W + GAP_X2 / 2;
-      let pathD = "";
-      if (itemCount === 1) {
-        // Línea recta directa
-        pathD = `M ${x1 + L1_W} ${l1CenterY} H ${x2}`;
-      } else {
-        // Tronco + columna vertical + ramas horizontales
-        pathD = `M ${x1 + L1_W} ${l1CenterY} H ${midX2} M ${midX2} ${firstL2CenterY} V ${lastL2CenterY} `;
-        groupL2Positions.forEach((l2) => {
-          pathD += `M ${midX2} ${l2.centerY} H ${x2} `;
-        });
+      // Determinar padre causal
+      let parentId = "ROOT";
+      if (idx > 0) {
+        let foundParent = null;
+        for (let j = idx - 1; j >= 0; j--) {
+          const prev = pasos[j];
+          const prevId = prev.id_registro || prev.paso || `step-${j + 1}`;
+          // Caso 1: La oficina de destino del paso j es el origen de este paso
+          if (prev.oficina_destino && p.oficina_origen && prev.oficina_destino === p.oficina_origen) {
+            foundParent = prevId;
+            break;
+          }
+          // Caso 2: Derivación concurrente desde la misma oficina de origen (Bifurcación)
+          if (prev.oficina_origen && p.oficina_origen && prev.oficina_origen === p.oficina_origen) {
+            const prevNode = nodeMap.get(prevId);
+            if (prevNode) {
+              foundParent = prevNode.parentId;
+              break;
+            }
+          }
+        }
+        parentId = foundParent || pasos[idx - 1].id_registro || pasos[idx - 1].paso || `step-${idx}`;
       }
 
-      l1Connections.push({
-        groupId: group.id,
-        pathD,
-        tieneAnomalia: group.tieneAnomalia,
-        itemIds: group.items.map((i) => i.id_registro || i.paso),
-      });
-
-      currentY += effectiveHeight + GROUP_GAP_Y;
+      const node = {
+        id,
+        type: "STEP",
+        item: p,
+        index: idx + 1,
+        parentId,
+        width: STEP_W,
+        height,
+        column: 1,
+        x: 0,
+        y: 0,
+        centerY: 0,
+      };
+      nodes.push(node);
+      nodeMap.set(id, node);
+      childrenMap.set(id, []);
     });
 
-    // 3. Posicionar el Root en base al centro de los nodos L1
-    const firstL1CenterY = l1Nodes[0].centerY;
-    const lastL1CenterY = l1Nodes[l1Nodes.length - 1].centerY;
-    const rootCenterY = (firstL1CenterY + lastL1CenterY) / 2;
-    const rootY = rootCenterY - ROOT_H / 2;
+    // Enlazar hijos y computar columnas (profundidad en el árbol)
+    nodes.forEach((node) => {
+      const parent = nodeMap.get(node.parentId) || rootNode;
+      node.column = (parent.column || 0) + 1;
+      if (!childrenMap.has(parent.id)) {
+        childrenMap.set(parent.id, []);
+      }
+      childrenMap.get(parent.id).push(node);
+    });
 
-    const rootNode = {
-      x: x0,
-      y: rootY,
-      width: ROOT_W,
-      height: ROOT_H,
-      centerY: rootCenterY,
-    };
+    // Marcar nodos terminales ("en que oficina acaba")
+    nodes.forEach((node) => {
+      node.isTerminal = (childrenMap.get(node.id) || []).length === 0;
+    });
 
-    // Conector del Root a los L1
-    const midX1 = x0 + ROOT_W + GAP_X1 / 2;
-    let rootPathD = "";
-    if (l1Nodes.length === 1) {
-      rootPathD = `M ${x0 + ROOT_W} ${rootCenterY} H ${x1}`;
-    } else {
-      rootPathD = `M ${x0 + ROOT_W} ${rootCenterY} H ${midX1} M ${midX1} ${firstL1CenterY} V ${lastL1CenterY} `;
-      l1Nodes.forEach((l1) => {
-        rootPathD += `M ${midX1} ${l1.centerY} H ${x1} `;
+    // Agrupar por columnas
+    const maxCol = Math.max(...nodes.map((n) => n.column), 1);
+    const columns = Array.from({ length: maxCol + 1 }, () => []);
+    columns[0].push(rootNode);
+    nodes.forEach((node) => {
+      columns[node.column].push(node);
+    });
+
+    // Asignar X para cada columna
+    columns.forEach((colNodes, colIdx) => {
+      const colX = colIdx === 0 ? PADDING_X : PADDING_X + ORIGIN_W + GAP_X + (colIdx - 1) * (STEP_W + GAP_X);
+      colNodes.forEach((node) => {
+        node.x = colX;
+      });
+    });
+
+    // Posicionamiento Y:
+    // 1. Columnas terminales (de derecha a izquierda apilando verticalmente)
+    for (let c = maxCol; c >= 1; c--) {
+      const colNodes = columns[c];
+      let currY = PADDING_Y;
+      colNodes.forEach((node) => {
+        node.y = currY;
+        node.centerY = node.y + node.height / 2;
+        currY += node.height + GAP_Y;
       });
     }
 
-    const totalWidth = x2 + L2_W + PADDING_X * 2;
-    const totalHeight = Math.max(currentY, rootY + ROOT_H) + PADDING_Y;
+    // 2. Centrado vertical de padres respecto al promedio de sus hijos
+    for (let c = maxCol - 1; c >= 1; c--) {
+      const colNodes = columns[c];
+      colNodes.forEach((node) => {
+        const children = childrenMap.get(node.id);
+        if (children && children.length > 0) {
+          const avgCenterY = children.reduce((acc, ch) => acc + ch.centerY, 0) / children.length;
+          node.centerY = avgCenterY;
+          node.y = avgCenterY - node.height / 2;
+        }
+      });
+    }
+
+    // 3. Centrado vertical de Documento Origen (ROOT)
+    const rootChildren = childrenMap.get("ROOT");
+    if (rootChildren && rootChildren.length > 0) {
+      const rootAvgCenterY = rootChildren.reduce((acc, ch) => acc + ch.centerY, 0) / rootChildren.length;
+      rootNode.centerY = rootAvgCenterY;
+      rootNode.y = rootAvgCenterY - rootNode.height / 2;
+    } else {
+      rootNode.y = PADDING_Y;
+      rootNode.centerY = rootNode.y + rootNode.height / 2;
+    }
+
+    // Normalizar para que ningún nodo quede por encima del margen superior PADDING_Y
+    const allNodes = [rootNode, ...nodes];
+    const minY = Math.min(...allNodes.map((n) => n.y));
+    if (minY < PADDING_Y) {
+      const shiftY = PADDING_Y - minY;
+      allNodes.forEach((n) => {
+        n.y += shiftY;
+        n.centerY += shiftY;
+      });
+    }
+
+    // Resolver colisiones verticales entre nodos de la misma columna
+    for (let c = 1; c <= maxCol; c++) {
+      const colNodes = columns[c];
+      if (colNodes.length > 1) {
+        colNodes.sort((a, b) => a.y - b.y);
+        for (let i = 1; i < colNodes.length; i++) {
+          const prev = colNodes[i - 1];
+          const curr = colNodes[i];
+          if (curr.y < prev.y + prev.height + GAP_Y) {
+            const shift = prev.y + prev.height + GAP_Y - curr.y;
+            curr.y += shift;
+            curr.centerY += shift;
+          }
+        }
+      }
+    }
+
+    // 4. Conectores SVG (Conexiones directas, Troncos y Ramificaciones con Junction Dots)
+    const connections = [];
+    const junctionDots = [];
+
+    allNodes.forEach((parentNode) => {
+      const children = childrenMap.get(parentNode.id) || [];
+      if (children.length === 0) return;
+
+      const xOut = parentNode.x + parentNode.width;
+      const yOut = parentNode.centerY;
+
+      if (children.length === 1) {
+        // Conexión simple
+        const child = children[0];
+        const xIn = child.x;
+        const yIn = child.centerY;
+        let pathD = "";
+        if (Math.abs(yOut - yIn) < 3) {
+          pathD = `M ${xOut} ${yOut} H ${xIn}`;
+        } else {
+          const midX = (xOut + xIn) / 2;
+          pathD = `M ${xOut} ${yOut} C ${midX} ${yOut}, ${midX} ${yIn}, ${xIn} ${yIn}`;
+        }
+        connections.push({
+          id: `conn-${parentNode.id}-${child.id}`,
+          pathD,
+          parentId: parentNode.id,
+          childId: child.id,
+          tieneAnomalia: child.item?.es_anomalo,
+        });
+      } else {
+        // Bifurcación (como en el Paso 2 hacia Paso 3 y Paso 4)
+        const firstChild = children[0];
+        const xIn = firstChild.x;
+        const xFork = xOut + Math.min(45, (xIn - xOut) * 0.45);
+
+        // Tronco horizontal hasta el punto de bifurcación
+        connections.push({
+          id: `conn-stem-${parentNode.id}`,
+          pathD: `M ${xOut} ${yOut} H ${xFork}`,
+          parentId: parentNode.id,
+          childId: null,
+          tieneAnomalia: false,
+        });
+
+        // Punto de unión (Junction dot) en la bifurcación
+        junctionDots.push({
+          id: `junction-${parentNode.id}`,
+          x: xFork,
+          y: yOut,
+        });
+
+        // Ramas curvas hacia cada hijo
+        children.forEach((child) => {
+          const yIn = child.centerY;
+          const branchD = `M ${xFork} ${yOut} C ${xFork + 32} ${yOut}, ${child.x - 32} ${yIn}, ${child.x} ${yIn}`;
+          connections.push({
+            id: `conn-${parentNode.id}-${child.id}`,
+            pathD: branchD,
+            parentId: parentNode.id,
+            childId: child.id,
+            tieneAnomalia: child.item?.es_anomalo,
+          });
+        });
+      }
+    });
+
+    const totalWidth = Math.max(...allNodes.map((n) => n.x + n.width)) + PADDING_X * 2;
+    const totalHeight = Math.max(...allNodes.map((n) => n.y + n.height)) + PADDING_Y * 2;
 
     return {
       rootNode,
-      l1Nodes,
-      l2Nodes,
-      rootPathD,
-      l1Connections,
+      stepNodes: nodes,
+      allNodes,
+      connections,
+      junctionDots,
       totalWidth,
       totalHeight,
     };
-  }, [groups]);
+  }, [pasos, info]);
 
   // Centrar o ajustar el árbol al contenedor
   const handleFitToView = useCallback(() => {
@@ -217,7 +327,7 @@ export default function ArbolTrazabilidad({
     setPan({ x: Math.round(newPanX), y: Math.round(newPanY) });
   }, [layout]);
 
-  // Auto-ajuste inicial al montar
+  // Auto-ajuste inicial al montar o cambiar datos
   useEffect(() => {
     if (layout) {
       handleFitToView();
@@ -225,17 +335,20 @@ export default function ArbolTrazabilidad({
   }, [layout, handleFitToView]);
 
   // Centrar un nodo específico suavemente en pantalla
-  const handleCenterNode = useCallback((node) => {
-    if (!containerRef.current || !node) return;
-    const cw = containerRef.current.clientWidth;
-    const ch = containerRef.current.clientHeight;
-    const targetZoom = Math.max(zoom, 1.0);
-    const targetPanX = cw / 2 - (node.x + node.width / 2) * targetZoom;
-    const targetPanY = ch / 2 - (node.y + node.height / 2) * targetZoom;
+  const handleCenterNode = useCallback(
+    (node) => {
+      if (!containerRef.current || !node) return;
+      const cw = containerRef.current.clientWidth;
+      const ch = containerRef.current.clientHeight;
+      const targetZoom = Math.max(zoom, 1.0);
+      const targetPanX = cw / 2 - (node.x + node.width / 2) * targetZoom;
+      const targetPanY = ch / 2 - (node.y + node.height / 2) * targetZoom;
 
-    setZoom(targetZoom);
-    setPan({ x: Math.round(targetPanX), y: Math.round(targetPanY) });
-  }, [zoom]);
+      setZoom(targetZoom);
+      setPan({ x: Math.round(targetPanX), y: Math.round(targetPanY) });
+    },
+    [zoom],
+  );
 
   // Atajos de teclado (Zoom y Reset)
   useEffect(() => {
@@ -307,46 +420,39 @@ export default function ArbolTrazabilidad({
   };
 
   // Función de evaluación de visibilidad por búsqueda o filtro
-  const isNodeMatching = useCallback((item) => {
-    if (!item) return true;
+  const isNodeMatching = useCallback(
+    (item) => {
+      if (!item) return true;
 
-    // Filtro por tipo
-    if (filterType === "anomalias" && !item.es_anomalo) return false;
-    if (filterType === "exterior" && !item.es_exterior) return false;
+      // Filtro por tipo
+      if (filterType === "anomalias" && !item.es_anomalo) return false;
+      if (filterType === "exterior" && !isExteriorPaso(item)) return false;
 
-    // Búsqueda por texto
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchOrig = item.oficina_origen?.toLowerCase().includes(q);
-      const matchDest = item.oficina_destino?.toLowerCase().includes(q);
-      const matchUser = item.usuario?.toLowerCase().includes(q);
-      const matchState = item.estado?.toLowerCase().includes(q);
-      if (!matchOrig && !matchDest && !matchUser && !matchState) return false;
-    }
+      // Búsqueda por texto
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchOrig = item.oficina_origen?.toLowerCase().includes(q);
+        const matchDest = item.oficina_destino?.toLowerCase().includes(q);
+        const matchUser = item.usuario?.toLowerCase().includes(q);
+        const matchState = item.estado?.toLowerCase().includes(q);
+        if (!matchOrig && !matchDest && !matchUser && !matchState) return false;
+      }
 
-    return true;
-  }, [filterType, searchQuery]);
-
-  const isGroupMatching = useCallback((group) => {
-    return group.items.some((i) => isNodeMatching(i));
-  }, [isNodeMatching]);
+      return true;
+    },
+    [filterType, searchQuery],
+  );
 
   // Minimap calculations & click-to-pan
   const miniWidth = 150;
   const miniHeight = 95;
-  const miniScale = layout
-    ? Math.min(miniWidth / layout.totalWidth, miniHeight / layout.totalHeight)
-    : 0.1;
+  const miniScale = layout ? Math.min(miniWidth / layout.totalWidth, miniHeight / layout.totalHeight) : 0.1;
   const containerCw = containerRef.current?.clientWidth || 800;
   const containerCh = containerRef.current?.clientHeight || 600;
   const viewportRectX = layout ? Math.max(0, -pan.x / zoom) * miniScale : 0;
   const viewportRectY = layout ? Math.max(0, -pan.y / zoom) * miniScale : 0;
-  const viewportRectW = layout
-    ? Math.min(layout.totalWidth, containerCw / zoom) * miniScale
-    : 0;
-  const viewportRectH = layout
-    ? Math.min(layout.totalHeight, containerCh / zoom) * miniScale
-    : 0;
+  const viewportRectW = layout ? Math.min(layout.totalWidth, containerCw / zoom) * miniScale : 0;
+  const viewportRectH = layout ? Math.min(layout.totalHeight, containerCh / zoom) * miniScale : 0;
 
   const handleMinimapClick = (e) => {
     if (!layout || !containerRef.current) return;
@@ -365,7 +471,7 @@ export default function ArbolTrazabilidad({
   if (!layout) {
     return (
       <div className={styles.viewportContainer} style={{ alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "#64748b" }}>Cargando diagrama de trazabilidad...</p>
+        <p style={{ color: "#94a3b8" }}>Cargando diagrama de trazabilidad...</p>
       </div>
     );
   }
@@ -376,9 +482,7 @@ export default function ArbolTrazabilidad({
   return (
     <div
       ref={containerRef}
-      className={`${styles.viewportContainer} ${
-        isFullscreen ? styles.viewportContainerFullscreen : ""
-      }`}
+      className={`${styles.viewportContainer} ${isFullscreen ? styles.viewportContainerFullscreen : ""}`}
       onWheel={handleWheel}
     >
       {/* ================= BARRA SUPERIOR DE BÚSQUEDA Y FILTROS ================= */}
@@ -416,9 +520,7 @@ export default function ArbolTrazabilidad({
 
           <button
             type="button"
-            className={`${styles.filterChip} ${
-              filterType === "anomalias" ? styles.filterChipActiveAlert : ""
-            }`}
+            className={`${styles.filterChip} ${filterType === "anomalias" ? styles.filterChipActiveAlert : ""}`}
             onClick={() => setFilterType("anomalias")}
           >
             <span>⚠️ Anomalías</span>
@@ -428,9 +530,7 @@ export default function ArbolTrazabilidad({
           {totalExterior > 0 && (
             <button
               type="button"
-              className={`${styles.filterChip} ${
-                filterType === "exterior" ? styles.filterChipActive : ""
-              }`}
+              className={`${styles.filterChip} ${filterType === "exterior" ? styles.filterChipActive : ""}`}
               onClick={() => setFilterType("exterior")}
             >
               <span>🌐 Exterior</span>
@@ -442,9 +542,7 @@ export default function ArbolTrazabilidad({
 
       {/* ================= ÁREA DE ARRASTRE (CANVAS PAN & ZOOM) ================= */}
       <div
-        className={`${styles.panGrabArea} ${
-          isDragging ? styles.panGrabAreaDragging : ""
-        }`}
+        className={`${styles.panGrabArea} ${isDragging ? styles.panGrabAreaDragging : ""}`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -459,11 +557,7 @@ export default function ArbolTrazabilidad({
           }}
         >
           {/* ================= 1. CAPA DE LÍNEAS SVG CON MARCADORES ================= */}
-          <svg
-            className={styles.svgLayer}
-            width={layout.totalWidth}
-            height={layout.totalHeight}
-          >
+          <svg className={styles.svgLayer} width={layout.totalWidth} height={layout.totalHeight}>
             <defs>
               <marker
                 id="arrow-blue"
@@ -491,58 +585,47 @@ export default function ArbolTrazabilidad({
             </defs>
 
             {/* Capa de resplandor (Glow) bajo los conectores */}
-            <path
-              d={layout.rootPathD}
-              className={styles.connectorGlow}
-            />
-            {layout.l1Connections.map((conn) => (
+            {layout.connections.map((conn) => (
               <path
-                key={`glow-${conn.groupId}`}
+                key={`glow-${conn.id}`}
                 d={conn.pathD}
-                className={`${styles.connectorGlow} ${
-                  conn.tieneAnomalia ? styles.connectorGlowAlert : ""
-                }`}
+                className={`${styles.connectorGlow} ${conn.tieneAnomalia ? styles.connectorGlowAlert : ""}`}
               />
             ))}
 
-            {/* Conector principal Root -> Nivel 1 */}
-            <path
-              d={layout.rootPathD}
-              className={styles.connectorLine}
-              markerEnd="url(#arrow-blue)"
-            />
-
-            {/* Conectores Nivel 1 -> Nivel 2 */}
-            {layout.l1Connections.map((conn) => {
-              const isTargetActive =
-                activeItemId && conn.itemIds.includes(activeItemId);
+            {/* Líneas de conexión */}
+            {layout.connections.map((conn) => {
+              const isTargetActive = activeItemId && (conn.childId === activeItemId || conn.parentId === activeItemId);
               const isTargetHovered =
-                hoveredPasoId && conn.itemIds.includes(hoveredPasoId);
+                hoveredPasoId && (conn.childId === hoveredPasoId || conn.parentId === hoveredPasoId);
               const isConnHighlighted = isTargetActive || isTargetHovered;
-              const isConnDimmed =
-                (activeItemId && !isTargetActive) ||
-                (hoveredPasoId && !isTargetHovered);
+              const isConnDimmed = (activeItemId && !isTargetActive) || (hoveredPasoId && !isTargetHovered);
 
               return (
                 <path
-                  key={conn.groupId}
+                  key={conn.id}
                   d={conn.pathD}
                   className={`${styles.connectorLine} ${
                     conn.tieneAnomalia ? styles.connectorLineAlert : ""
                   } ${isConnHighlighted ? styles.connectorHighlighted : ""} ${
                     isConnDimmed ? styles.connectorDimmed : ""
                   }`}
-                  markerEnd={conn.tieneAnomalia ? "url(#arrow-red)" : "url(#arrow-blue)"}
+                  markerEnd={conn.childId ? (conn.tieneAnomalia ? "url(#arrow-red)" : "url(#arrow-blue)") : undefined}
                 />
               );
             })}
+
+            {/* Puntos de unión (Junction dots) para bifurcaciones */}
+            {layout.junctionDots.map((junc) => (
+              <circle key={junc.id} cx={junc.x} cy={junc.y} r="4.5" className={styles.junctionDot} />
+            ))}
           </svg>
 
           {/* ================= 2. CAPA DE NODOS HTML ================= */}
           <div className={styles.nodesLayer}>
-            {/* NODO RAÍZ (ROOT PILL — ROJO/MAGENTA) */}
+            {/* 1. NODO RAÍZ: DOCUMENTO ORIGEN (Exactamente como la imagen cargada) */}
             <div
-              className={styles.nodeRoot}
+              className={styles.docOriginCard}
               style={{
                 left: `${layout.rootNode.x}px`,
                 top: `${layout.rootNode.y}px`,
@@ -550,93 +633,150 @@ export default function ArbolTrazabilidad({
                 height: `${layout.rootNode.height}px`,
               }}
               onDoubleClick={() => handleCenterNode(layout.rootNode)}
-              title="Doble clic para centrar en pantalla"
+              title="Documento de Origen · Flujo inicial del expediente"
             >
-              <div className={styles.nodeRootIcon}>📄</div>
-              <div className={styles.nodeRootInfo}>
-                <div className={styles.nodeRootTitle}>
-                  Doc. #{info.numero_doc || info.id_documento}
+              {/* Puerto de salida derecha hacia el paso 1 */}
+              <div className={`${styles.cardPortRight} ${styles.cardPortOrigin}`} />
+
+              {/* Banner superior con fondo de textura de archivo y badge INICIO */}
+              <div className={styles.docOriginBanner}>
+                <div className={styles.docOriginBannerLeft}>
+                  <div className={styles.docOriginDocIcon}>📄</div>
+                  <div className={styles.docOriginBannerTitles}>
+                    <span className={styles.docOriginMainTitle}>DOCUMENTO ORIGEN</span>
+                    <span className={styles.docOriginIdPill}>
+                      ID: {info.id_documento || info.numero_doc || "-"}
+                    </span>
+                  </div>
                 </div>
-                <div className={styles.nodeRootSub}>
-                  <span>{info.tipo_documento || "DOC"}</span>
-                  <span className={styles.badgeRootClasif}>
-                    {info.clasificacion || "COMUN"}
+                <span className={styles.docOriginInicioPill}>INICIO</span>
+              </div>
+
+              {/* Cuerpo con fondo blanco y 6 tarjetas de metadatos */}
+              <div className={styles.docOriginBody}>
+                <div
+                  className={styles.docOriginAsuntoBox}
+                  title={info.asunto || "Sin asunto especificado"}
+                >
+                  <strong>ASUNTO: </strong>
+                  {info.asunto || "-"}
+                </div>
+
+                <div className={styles.docOriginGrid}>
+                  <div className={styles.docOriginPill}>
+                    <span className={styles.docOriginPillLabel}>N° Documento</span>
+                    <span className={styles.docOriginPillVal} title={info.numero_doc || "-"}>
+                      {info.numero_doc || "-"}
+                    </span>
+                  </div>
+
+                  <div className={styles.docOriginPill}>
+                    <span className={styles.docOriginPillLabel}>Unidad Origen</span>
+                    <span
+                      className={styles.docOriginPillVal}
+                      title={info.unidad_origen || info.oficina_inicial || pasos[0]?.oficina_origen || "-"}
+                    >
+                      {info.unidad_origen || info.oficina_inicial || pasos[0]?.oficina_origen || "-"}
+                    </span>
+                  </div>
+
+                  <div className={styles.docOriginPill}>
+                    <span className={styles.docOriginPillLabel}>Tipo Documento</span>
+                    <span className={styles.docOriginPillVal}>{info.tipo_documento || "-"}</span>
+                  </div>
+
+                  <div className={styles.docOriginPill}>
+                    <span className={styles.docOriginPillLabel}>Fecha Doc</span>
+                    <span className={styles.docOriginPillVal}>
+                      {info.fecha_doc ||
+                        (pasos[0]?.fecha_creacion
+                          ? pasos[0].fecha_creacion.split("T")[0].split(" ")[0]
+                          : "-")}
+                    </span>
+                  </div>
+
+                  <div className={styles.docOriginPill}>
+                    <span className={styles.docOriginPillLabel}>Clasificación</span>
+                    <span
+                      className={`${styles.docOriginPillVal} ${
+                        styles[
+                          `clasif_${(
+                            info.clasificacion
+                              ? info.clasificacion.toLowerCase().includes("secreto")
+                                ? "secreto"
+                                : info.clasificacion.toLowerCase().includes("reservado")
+                                ? "reservado"
+                                : info.clasificacion.toLowerCase().includes("confidencial")
+                                ? "confidencial"
+                                : "comun"
+                              : "comun"
+                          )}`
+                        ] || ""
+                      }`}
+                    >
+                      {info.clasificacion || "-"}
+                    </span>
+                  </div>
+
+                  <div className={styles.docOriginPill}>
+                    <span className={styles.docOriginPillLabel}>Sistema de Envío</span>
+                    <span className={styles.docOriginPillVal}>{info.sistema_envio || info.sistema || "-"}</span>
+                  </div>
+                </div>
+
+                <div className={styles.docOriginFooter}>
+                  <div className={styles.docOriginFlujoText}>
+                    <span>🌱</span>
+                    <span>Flujo inicia aquí</span>
+                  </div>
+                  <span className={styles.docOriginOrigenBadge}>
+                    ORIGEN: {info.tipo_origen || (isExteriorPaso(pasos[0]) ? "EXTERNO" : "INSTITUCIONAL")}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* NODOS DE NIVEL 1 (AZUL SÓLIDO — OFICINAS ORIGEN) */}
-            {layout.l1Nodes.map((l1) => {
-              const groupMatches = isGroupMatching(l1.group);
-              const isChildActive =
-                activeItemId &&
-                l1.group.items.some(
-                  (i) => (i.id_registro || i.paso) === activeItemId
-                );
-              const isChildHovered =
-                hoveredPasoId &&
-                l1.group.items.some(
-                  (i) => (i.id_registro || i.paso) === hoveredPasoId
-                );
-              const isHighlighted = isChildActive || isChildHovered;
-
-              return (
-                <div
-                  key={l1.group.id}
-                  className={`${styles.nodeLevel1} ${
-                    l1.group.tieneAnomalia ? styles.nodeLevel1Alert : ""
-                  } ${!groupMatches ? styles.nodeDimmed : ""}`}
-                  style={{
-                    left: `${l1.x}px`,
-                    top: `${l1.y}px`,
-                    width: `${l1.width}px`,
-                    height: `${l1.height}px`,
-                    transform: isHighlighted ? "scale(1.04)" : undefined,
-                    boxShadow: isHighlighted
-                      ? "0 0 0 3px #60a5fa, 0 12px 28px rgba(37, 99, 235, 0.5)"
-                      : undefined,
-                  }}
-                  onDoubleClick={() => handleCenterNode(l1)}
-                  title={`Oficina Emisora: ${l1.group.oficina} (${l1.group.items.length} derivaciones) · Doble clic para centrar`}
-                >
-                  <div className={styles.nodeLevel1Icon}>🏢</div>
-                  <div className={styles.nodeLevel1Text}>
-                    <div className={styles.nodeLevel1Title}>
-                      {l1.group.oficina}
-                    </div>
-                    <div className={styles.nodeLevel1Sub}>
-                      {l1.group.items.length} derivaci
-                      {l1.group.items.length === 1 ? "ón" : "ones"}
-                      {l1.group.tieneAnomalia && " ⚠️"}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* NODOS DE NIVEL 2 (BLANCOS CON BORDE — PASOS/DESTINOS) */}
-            {layout.l2Nodes.map((l2, idx) => {
-              const p = l2.item;
+            {/* 2. NODOS DE PASO: STEP FLOW CARDS (Idénticos a la imagen con oficina final) */}
+            {layout.stepNodes.map((node) => {
+              const p = node.item;
               const itemId = p.id_registro || p.paso;
               const isMatch = isNodeMatching(p);
               const isActive = activeItemId === itemId;
               const isHovered = hoveredPasoId === itemId;
+              const hasChildren = !node.isTerminal;
+
+              const senderUser = p.usuario || "Operador no asignado";
+              const receiverUser =
+                p.usuario_destino ||
+                (p.estado === "PENDIENTE" ? "Por recepcionar" : p.usuario_receptor || "Destinatario");
+              const receiverTime =
+                p.fecha_recepcion
+                  ? `${formatDateTime(p.fecha_recepcion).fecha} ${formatDateTime(p.fecha_recepcion).hora}`
+                  : p.estado === "PENDIENTE"
+                  ? "Pendiente"
+                  : p.tiempo_transcurrido
+                  ? `Δ ${p.tiempo_transcurrido}`
+                  : p.fecha_creacion
+                  ? `${formatDateTime(p.fecha_creacion).fecha} ${formatDateTime(p.fecha_creacion).hora}`
+                  : "-";
+
+              const isDecretado = p.estado?.toUpperCase().includes("DECRET") || (!p.estado && !p.es_anomalo);
+              const isPendiente = p.estado?.toUpperCase().includes("PEND");
+              const isFinalizado =
+                p.estado?.toUpperCase().includes("FINAL") || p.estado?.toUpperCase().includes("RECEP");
 
               return (
                 <div
-                  key={itemId || idx}
-                  className={`${styles.nodeLevel2} ${
-                    p.es_anomalo ? styles.nodeLevel2Anomalo : ""
-                  } ${isActive ? styles.nodeLevel2Active : ""} ${
-                    !isMatch ? styles.nodeDimmed : ""
-                  }`}
+                  key={node.id}
+                  className={`${styles.stepFlowCard} ${
+                    p.es_anomalo ? styles.stepFlowCardAnomalo : ""
+                  } ${isActive ? styles.stepFlowCardActive : ""} ${!isMatch ? styles.nodeDimmed : ""}`}
                   style={{
-                    left: `${l2.x}px`,
-                    top: `${l2.y}px`,
-                    width: `${l2.width}px`,
-                    height: `${l2.height}px`,
-                    transform: isHovered || isActive ? "scale(1.04) translateX(4px)" : undefined,
+                    left: `${node.x}px`,
+                    top: `${node.y}px`,
+                    width: `${node.width}px`,
+                    height: `${node.height}px`,
+                    transform: isHovered || isActive ? "scale(1.02) translateY(-2px)" : undefined,
                   }}
                   onMouseEnter={() => setHoveredPasoId(itemId)}
                   onMouseLeave={() => setHoveredPasoId(null)}
@@ -646,33 +786,185 @@ export default function ArbolTrazabilidad({
                   }}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
-                    handleCenterNode(l2);
+                    handleCenterNode(node);
                   }}
                   title={`Paso #${p.paso}: ${p.oficina_origen} ➔ ${p.oficina_destino} · Clic para inspección`}
                 >
-                  <div className={styles.nodeLevel2Left}>
-                    <span className={styles.stepIndexBadge}>#{p.paso}</span>
-                    <div className={styles.nodeLevel2Content}>
-                      <div className={styles.nodeLevel2Dest}>
-                        ➔ {p.oficina_destino}
+                  {/* Puerto de entrada izquierda */}
+                  <div className={styles.cardPortLeft} />
+
+                  {/* Puerto de salida derecha (si continúa el flujo) */}
+                  {hasChildren && <div className={styles.cardPortRight} />}
+
+                  {/* 1. Header con Icono de Oficina, Nombre y Badge */}
+                  <div className={styles.stepCardHeader}>
+                    <div className={styles.stepCardHeaderLeft}>
+                      <div className={styles.stepCardIconBox}>
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M3 21h18M3 7v14M21 7v14M6 3h12v4H6zM9 11h2v2H9zM13 11h2v2h-2zM9 15h2v2H9zM13 15h2v2h-2z" />
+                        </svg>
                       </div>
-                      <div className={styles.nodeLevel2Meta}>
-                        <span className={styles.metaState}>{p.estado}</span>
-                        <span>·</span>
-                        <span>{p.usuario}</span>
-                        {p.es_bucle && <span>🔁</span>}
-                        {p.es_exterior && <span>🌐</span>}
+                      <div className={styles.stepCardTitleBox}>
+                        <span className={styles.stepCardOfficeTitle} title={p.oficina_destino || p.oficina_origen}>
+                          {p.oficina_destino || p.oficina_origen}
+                        </span>
+                        <span className={styles.stepCardSubTitle}>Paso #{p.paso}</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.stepCardBadgeBox}>
+                      {p.es_bucle && (
+                        <span className={styles.badgeBuclePill} title="Autoenvío o bucle detectado en la misma oficina">
+                          🔄 BUCLE
+                        </span>
+                      )}
+                      {p.es_anomalo ? (
+                        <span className={styles.badgeAnomaloPill}>⚠️ ANOMALÍA</span>
+                      ) : isPendiente ? (
+                        <span className={styles.badgePendientePill}>PENDIENTE</span>
+                      ) : isFinalizado ? (
+                        <span className={styles.badgeFinalizadoPill}>FINALIZADO</span>
+                      ) : (
+                        <span className={styles.badgeDecretadoPill}>{p.estado || "DECRETADO"}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 2. Routing Box (Origen oficina ➔ Destino oficina) */}
+                  <div className={styles.stepRoutingBox}>
+                    <div className={styles.stepRoutingItem}>
+                      <span className={styles.stepRoutingLabel}>Origen oficina</span>
+                      <div className={styles.stepRoutingValPill} title={p.oficina_origen}>
+                        {p.oficina_origen || "-"}
+                      </div>
+                    </div>
+                    <div className={styles.stepRoutingArrow}>➔</div>
+                    <div className={styles.stepRoutingItem}>
+                      <span className={styles.stepRoutingLabel}>Destino oficina</span>
+                      <div className={styles.stepRoutingValPill} title={p.oficina_destino}>
+                        {p.oficina_destino || "-"}
                       </div>
                     </div>
                   </div>
 
-                  <span
-                    className={`${styles.nodeLevel2Badge} ${
-                      p.es_anomalo ? styles.badgeCritical : styles.badgeNormal
-                    }`}
-                  >
-                    {p.es_anomalo ? `⚠️ ${p.score.toFixed(3)}` : `✓ OK`}
-                  </span>
+                  {/* 3. Personnel Box (Remitente y Receptor con Avatares) */}
+                  <div className={styles.stepPersonnelBox}>
+                    {/* Remitente */}
+                    <div className={styles.stepPersonnelItem}>
+                      <div className={styles.stepAvatarTarget} title="Remitente / Emisor">
+                        🎖️
+                      </div>
+                      <div className={styles.stepPersonnelInfo}>
+                        <span className={styles.stepPersonnelName} title={senderUser}>
+                          {senderUser}
+                        </span>
+                        <span className={styles.stepPersonnelTime}>
+                          {p.fecha_creacion
+                            ? `${formatDateTime(p.fecha_creacion).fecha} ${formatDateTime(p.fecha_creacion).hora}`
+                            : "-"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Receptor */}
+                    <div className={styles.stepPersonnelItem}>
+                      <div
+                        className={p.estado === "PENDIENTE" ? styles.stepAvatar : styles.stepAvatarTarget}
+                        title={p.estado === "PENDIENTE" ? "Recepción pendiente" : "Receptor"}
+                      >
+                        {p.estado === "PENDIENTE" ? "⏳" : "👤"}
+                      </div>
+                      <div className={styles.stepPersonnelInfo}>
+                        <span className={styles.stepPersonnelName} title={receiverUser}>
+                          {receiverUser}
+                        </span>
+                        <span className={styles.stepPersonnelTime}>{receiverTime}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Filas de Metadatos (Tags, Observación y Responsable - si existen) */}
+                  {Boolean((p.acciones && p.acciones.length > 0) || p.observacion || p.decreto || p.proveido || p.responsable) && (
+                    <div className={styles.stepMetaRow}>
+                      {/* Tags */}
+                      {p.acciones && p.acciones.length > 0 && (
+                        <div className={styles.stepTagsRow}>
+                          {p.acciones.slice(0, 2).map((act, i) => (
+                            <span key={i} className={styles.miniTag}>
+                              › {act}
+                            </span>
+                          ))}
+                          {p.acciones.length > 2 && (
+                            <span
+                              className={styles.miniTag}
+                              style={{ background: "#f1f5f9", color: "#64748b", borderColor: "#cbd5e1" }}
+                            >
+                              +{p.acciones.length - 2} más
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Observación / Decreto */}
+                      {(p.observacion || p.decreto || p.proveido) && (
+                        <div className={styles.stepObservacionRow}>
+                          <span className={styles.stepObservacionLabel}>OBSERVACIÓN</span>
+                          <div
+                            className={styles.stepObservacionPill}
+                            title={p.observacion || p.decreto || p.proveido}
+                          >
+                            <span>📜</span>
+                            <span>{p.decreto ? `DECRETO ${p.decreto}` : p.observacion || p.proveido}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Responsable */}
+                      {(p.responsable || p.usuario_destino) && (
+                        <div className={styles.stepResponsableRow}>
+                          <span>Responsable:</span>
+                          <strong title={p.responsable || p.usuario_destino}>
+                            {p.responsable || p.usuario_destino}
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 5. Footer con Botón Info e Indicador de Estado / Oficina Final */}
+                  <div className={styles.stepCardFooter}>
+                    <button
+                      className={styles.infoBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectPaso(p);
+                      }}
+                      title="Ver detalles de este movimiento"
+                      type="button"
+                    >
+                      ⓘ
+                    </button>
+
+                    <div className={styles.stepCardFooterStatus}>
+                      {node.isTerminal ? (
+                        <span className={styles.finalOfficeBadge}>
+                          <span>🏁</span>
+                          <span>{isPendiente ? "OFICINA FINAL · PENDIENTE" : "OFICINA FINAL"}</span>
+                        </span>
+                      ) : (
+                        <span className={styles.regularStatusText}>
+                          {p.estado || "DECRETADO"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               );
             })}
@@ -682,29 +974,15 @@ export default function ArbolTrazabilidad({
 
       {/* ================= TOOLBAR FLOTANTE DE ZOOM & CONTROLES ================= */}
       <div className={styles.controlsBar}>
-        <button
-          className={styles.controlBtn}
-          onClick={handleZoomIn}
-          title="Acercar (+ o =)"
-          type="button"
-        >
+        <button className={styles.controlBtn} onClick={handleZoomIn} title="Acercar (+ o =)" type="button">
           ➕
         </button>
 
-        <span
-          className={styles.zoomLabel}
-          onClick={handleResetZoom}
-          title="Restablecer zoom al 100%"
-        >
+        <span className={styles.zoomLabel} onClick={handleResetZoom} title="Restablecer zoom al 100%">
           {Math.round(zoom * 100)}%
         </span>
 
-        <button
-          className={styles.controlBtn}
-          onClick={handleZoomOut}
-          title="Alejar (-)"
-          type="button"
-        >
+        <button className={styles.controlBtn} onClick={handleZoomOut} title="Alejar (-)" type="button">
           ➖
         </button>
 
@@ -737,32 +1015,16 @@ export default function ArbolTrazabilidad({
       >
         <svg className={styles.miniMapSvg} viewBox={`0 0 ${miniWidth} ${miniHeight}`}>
           {/* Nodo Root */}
-          <circle
-            cx={layout.rootNode.x * miniScale}
-            cy={layout.rootNode.centerY * miniScale}
-            r="4.5"
-            fill="#e11d48"
-          />
+          <circle cx={layout.rootNode.x * miniScale} cy={layout.rootNode.centerY * miniScale} r="4.5" fill="#10b981" />
 
-          {/* Nodos L1 */}
-          {layout.l1Nodes.map((l1, i) => (
+          {/* Nodos de Pasos */}
+          {layout.stepNodes.map((node) => (
             <circle
-              key={i}
-              cx={l1.x * miniScale}
-              cy={l1.centerY * miniScale}
+              key={node.id}
+              cx={node.x * miniScale}
+              cy={node.centerY * miniScale}
               r="3.5"
-              fill={l1.group.tieneAnomalia ? "#ef4444" : "#2563eb"}
-            />
-          ))}
-
-          {/* Nodos L2 */}
-          {layout.l2Nodes.map((l2, i) => (
-            <circle
-              key={i}
-              cx={l2.x * miniScale}
-              cy={l2.centerY * miniScale}
-              r="2.5"
-              fill={l2.item.es_anomalo ? "#ef4444" : "#94a3b8"}
+              fill={node.item.es_anomalo ? "#ef4444" : node.isTerminal ? "#d97706" : "#3b82f6"}
             />
           ))}
 
@@ -782,19 +1044,19 @@ export default function ArbolTrazabilidad({
       <div className={styles.legendBar}>
         <div className={styles.legendItem}>
           <div className={`${styles.legendDot} ${styles.legendDotRoot}`} />
-          <span>Doc. Raíz</span>
+          <span>Doc. Origen</span>
         </div>
         <div className={styles.legendItem}>
-          <div className={`${styles.legendDot} ${styles.legendDotL1}`} />
-          <span>Oficina Origen</span>
+          <div className={`${styles.legendDot} ${styles.legendDotStep}`} />
+          <span>Paso Intermedio</span>
         </div>
         <div className={styles.legendItem}>
-          <div className={`${styles.legendDot} ${styles.legendDotL2}`} />
-          <span>Destino Normal</span>
+          <div className={`${styles.legendDot} ${styles.legendDotFinal}`} />
+          <span>Oficina Final</span>
         </div>
         <div className={styles.legendItem}>
           <div className={`${styles.legendDot} ${styles.legendDotAlert}`} />
-          <span>Anomalía Detectada</span>
+          <span>Anomalía</span>
         </div>
       </div>
 
@@ -813,11 +1075,7 @@ export default function ArbolTrazabilidad({
             <h5 className={styles.popoverTitle}>
               <span>📋</span> Paso #{currentSelectedPaso.paso}
             </h5>
-            <button
-              className={styles.popoverClose}
-              onClick={() => handleSelectPaso(null)}
-              type="button"
-            >
+            <button className={styles.popoverClose} onClick={() => handleSelectPaso(null)} type="button">
               ✕
             </button>
           </div>
@@ -841,8 +1099,18 @@ export default function ArbolTrazabilidad({
             </div>
             <div className={styles.popoverRow}>
               <span>Fecha:</span>
-              <strong>{currentSelectedPaso.fecha_creacion}</strong>
+              <strong>
+                {currentSelectedPaso.fecha_creacion
+                  ? `${formatDateTime(currentSelectedPaso.fecha_creacion).fecha} ${formatDateTime(currentSelectedPaso.fecha_creacion).hora}`
+                  : "-"}
+              </strong>
             </div>
+            {currentSelectedPaso.es_bucle && (
+              <div className={styles.popoverRow} style={{ color: "#7c3aed" }}>
+                <span>Alerta:</span>
+                <strong>🔄 Bucle (Misma dependencia)</strong>
+              </div>
+            )}
             <div className={styles.popoverRow}>
               <span>Tiempo delta:</span>
               <strong>{currentSelectedPaso.tiempo_transcurrido || "-"}</strong>
@@ -857,9 +1125,7 @@ export default function ArbolTrazabilidad({
                   fontSize: "0.85rem",
                 }}
               >
-                {currentSelectedPaso.score != null
-                  ? currentSelectedPaso.score.toFixed(4)
-                  : "-"}
+                {currentSelectedPaso.score != null ? currentSelectedPaso.score.toFixed(4) : "-"}
                 {currentSelectedPaso.es_anomalo ? " (⚠️ Anómalo)" : " (Normal)"}
               </strong>
             </div>

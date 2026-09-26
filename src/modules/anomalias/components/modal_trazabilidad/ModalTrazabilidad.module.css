@@ -8,11 +8,11 @@
   background-color: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  z-index: 9999;
+  z-index: 10010;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
   animation: fadeIn 0.22s ease-out;
   overflow-y: auto;
 }
@@ -195,7 +195,7 @@
    BODY CONTENT
    ========================================================================== */
 .body {
-  padding: 1.5rem 1.75rem;
+  padding: 0.8rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -510,80 +510,107 @@
 .stepperContainer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   overflow-x: auto;
-  padding: 0.5rem 0.25rem 0.75rem 0.25rem;
+  padding: 0.85rem 0.5rem 1rem 0.5rem;
   scrollbar-width: thin;
-}
-
-.stepperContainer::-webkit-scrollbar {
-  height: 6px;
-}
-.stepperContainer::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
 }
 
 .stepNode {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  min-width: 140px;
-  max-width: 170px;
+  justify-content: space-between;
+  min-width: 215px;
+  max-width: 265px;
+  min-height: 114px;
   background: #ffffff;
   border: 1.5px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
+  border-radius: 14px;
+  padding: 0.8rem 0.95rem;
   position: relative;
-  text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.15s ease;
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
 .stepNode:hover {
-  transform: translateY(-2px);
-  border-color: #8b1a2b;
-  box-shadow: 0 4px 10px rgba(139, 26, 43, 0.12);
+  transform: translateY(-3px);
+  border-color: #3b82f6;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.14);
 }
 
 .stepNodeAnomalo {
-  border-color: #ef4444;
-  background: #fff5f5;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  border-color: #ef4444 !important;
+  background: linear-gradient(180deg, #fffafa 0%, #fff1f2 100%) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18), 0 3px 10px rgba(239, 68, 68, 0.08) !important;
 }
 
 .stepNodeIndex {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: #64748b;
-  margin-bottom: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.stepIndexTitle {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #1e293b;
 }
 
 .stepNodeOffice {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: #1e293b;
-  line-height: 1.2;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
   word-break: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin: 0.25rem 0 0.45rem 0;
+  flex: 1;
+}
+
+.stepNodeFooterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  border-top: 1px dashed #f1f5f9;
+}
+
+.stepNodeUserMini {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
 .stepNodeState {
   font-size: 0.65rem;
-  font-weight: 600;
-  padding: 0.15rem 0.45rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
   border-radius: 4px;
-  margin-top: 0.4rem;
   background: #f1f5f9;
-  color: #475569;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .stepConnector {
@@ -591,9 +618,9 @@
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  font-size: 1rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
-  padding: 0 0.2rem;
+  padding: 0 0.25rem;
 }
 
 /* ==========================================================================
@@ -760,10 +787,11 @@
 .routeRow {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  background: #f8fafc;
-  padding: 0.65rem 0.85rem;
-  border-radius: 8px;
+  gap: 1.1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1.5px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
   flex-wrap: wrap;
 }
 
@@ -771,30 +799,74 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-width: 180px;
+  min-width: 230px;
+  background: #ffffff;
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.officeBox:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+}
+
+.officeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+  gap: 0.5rem;
 }
 
 .officeRole {
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #94a3b8;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.officeStepBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+
+.officeStepBadgeDest {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
 }
 
 .officeName {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .routeArrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8b1a2b;
-  font-size: 1.1rem;
-  font-weight: 700;
+  color: #2563eb;
+  font-size: 1.35rem;
+  font-weight: 900;
   padding: 0 0.5rem;
   flex-shrink: 0;
 }
@@ -802,26 +874,33 @@
 /* Step Details Grid */
 .detailsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.65rem;
-  font-size: 0.78rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  background: #f8fafc;
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .detailItem {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
 }
 
 .detailLabel {
   font-size: 0.68rem;
-  color: #94a3b8;
-  font-weight: 500;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .detailVal {
-  font-weight: 600;
-  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1e293b;
 }
 
 /* Score Risk Bar */
@@ -958,3 +1037,213 @@
 .footerCloseBtn:hover {
   background: #0f172a;
 }
+
+/* ==========================================================================
+   ENHANCED CUSTODIA & STEPPER PIPELINE STYLES
+   ========================================================================== */
+.continuityBadgeOk {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.continuityBadgeAlert {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.continuityBadgeBranch {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Nodo 0 - Origen Inicial */
+.stepNodeOrigin {
+  background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%) !important;
+  border: 2px solid #10b981 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+}
+
+.originPill {
+  background: #10b981;
+  color: #ffffff;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.stepNodeStateOrigin {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  margin-top: 0.4rem;
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+/* Conector envolvente con tiempo de traspaso */
+.stepConnectorWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+.stepDeltaMini {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.connectorDiscontinuo {
+  color: #f59e0b !important;
+  font-weight: 700;
+  animation: pulseDiscontinuo 1.5s infinite ease-in-out;
+}
+
+.connectorBifurcacion {
+  color: #8b5cf6 !important;
+  font-weight: 700;
+}
+
+@keyframes pulseDiscontinuo {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.stepNodeActive {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25), 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.stateAnomalo {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+/* Banners de Continuidad en Timeline */
+.continuityAlertBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  color: #92400e;
+}
+
+.continuityBranchBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-left: 4px solid #8b5cf6;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  color: #5b21b6;
+}
+
+.routeArrowContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.routeDeltaPill {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.cardHighlighted {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), 0 8px 24px rgba(37, 99, 235, 0.12) !important;
+  transition: all 0.3s ease;
+}
+
+/* Badges de Clasificación Documental */
+.badge {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.badgeSecreto {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.badgeReservado {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #d97706;
+}
+
+.badgeConfidencial {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+}
+
+.badgeComun {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+

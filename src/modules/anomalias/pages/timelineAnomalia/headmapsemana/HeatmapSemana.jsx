@@ -66,10 +66,12 @@ function getHeatColor(count, maxCount) {
 // ============================================================
 // Burbuja personalizada (shape de Scatter)
 // ============================================================
-function BubbleShape({ cx, cy, payload, maxCount }) {
+function BubbleShape({ cx, cy, payload, maxCount, onClick }) {
   const fill = getHeatColor(payload.value, maxCount);
   const ratio = maxCount > 0 ? payload.value / maxCount : 0;
   const r = payload.value === 0 ? 4 : 5 + ratio * 3;
+  const isClickable = payload.value > 0 && typeof onClick === "function";
+
   return (
     <circle
       cx={cx}
@@ -77,9 +79,19 @@ function BubbleShape({ cx, cy, payload, maxCount }) {
       r={r}
       fill={fill}
       stroke={
-        payload.value > 0 ? "rgba(192, 132, 252, 0.2)" : "transparent"
+        payload.value > 0 ? "rgba(192, 132, 252, 0.4)" : "transparent"
       }
-      strokeWidth={payload.value > 0 ? 1 : 0}
+      strokeWidth={payload.value > 0 ? 1.2 : 0}
+      style={{
+        cursor: isClickable ? "pointer" : "default",
+        transition: "all 0.15s ease",
+      }}
+      onClick={(e) => {
+        if (isClickable) {
+          e.stopPropagation();
+          onClick(payload);
+        }
+      }}
     />
   );
 }
@@ -87,12 +99,24 @@ function BubbleShape({ cx, cy, payload, maxCount }) {
 // ============================================================
 // Tooltip personalizado (glassmorphism dark)
 // ============================================================
-function BubbleTooltipContent({ active, payload }) {
+function BubbleTooltipContent({ active, payload, hasClick, onTrigger }) {
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;
   return (
-    <div className={styles.bubbleTooltip}>
+    <div
+      className={styles.bubbleTooltip}
+      style={{
+        cursor: hasClick && data.value > 0 ? "pointer" : "default",
+        pointerEvents: "auto",
+      }}
+      onClick={(e) => {
+        if (hasClick && data.value > 0 && onTrigger) {
+          e.stopPropagation();
+          onTrigger(data);
+        }
+      }}
+    >
       <div className={styles.bubbleTooltipDay}>{data.diaFull}</div>
       <div className={styles.bubbleTooltipHour}>{data.hour}</div>
       <div className={styles.bubbleTooltipCount}>
@@ -101,6 +125,18 @@ function BubbleTooltipContent({ active, payload }) {
           {data.value === 1 ? "anomalía" : "anomalías"}
         </span>
       </div>
+      {hasClick && data.value > 0 && (
+        <div
+          style={{
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            marginTop: "0.35rem",
+            color: "#c084fc",
+          }}
+        >
+          🔍 Clic para inspeccionar
+        </div>
+      )}
     </div>
   );
 }
@@ -108,8 +144,65 @@ function BubbleTooltipContent({ active, payload }) {
 // ============================================================
 // Fila de un día (un ScatterChart)
 // ============================================================
-function DayRow({ dayData, dayLabel, isWeekend, showXTicks, maxCount, domain }) {
+function DayRow({
+  dayData,
+  dayLabel,
+  isWeekend,
+  showXTicks,
+  maxCount,
+  domain,
+  onSelectPunto,
+}) {
   const height = showXTicks ? 80 : 70;
+
+  const handleBubbleClick = (item) => {
+    if (onSelectPunto && item && item.value > 0) {
+      onSelectPunto({
+        tipo: "heatmap",
+        diaFull: item.diaFull,
+        dia_num: item.dia_num,
+        hora: item.hour,
+        hora_num: item.hora_num != null ? item.hora_num : parseInt(item.hour, 10),
+        cantidad: item.value,
+      });
+    }
+  };
+
+  const handleChartClick = (e) => {
+    if (!onSelectPunto || !e) return;
+
+    let item = null;
+
+    // 1. Recharts v2 format
+    if (e.activePayload && e.activePayload.length) {
+      item = e.activePayload[0].payload;
+    }
+
+    // 2. Recharts v3: activeTooltipIndex o activeIndex
+    if (!item) {
+      const rawIdx = e.activeTooltipIndex != null ? e.activeTooltipIndex : e.activeIndex;
+      if (rawIdx != null && rawIdx !== "") {
+        const idx = Number(rawIdx);
+        if (!isNaN(idx) && idx >= 0 && idx < dayData.length) {
+          item = dayData[idx];
+        }
+      }
+    }
+
+    // 3. Recharts v3: activeLabel
+    if (!item && e.activeLabel != null) {
+      const lbl = String(e.activeLabel).trim();
+      item = dayData.find((d) => {
+        const hStr = String(d.hour).trim();
+        return hStr === lbl || hStr.startsWith(lbl);
+      });
+    }
+
+    if (item && item.value > 0) {
+      handleBubbleClick(item);
+    }
+  };
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ScatterChart
@@ -119,6 +212,8 @@ function DayRow({ dayData, dayLabel, isWeekend, showXTicks, maxCount, domain }) 
           bottom: showXTicks ? 5 : 0,
           left: 0,
         }}
+        onClick={handleChartClick}
+        style={{ cursor: onSelectPunto ? "pointer" : "default" }}
       >
         <XAxis
           type="category"
@@ -160,13 +255,28 @@ function DayRow({ dayData, dayLabel, isWeekend, showXTicks, maxCount, domain }) 
         <ZAxis type="number" dataKey="value" domain={domain} range={[80, 600]} />
         <Tooltip
           cursor={{ strokeDasharray: "3 3", stroke: "rgba(192, 132, 252, 0.15)" }}
-          content={<BubbleTooltipContent />}
-          wrapperStyle={{ zIndex: 100 }}
+          content={
+            <BubbleTooltipContent
+              hasClick={Boolean(onSelectPunto)}
+              onTrigger={handleBubbleClick}
+            />
+          }
+          wrapperStyle={{ zIndex: 100, pointerEvents: "auto" }}
         />
         <Scatter
           data={dayData}
           isAnimationActive={false}
-          shape={(props) => <BubbleShape {...props} maxCount={maxCount} />}
+          onClick={(node) => {
+            const p = node?.payload || node;
+            if (p && p.value > 0) handleBubbleClick(p);
+          }}
+          shape={(props) => (
+            <BubbleShape
+              {...props}
+              maxCount={maxCount}
+              onClick={handleBubbleClick}
+            />
+          )}
         />
       </ScatterChart>
     </ResponsiveContainer>
@@ -176,7 +286,7 @@ function DayRow({ dayData, dayLabel, isWeekend, showXTicks, maxCount, domain }) 
 // ============================================================
 // Componente principal
 // ============================================================
-export default function HeatmapSemana({ data = [] }) {
+export default function HeatmapSemana({ data = [], onSelectPunto = null }) {
   const maxCount = useMemo(
     () => Math.max(...data.map((d) => d.cantidad), 1),
     [data]
@@ -196,6 +306,8 @@ export default function HeatmapSemana({ data = [] }) {
         index: 1,
         value: item.cantidad,
         diaFull: DIAS_FULL[item.dia_num],
+        dia_num: item.dia_num,
+        hora_num: item.hora_num,
       });
     });
 
@@ -209,6 +321,8 @@ export default function HeatmapSemana({ data = [] }) {
             index: 1,
             value: 0,
             diaFull: DIAS_FULL[d],
+            dia_num: d,
+            hora_num: parseInt(h, 10),
           });
         }
       });
@@ -233,6 +347,7 @@ export default function HeatmapSemana({ data = [] }) {
             showXTicks={i === 6}
             maxCount={maxCount}
             domain={domain}
+            onSelectPunto={onSelectPunto}
           />
         ))}
       </div>
