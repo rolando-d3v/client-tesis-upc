@@ -17,6 +17,10 @@ import Dashboard4Clasificacion from "../modules/eventos/pages/Dashboard4Clasific
 import Dashboard5Deteccion from "../modules/eventos/pages/Dashboard5Deteccion/Dashboard5Deteccion";
 import Modulo6Perfiles from "../modules/eventos/pages/Modulo6Perfiles/Modulo6Perfiles";
 
+// Incidentes Correlacionados (Opción B)
+import IncidentesPage from "../modules/correlacion/pages/IncidentesPage";
+import IncidenteDetallePage from "../modules/correlacion/pages/IncidenteDetallePage";
+
 
 const NoFount = () => {
   return <div>Fount 404</div>;
@@ -66,6 +70,10 @@ export const router = createBrowserRouter([
           { path: "/eventos/clasificacion", element: <Dashboard4Clasificacion /> },
           { path: "/eventos/deteccion", element: <Dashboard5Deteccion /> },
           { path: "/eventos/perfiles", element: <Modulo6Perfiles /> },
+
+          // Incidentes Correlacionados de Fuga (Opción B)
+          { path: "/incidentes", element: <IncidentesPage /> },
+          { path: "/incidentes/:id", element: <IncidenteDetallePage /> },
         ],
       },
     ],

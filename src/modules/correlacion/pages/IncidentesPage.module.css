@@ -1,0 +1,66 @@
+.page {
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 0.92rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.filterPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.pill {
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.pill:hover {
+  background: #f3f4f6;
+}
+
+.pillActive {
+  background: #7c3aed;
+  color: #ffffff;
+  border-color: #7c3aed;
+}
+
+.pillCritico.pillActive {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.pillAlto.pillActive {
+  background: #ea580c;
+  border-color: #ea580c;
+}

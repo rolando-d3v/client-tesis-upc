@@ -334,14 +334,7 @@ function SeccionRarezaEstadistica({ row }) {
         <span className={styles.xaiBadgeModel}>Modelo: 300 Árboles IF</span>
       </div>
 
-      {/* Banner de factor determinante */}
-      <div className={styles.xaiInsightBanner}>
-        <span className={styles.xaiInsightIcon}>💡</span>
-        <div className={styles.xaiInsightText}>
-          <strong>Diagnóstico Principal del Algoritmo: </strong>
-          <span>{factorDeterminante}</span>
-        </div>
-      </div>
+   
 
       {/* Tabla de Factores y Rareza */}
       <div className={styles.xaiTableWrapper}>
@@ -415,12 +408,6 @@ function SeccionRarezaEstadistica({ row }) {
         </table>
       </div>
 
-      <div className={styles.xaiFooterNote}>
-        <span>📌</span>
-        <span>
-          <strong>Fundamento Metodológico:</strong> En Isolation Forest, las características con frecuencias extremadamente bajas (≤ 0.05%) son particionadas en ramas superficiales con caminos de búsqueda cortos $E(h(x))$, lo que eleva el score hacia el umbral de anomalía crítica (≥ 0.8500).
-        </span>
-      </div>
     </div>
   );
 }

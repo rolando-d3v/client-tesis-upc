@@ -21,6 +21,7 @@ import {
   FaShieldHalved,
   FaBrain,
   FaUserShield,
+  FaTriangleExclamation,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -76,29 +77,32 @@ export default function SidebarAdmin() {
       name: "Por Usuario",
       icon: <FaUsers />,
     },
-    {
-      id: 4,
-      url: "/eventos/temporal",
-      name: "Actividad Temporal",
-      icon: <FaClock />,
-    },
-    {
-      id: 5,
-      url: "/eventos/clasificacion",
-      name: "Clasificación Doc.",
-      icon: <FaShieldHalved />,
-    },
+    // {
+    //   id: 4,
+    //   url: "/eventos/temporal",
+    //   name: "Actividad Temporal",
+    //   icon: <FaClock />,
+    // },
+    // {
+    //   id: 5,
+    //   url: "/eventos/clasificacion",
+    //   name: "Clasificación Doc.",
+    //   icon: <FaShieldHalved />,
+    // },
     {
       id: 6,
       url: "/eventos/deteccion",
       name: "Motor Detección",
       icon: <FaBrain />,
     },
+  ];
+
+  const correlacionLinks = [
     {
-      id: 7,
-      url: "/eventos/perfiles",
-      name: "Perfiles Usuario",
-      icon: <FaUserShield />,
+      id: 20,
+      url: "/incidentes",
+      name: "Incidentes de Fuga",
+      icon: <FaTriangleExclamation />,
     },
   ];
 
@@ -202,6 +206,29 @@ export default function SidebarAdmin() {
             to={link.url}
           >
             <span className={styles.icon}>{link.icon}</span>
+            {link.name}
+          </Link>
+        ))}
+      </div>
+
+      <hr className={styles.divider} />
+
+      <div className={styles.sectionTitle} style={{ color: "#ef4444" }}>
+        Centro de Amenazas (SOC)
+      </div>
+
+      <div className={styles.listUrl}>
+        {correlacionLinks?.map((link) => (
+          <Link
+            key={link.id}
+            className={`${styles.link} ${
+              location.pathname.startsWith(link.url) ? styles.linkActive : ""
+            }`}
+            to={link.url}
+          >
+            <span className={styles.icon} style={{ color: "#ef4444" }}>
+              {link.icon}
+            </span>
             {link.name}
           </Link>
         ))}

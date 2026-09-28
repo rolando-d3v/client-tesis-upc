@@ -1,0 +1,159 @@
+import styles from "./StorylineTimeline.module.css";
+import dayjs from "dayjs";
+import {
+  FaClockRotateLeft,
+  FaEye,
+  FaDownload,
+  FaTrash,
+  FaRoute,
+  FaPenToSquare,
+  FaTriangleExclamation,
+  FaFileLines,
+} from "react-icons/fa6";
+
+const getIcon = (icono, nivel) => {
+  switch (icono) {
+    case "download":
+      return <FaDownload />;
+    case "trash":
+      return <FaTrash />;
+    case "eye_alert":
+      return <FaEye />;
+    case "eye":
+      return <FaEye />;
+    case "route_alert":
+      return <FaTriangleExclamation />;
+    case "route":
+      return <FaRoute />;
+    case "edit":
+      return <FaPenToSquare />;
+    default:
+      return <FaFileLines />;
+  }
+};
+
+const getNodeClass = (nivel) => {
+  switch (nivel?.toLowerCase()) {
+    case "critico":
+      return styles.nodeCritico;
+    case "alto":
+      return styles.nodeAlto;
+    case "medio":
+      return styles.nodeMedio;
+    default:
+      return styles.nodeInfo;
+  }
+};
+
+const getPhaseClass = (fase) => {
+  const f = fase?.toLowerCase() || "";
+  if (f.includes("reconocimiento")) return styles.phaseReconocimiento;
+  if (f.includes("desvío") || f.includes("desvio")) return styles.phaseDesvio;
+  if (f.includes("exfiltración") || f.includes("exfiltracion")) return styles.phaseExfiltracion;
+  if (f.includes("evasión") || f.includes("evasion")) return styles.phaseEvasion;
+  return styles.phaseTransito;
+};
+
+export default function StorylineTimeline({ storyline = [] }) {
+  if (!storyline || storyline.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.title}>
+          <FaClockRotateLeft style={{ color: "#7c3aed" }} />
+          Reconstrucción Cronológica del Incidente (Storyline)
+        </div>
+        <p className={styles.subtitle} style={{ marginTop: "1rem" }}>
+          No se registraron pasos o evidencias cronológicas para esta correlación.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.titleRow}>
+        <div className={styles.title}>
+          <FaClockRotateLeft style={{ color: "#7c3aed" }} />
+          Reconstrucción Cronológica del Incidente (Storyline Auditado)
+        </div>
+        <span style={{ fontSize: "0.82rem", color: "#6b7280", fontWeight: 600 }}>
+          {storyline.length} acciones correlacionadas
+        </span>
+      </div>
+      <p className={styles.subtitle}>
+        Línea de tiempo unificada que evidencia el desvío del documento y las acciones realizadas por el usuario en cada fase de la amenaza.
+      </p>
+
+      <div className={styles.timeline}>
+        {storyline.map((paso, index) => {
+          const dtFormatted = paso.timestamp
+            ? dayjs(paso.timestamp).format("DD/MM/YYYY HH:mm:ss")
+            : "Hora no especificada";
+
+          const meta = paso.metadatos || {};
+
+          return (
+            <div key={index} className={styles.step}>
+              {/* Icono del nodo */}
+              <div className={`${styles.nodeIcon} ${getNodeClass(paso.nivel)}`}>
+                {getIcon(paso.icono, paso.nivel)}
+              </div>
+
+              {/* Tarjeta de evento */}
+              <div className={styles.card}>
+                <div className={styles.stepHeader}>
+                  <div className={styles.headerLeft}>
+                    <span className={`${styles.phaseBadge} ${getPhaseClass(paso.fase)}`}>
+                      {paso.fase || "Pase"}
+                    </span>
+                    <span className={styles.originBadge}>
+                      {paso.origen === "trazabilidad" ? "Trazabilidad" : "Evento Usuario"}
+                    </span>
+                  </div>
+                  <span className={styles.timestamp}>{dtFormatted}</span>
+                </div>
+
+                <div className={styles.stepTitle}>{paso.titulo}</div>
+                <div className={styles.stepDesc}>{paso.descripcion}</div>
+
+                {/* Metadatos adicionales */}
+                <div className={styles.metaRow}>
+                  {meta.usuario && (
+                    <span className={styles.metaPill}>
+                      Usuario: <strong>{meta.usuario}</strong>
+                    </span>
+                  )}
+                  {meta.oficina && (
+                    <span className={styles.metaPill}>
+                      Oficina: {meta.oficina}
+                    </span>
+                  )}
+                  {meta.oficina_origen && meta.oficina_destino && (
+                    <span className={styles.metaPill}>
+                      Ruta: {meta.oficina_origen} → {meta.oficina_destino}
+                    </span>
+                  )}
+                  {meta.estado && (
+                    <span className={styles.metaPill}>
+                      Estado: {meta.estado}
+                    </span>
+                  )}
+                  {meta.fuera_horario && (
+                    <span className={`${styles.metaPill} ${styles.metaAlert}`}>
+                      ⚠️ Fuera de horario laboral
+                    </span>
+                  )}
+                  {meta.peso_mb > 0 && (
+                    <span className={styles.metaPill}>
+                      Archivo: {meta.peso_mb} MB
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
