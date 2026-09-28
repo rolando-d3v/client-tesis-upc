@@ -77,18 +77,18 @@ export default function SidebarAdmin() {
       name: "Por Usuario",
       icon: <FaUsers />,
     },
-    // {
-    //   id: 4,
-    //   url: "/eventos/temporal",
-    //   name: "Actividad Temporal",
-    //   icon: <FaClock />,
-    // },
-    // {
-    //   id: 5,
-    //   url: "/eventos/clasificacion",
-    //   name: "Clasificación Doc.",
-    //   icon: <FaShieldHalved />,
-    // },
+    {
+      id: 4,
+      url: "/eventos/temporal",
+      name: "Actividad Temporal",
+      icon: <FaClock />,
+    },
+    {
+      id: 5,
+      url: "/eventos/clasificacion",
+      name: "Clasificación Doc.",
+      icon: <FaShieldHalved />,
+    },
     {
       id: 6,
       url: "/eventos/deteccion",
@@ -129,49 +129,7 @@ export default function SidebarAdmin() {
         <span>Sistema Predictivo</span>
       </div>
 
-      {/* <hr className={styles.divider} /> */}
-
-      {/* ---- Filtro de Fechas ---- */}
-      {/* <div className={styles.filterSection}>
-        <div className={styles.filterHeader}>
-          <span className={styles.filterTitle}>Filtrar por Fecha</span>
-          {tieneFiltroDeFecha && (
-            <span className={styles.filterBadge}>Activo</span>
-          )}
-        </div>
-
-        <label className={styles.filterLabel} htmlFor="sidebar-fecha-inicio">
-          Desde
-        </label>
-        <input
-          type="date"
-          id="sidebar-fecha-inicio"
-          className={styles.filterInput}
-          value={fechaInicio || ""}
-          onChange={(e) => dispatch(setFechaInicio(e.target.value))}
-        />
-
-        <label className={styles.filterLabel} htmlFor="sidebar-fecha-fin">
-          Hasta
-        </label>
-        <input
-          type="date"
-          id="sidebar-fecha-fin"
-          className={styles.filterInput}
-          value={fechaFin || ""}
-          min={fechaInicio || undefined}
-          onChange={(e) => dispatch(setFechaFin(e.target.value))}
-        />
-
-        <button
-          className={styles.filterBtnTotal}
-          onClick={handleLimpiar}
-          title="Mostrar todos los datos sin filtro de fecha"
-        >
-          <FaEraser />
-          Total
-        </button>
-      </div> */}
+     
 
       <hr className={styles.divider} />
 
