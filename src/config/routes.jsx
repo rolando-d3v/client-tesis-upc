@@ -12,10 +12,10 @@ import CargaAnomalias from "../modules/anomalias/pages/carga_csv_anomalias/Carga
 import CargaCSVEventos from "../modules/eventos/pages/CargaCSVEventos/CargaCSVEventos";
 import Dashboard1Ejecutivo from "../modules/eventos/pages/Dashboard1Ejecutivo/Dashboard1Ejecutivo";
 import Dashboard2Usuarios from "../modules/eventos/pages/Dashboard2Usuarios/Dashboard2Usuarios";
-import Dashboard3Temporal from "../modules/eventos/pages/Dashboard3Temporal/Dashboard3Temporal";
 import Dashboard4Clasificacion from "../modules/eventos/pages/Dashboard4Clasificacion/Dashboard4Clasificacion";
 import Dashboard5Deteccion from "../modules/eventos/pages/Dashboard5Deteccion/Dashboard5Deteccion";
 import Modulo6Perfiles from "../modules/eventos/pages/Modulo6Perfiles/Modulo6Perfiles";
+import MonitoreoEnVivo from "../modules/eventos/pages/MonitoreoEnVivo/MonitoreoEnVivo";
 
 // Incidentes Correlacionados (Opción B)
 import IncidentesPage from "../modules/correlacion/pages/IncidentesPage";
@@ -66,10 +66,10 @@ export const router = createBrowserRouter([
           { path: "/carga_eventos", element: <CargaCSVEventos /> },
           { path: "/eventos/dashboard-ejecutivo", element: <Dashboard1Ejecutivo /> },
           { path: "/eventos/usuarios", element: <Dashboard2Usuarios /> },
-          { path: "/eventos/temporal", element: <Dashboard3Temporal /> },
           { path: "/eventos/clasificacion", element: <Dashboard4Clasificacion /> },
           { path: "/eventos/deteccion", element: <Dashboard5Deteccion /> },
           { path: "/eventos/perfiles", element: <Modulo6Perfiles /> },
+          { path: "/eventos/monitoreo-vivo", element: <MonitoreoEnVivo /> },
 
           // Incidentes Correlacionados de Fuga (Opción B)
           { path: "/incidentes", element: <IncidentesPage /> },

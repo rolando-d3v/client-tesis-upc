@@ -17,11 +17,11 @@ import {
   FaEraser,
   FaFileCsv,
   FaUsers,
-  FaClock,
   FaShieldHalved,
   FaBrain,
   FaUserShield,
   FaTriangleExclamation,
+  FaBolt,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -78,12 +78,6 @@ export default function SidebarAdmin() {
       icon: <FaUsers />,
     },
     {
-      id: 4,
-      url: "/eventos/temporal",
-      name: "Actividad Temporal",
-      icon: <FaClock />,
-    },
-    {
       id: 5,
       url: "/eventos/clasificacion",
       name: "Clasificación Doc.",
@@ -94,6 +88,12 @@ export default function SidebarAdmin() {
       url: "/eventos/deteccion",
       name: "Motor Detección",
       icon: <FaBrain />,
+    },
+    {
+      id: 7,
+      url: "/eventos/monitoreo-vivo",
+      name: "Monitoreo en Vivo",
+      icon: <FaBolt style={{ color: "#38bdf8" }} />,
     },
   ];
 

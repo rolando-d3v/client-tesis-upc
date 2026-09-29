@@ -1,0 +1,173 @@
+.banner {
+  background: #ffffff;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.bannerCritico {
+  border-left: 6px solid #dc2626;
+  background: linear-gradient(90deg, rgba(254, 242, 242, 0.7) 0%, #ffffff 40%);
+}
+
+.bannerAlto {
+  border-left: 6px solid #ea580c;
+  background: linear-gradient(90deg, rgba(255, 247, 237, 0.7) 0%, #ffffff 40%);
+}
+
+.bannerMedio {
+  border-left: 6px solid #d97706;
+  background: linear-gradient(90deg, rgba(254, 252, 232, 0.7) 0%, #ffffff 40%);
+}
+
+.bannerBajo {
+  border-left: 6px solid #16a34a;
+  background: linear-gradient(90deg, rgba(240, 253, 244, 0.7) 0%, #ffffff 40%);
+}
+
+.bannerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.bannerTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.liveDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulseBeacon 1.4s infinite;
+}
+
+@keyframes pulseBeacon {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.dotCritico {
+  background-color: #dc2626;
+  box-shadow: 0 0 8px #dc2626;
+}
+
+.dotAlto {
+  background-color: #ea580c;
+  box-shadow: 0 0 8px #ea580c;
+}
+
+.dotMedio {
+  background-color: #d97706;
+  box-shadow: 0 0 8px #d97706;
+}
+
+.dotBajo {
+  background-color: #16a34a;
+  box-shadow: 0 0 8px #16a34a;
+}
+
+.badgeRiesgo {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badgeCritico {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.badgeAlto {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.badgeMedio {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badgeBajo {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.gridInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.colInfo h5 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.25rem 0;
+  font-weight: 700;
+}
+
+.colInfo p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.motivosRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.chipMotivo {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chipBaseLine {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}

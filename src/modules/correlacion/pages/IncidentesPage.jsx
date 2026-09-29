@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 export default function IncidentesPage() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
   const [filtros, setFiltros] = useState({
     nivel_riesgo: "",
     estado: "",
@@ -18,10 +19,10 @@ export default function IncidentesPage() {
     busqueda: "",
   });
 
-  const { data: resumen, isLoading: loadingResumen } = useResumenSOC();
+  const { data: resumen } = useResumenSOC();
   const { data: incidentesData, isLoading: loadingIncidentes, refetch } = useIncidentes({
     page,
-    page_size: 15,
+    page_size: pageSize,
     ...filtros,
   });
 
@@ -107,10 +108,13 @@ export default function IncidentesPage() {
         data={incidentesData}
         page={page}
         setPage={setPage}
+        pageSize={pageSize}
+        setPageSize={setPageSize}
         filtros={filtros}
         setFiltros={setFiltros}
         onEjecutarCorrelacion={handleEjecutar}
         isExecuting={ejecutarMutation.isPending}
+        isLoading={loadingIncidentes}
       />
     </div>
   );

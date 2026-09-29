@@ -204,3 +204,54 @@ export const useM6Perfiles = () => {
     staleTime: 1000 * 30,
   });
 };
+
+// ============================================================
+// SIMULADOR & FASE ONLINE (STREAMING EN TIEMPO REAL)
+// ============================================================
+
+export const iniciarSimuladorAPI = async (config = { intervalo: 5.0 }) => {
+  const response = await api.post("/eventos/simulador/iniciar", config);
+  return response.data;
+};
+
+export const pausarSimuladorAPI = async () => {
+  const response = await api.post("/eventos/simulador/pausar");
+  return response.data;
+};
+
+export const reanudarSimuladorAPI = async () => {
+  const response = await api.post("/eventos/simulador/reanudar");
+  return response.data;
+};
+
+export const detenerSimuladorAPI = async () => {
+  const response = await api.post("/eventos/simulador/detener");
+  return response.data;
+};
+
+export const getEstadoSimuladorAPI = async () => {
+  const response = await api.get("/eventos/simulador/estado");
+  return response.data;
+};
+
+export const ingestarEventoAPI = async (evento) => {
+  const response = await api.post("/eventos/ingestar-evento", evento);
+  return response.data;
+};
+
+export const cargarCSVSimuladorAPI = async ({ file, intervalo = 5.0, autoIniciar = true }) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("intervalo", String(intervalo));
+  formData.append("auto_iniciar", String(autoIniciar));
+  const response = await api.post("/eventos/simulador/cargar-csv", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+export const useCargarCSVSimulador = () => {
+  return useMutation({ mutationFn: cargarCSVSimuladorAPI });
+};
+
+
