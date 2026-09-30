@@ -7,6 +7,7 @@ import {
   FaClock,
   FaTrash,
   FaGlobe,
+  FaDownload,
 } from "react-icons/fa6";
 
 const getColorByLevel = (nivel) => {
@@ -34,16 +35,22 @@ export default function ScoreGauge({ incidente }) {
   const clasif = (incidente.clasificacion_doc || "").toUpperCase();
   const destino = (incidente.destino_doc || "").toLowerCase();
 
-  // Multiplicadores identificados
+  // Multiplicadores identificados según constantes.py
   const esSecreto = clasif === "SECRETO";
   const esReservado = clasif === "RESERVADO";
   const esExterior = destino === "exterior";
+  const tieneDescarga =
+    incidente.motivos_eventos?.some((m) =>
+      m.codigo?.includes("DESCARGA") || m.codigo?.includes("COPIA")
+    ) || incidente.storyline?.some((s) => s.icono === "download");
   const tieneBorrado = incidente.motivos_eventos?.some((m) =>
     m.codigo?.includes("ELIMINAR")
   );
   const tieneFueraHorario =
     incidente.motivos_eventos?.some((m) => m.codigo?.includes("HORARIO")) ||
     incidente.motivos_trazabilidad?.some((m) => m.codigo?.includes("MADRUGADA"));
+
+  const esAccionCritica = tieneDescarga || tieneBorrado || incidente.storyline?.some((s) => s.fase?.includes("Desvío") || s.fase?.includes("Exfiltración"));
 
   return (
     <div className={styles.card}>
@@ -134,22 +141,27 @@ export default function ScoreGauge({ incidente }) {
         <div className={styles.factorsList}>
           {esSecreto && (
             <span className={styles.factorBadge}>
-              <FaTriangleExclamation /> Clasificación SECRETO (×1.5)
+              <FaTriangleExclamation /> Clasificación SECRETO ({esAccionCritica ? "×1.5" : "×1.15"})
             </span>
           )}
           {esReservado && (
             <span className={styles.factorBadge}>
-              <FaTriangleExclamation /> Clasificación RESERVADO (×1.25)
+              <FaTriangleExclamation /> Clasificación RESERVADO ({esAccionCritica ? "×1.25" : "×1.05"})
             </span>
           )}
-          {esExterior && (
+          {esExterior && esAccionCritica && (
             <span className={styles.factorBadge}>
-              <FaGlobe /> Desvío a Exterior (×1.4)
+              <FaGlobe /> Desvío a Exterior (×1.3)
+            </span>
+          )}
+          {tieneDescarga && (
+            <span className={styles.factorBadge}>
+              <FaDownload /> Descarga / Copia Local (×1.4)
             </span>
           )}
           {tieneFueraHorario && (
             <span className={styles.factorBadge}>
-              <FaClock /> Actividad Fuera de Horario (×1.3)
+              <FaClock /> Actividad Fuera de Horario ({esAccionCritica ? "×1.3" : "×1.15"})
             </span>
           )}
           {tieneBorrado && (
@@ -157,7 +169,7 @@ export default function ScoreGauge({ incidente }) {
               <FaTrash /> Intento de Borrado / Destrucción (×1.2)
             </span>
           )}
-          {!esSecreto && !esReservado && !esExterior && !tieneFueraHorario && !tieneBorrado && (
+          {!esSecreto && !esReservado && !esExterior && !tieneDescarga && !tieneFueraHorario && !tieneBorrado && (
             <span className={`${styles.factorBadge} ${styles.factorNeutral}`}>
               Sin multiplicadores críticos adicionales
             </span>

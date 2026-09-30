@@ -40,6 +40,49 @@ export const postEjecutarCorrelacion = async (data = {}) => {
   return response.data;
 };
 
+export const getReporteIncidente = async (id) => {
+  if (!id) return null;
+  const response = await api.get(`/correlacion/incidentes/${id}/reporte`);
+  return response.data;
+};
+
+export const postNeutralizarUsuario = async ({
+  incidente_id,
+  id_user,
+  nombre_usuario,
+  motivo,
+  responsable = "ANALISTA_SOC",
+}) => {
+  const response = await api.post("/correlacion/neutralizar", {
+    incidente_id,
+    id_user,
+    nombre_usuario,
+    motivo,
+    responsable,
+  });
+  return response.data;
+};
+
+export const postDesbloquearUsuario = async ({
+  id_user,
+  responsable,
+  justificacion,
+  incidente_id,
+}) => {
+  const response = await api.post("/correlacion/desbloquear", {
+    id_user,
+    responsable,
+    justificacion,
+    incidente_id,
+  });
+  return response.data;
+};
+
+export const getAlertasBloqueados = async () => {
+  const response = await api.get("/correlacion/alertas/bloqueados");
+  return response.data;
+};
+
 
 // ============================================================
 // REACT QUERY HOOKS
@@ -93,3 +136,52 @@ export const useEjecutarCorrelacion = () => {
     },
   });
 };
+
+export const useReporteIncidente = (id) => {
+  return useQuery({
+    queryKey: ["reporte_incidente", id],
+    queryFn: () => getReporteIncidente(id),
+    enabled: !!id,
+    staleTime: 1000 * 60,
+  });
+};
+
+export const useAlertasBloqueados = () => {
+  return useQuery({
+    queryKey: ["alertas_bloqueados"],
+    queryFn: getAlertasBloqueados,
+    staleTime: 1000 * 20,
+    refetchInterval: 1000 * 30,
+  });
+};
+
+export const useNeutralizarUsuario = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: postNeutralizarUsuario,
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["incidentes"] });
+      queryClient.invalidateQueries({ queryKey: ["incidente", variables.incidente_id] });
+      queryClient.invalidateQueries({ queryKey: ["reporte_incidente", variables.incidente_id] });
+      queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
+      queryClient.invalidateQueries({ queryKey: ["resumen_soc"] });
+    },
+  });
+};
+
+export const useDesbloquearUsuario = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: postDesbloquearUsuario,
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["incidentes"] });
+      if (variables.incidente_id) {
+        queryClient.invalidateQueries({ queryKey: ["incidente", variables.incidente_id] });
+        queryClient.invalidateQueries({ queryKey: ["reporte_incidente", variables.incidente_id] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
+      queryClient.invalidateQueries({ queryKey: ["resumen_soc"] });
+    },
+  });
+};
+

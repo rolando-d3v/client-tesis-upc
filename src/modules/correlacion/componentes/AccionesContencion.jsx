@@ -1,6 +1,11 @@
 import { useState } from "react";
 import styles from "./AccionesContencion.module.css";
-import { useActualizarEstadoIncidente } from "../../../api/apiCorrelacion";
+import {
+  useActualizarEstadoIncidente,
+  useNeutralizarUsuario,
+  useReporteIncidente,
+} from "../../../api/apiCorrelacion";
+import ModalReportePericial from "./ModalReportePericial";
 import { toast } from "sonner";
 import {
   FaShieldHalved,
@@ -8,6 +13,7 @@ import {
   FaHandcuffs,
   FaCheckDouble,
   FaBan,
+  FaFileContract,
 } from "react-icons/fa6";
 
 const getStatusBadge = (estado) => {
@@ -29,7 +35,10 @@ const getStatusBadge = (estado) => {
 
 export default function AccionesContencion({ incidente }) {
   const [nota, setNota] = useState("");
+  const [showModalReporte, setShowModalReporte] = useState(false);
   const updateMutation = useActualizarEstadoIncidente();
+  const neutralizarMutation = useNeutralizarUsuario();
+  const { data: reporteData } = useReporteIncidente(incidente?.id);
 
   if (!incidente) return null;
 
@@ -47,71 +56,132 @@ export default function AccionesContencion({ incidente }) {
     }
   };
 
+  const handleNeutralizar = async () => {
+    const confirmacion = window.confirm(
+      `¿Confirmar NEUTRALIZACIÓN INMEDIATA (bloqueo preventivo de credenciales) para el usuario ${incidente.nombre_usuario || "ID " + incidente.id_user}?`
+    );
+    if (!confirmacion) return;
+
+    try {
+      const motivoDefecto =
+        nota.trim() ||
+        `Neutralización preventiva inmediata por detección de amenaza de fuga en Incidente #${incidente.id} (Score: ${Math.round(
+          (incidente.score_correlacion || 0) * 100
+        )}%)`;
+
+      const res = await neutralizarMutation.mutateAsync({
+        incidente_id: incidente.id,
+        id_user: incidente.id_user,
+        nombre_usuario: incidente.nombre_usuario || "Usuario",
+        motivo: motivoDefecto,
+        responsable: "ANALISTA_SOC",
+      });
+
+      toast.success(
+        res?.mensaje || "Cuenta de usuario neutralizada preventivamente con éxito."
+      );
+      setNota("");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.detail || "Error al ejecutar neutralización de cuenta."
+      );
+    }
+  };
+
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
-        <div className={styles.title}>
-          <FaShieldHalved style={{ color: "#7c3aed" }} />
-          Gestión de Respuesta a Incidentes (SOC / CISO)
+    <>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <div className={styles.title}>
+            <FaShieldHalved style={{ color: "#7c3aed" }} />
+            Gestión de Respuesta a Incidentes (SOC / CISO)
+          </div>
+          <div className={styles.statusWrapper}>
+            <span>Estado actual:</span>
+            {getStatusBadge(incidente.estado)}
+          </div>
         </div>
-        <div className={styles.statusWrapper}>
-          <span>Estado actual:</span>
-          {getStatusBadge(incidente.estado)}
+
+        <div className={styles.form}>
+          <label className={styles.label} htmlFor="nota-analista">
+            Nota u orden de acción del analista SOC:
+          </label>
+          <textarea
+            id="nota-analista"
+            className={styles.textarea}
+            placeholder="Ej: Se coordinó con Mesa de Ayuda el bloqueo preventivo de credenciales del usuario y aislamiento del documento..."
+            value={nota}
+            onChange={(e) => setNota(e.target.value)}
+          />
+
+          <div className={styles.btnGroup}>
+            <button
+              className={`${styles.btn} ${styles.btnInvestigar}`}
+              disabled={updateMutation.isPending || incidente.estado === "en_investigacion"}
+              onClick={() => handleCambiarEstado("en_investigacion")}
+            >
+              <FaMagnifyingGlass /> Iniciar Investigación
+            </button>
+
+            <button
+              className={`${styles.btn} ${styles.btnContener}`}
+              disabled={updateMutation.isPending || incidente.estado === "contenido"}
+              onClick={() => handleCambiarEstado("contenido")}
+            >
+              <FaHandcuffs /> Contener Amenaza
+            </button>
+
+            <button
+              className={`${styles.btn} ${styles.btnMitigar}`}
+              disabled={updateMutation.isPending || incidente.estado === "mitigado"}
+              onClick={() => handleCambiarEstado("mitigado")}
+            >
+              <FaCheckDouble /> Marcar Mitigado
+            </button>
+
+            <button
+              className={`${styles.btn} ${styles.btnDescartar}`}
+              disabled={updateMutation.isPending || incidente.estado === "falso_positivo"}
+              onClick={() => handleCambiarEstado("falso_positivo")}
+            >
+              <FaBan /> Descartar (Falso Positivo)
+            </button>
+
+            {/* Acción Crítica: Neutralización / Bloqueo Inmediato */}
+            <button
+              className={`${styles.btn} ${styles.btnNeutralizar}`}
+              disabled={neutralizarMutation.isPending}
+              onClick={handleNeutralizar}
+              title="Ejecuta la neutralización preventiva de la cuenta del usuario en el sistema"
+            >
+              <FaBan /> Bloquear Cuenta (Neutralizar)
+            </button>
+
+            {/* Acción Forense: Dictamen Pericial */}
+            <button
+              className={`${styles.btn} ${styles.btnReporte}`}
+              onClick={() => setShowModalReporte(true)}
+              title="Ver el informe pericial forense completo del incidente"
+            >
+              <FaFileContract /> Ver Dictamen Pericial
+            </button>
+          </div>
         </div>
+
+        {incidente.accion_tomada && (
+          <div className={styles.accionAnterior}>
+            <strong>Última acción registrada:</strong> {incidente.accion_tomada}
+          </div>
+        )}
       </div>
 
-      <div className={styles.form}>
-        <label className={styles.label} htmlFor="nota-analista">
-          Nota u orden de acción del analista SOC:
-        </label>
-        <textarea
-          id="nota-analista"
-          className={styles.textarea}
-          placeholder="Ej: Se coordinó con Mesa de Ayuda el bloqueo preventivo de credenciales del usuario y aislamiento del documento..."
-          value={nota}
-          onChange={(e) => setNota(e.target.value)}
+      {/* Modal Dictamen Pericial Forense */}
+      {showModalReporte && (
+        <ModalReportePericial
+          reporte={reporteData}
+          onClose={() => setShowModalReporte(false)}
         />
-
-        <div className={styles.btnGroup}>
-          <button
-            className={`${styles.btn} ${styles.btnInvestigar}`}
-            disabled={updateMutation.isPending || incidente.estado === "en_investigacion"}
-            onClick={() => handleCambiarEstado("en_investigacion")}
-          >
-            <FaMagnifyingGlass /> Iniciar Investigación
-          </button>
-
-          <button
-            className={`${styles.btn} ${styles.btnContener}`}
-            disabled={updateMutation.isPending || incidente.estado === "contenido"}
-            onClick={() => handleCambiarEstado("contenido")}
-          >
-            <FaHandcuffs /> Contener Amenaza
-          </button>
-
-          <button
-            className={`${styles.btn} ${styles.btnMitigar}`}
-            disabled={updateMutation.isPending || incidente.estado === "mitigado"}
-            onClick={() => handleCambiarEstado("mitigado")}
-          >
-            <FaCheckDouble /> Marcar Mitigado
-          </button>
-
-          <button
-            className={`${styles.btn} ${styles.btnDescartar}`}
-            disabled={updateMutation.isPending || incidente.estado === "falso_positivo"}
-            onClick={() => handleCambiarEstado("falso_positivo")}
-          >
-            <FaBan /> Descartar (Falso Positivo)
-          </button>
-        </div>
-      </div>
-
-      {incidente.accion_tomada && (
-        <div className={styles.accionAnterior}>
-          <strong>Última acción registrada:</strong> {incidente.accion_tomada}
-        </div>
       )}
-    </div>
+    </>
   );
 }

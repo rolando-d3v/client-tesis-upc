@@ -6,8 +6,10 @@ import {
   useIncidentes,
   useResumenSOC,
   useEjecutarCorrelacion,
+  useAlertasBloqueados,
 } from "../../../api/apiCorrelacion";
 import { toast } from "sonner";
+import { FaShieldHalved } from "react-icons/fa6";
 
 export default function IncidentesPage() {
   const [page, setPage] = useState(1);
@@ -20,6 +22,7 @@ export default function IncidentesPage() {
   });
 
   const { data: resumen } = useResumenSOC();
+  const { data: alertasBloqueo } = useAlertasBloqueados();
   const { data: incidentesData, isLoading: loadingIncidentes, refetch } = useIncidentes({
     page,
     page_size: pageSize,
@@ -63,6 +66,20 @@ export default function IncidentesPage() {
           </p>
         </div>
       </div>
+
+      {/* Banner de Contención Activa / Cuentas Neutralizadas */}
+      {alertasBloqueo?.total_cuentas_bloqueadas > 0 && (
+        <div className={styles.alertBanner}>
+          <FaShieldHalved className={styles.alertIcon} />
+          <div>
+            <strong>Centro de Contención SOC Activo:</strong> Se registran{" "}
+            <span className={styles.alertCount}>
+              {alertasBloqueo.total_cuentas_bloqueadas}
+            </span>{" "}
+            cuentas neutralizadas preventivamente ante intentos críticos de fuga de información.
+          </div>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <KPICardsSOC resumen={resumen} onFilterClick={handleQuickFilter} />

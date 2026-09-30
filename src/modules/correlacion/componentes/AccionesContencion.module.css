@@ -161,6 +161,24 @@
   background: #e5e7eb;
 }
 
+.btnNeutralizar {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #b91c1c;
+}
+.btnNeutralizar:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.btnReporte {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0369a1;
+}
+.btnReporte:hover:not(:disabled) {
+  background: #0369a1;
+}
+
 .accionAnterior {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
