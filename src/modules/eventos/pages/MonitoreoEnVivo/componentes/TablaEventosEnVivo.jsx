@@ -25,6 +25,7 @@ import {
   FaRotateLeft,
   FaTriangleExclamation,
 } from "react-icons/fa6";
+import RoleBadge from "../../../../../components/RoleBadge";
 
 const getClasifClass = (clasif) => {
   switch (clasif?.toUpperCase()) {
@@ -88,6 +89,7 @@ export default function TablaEventosEnVivo({
       nivel_riesgo: "",
       clasificacion: "",
       tipo_evento: "",
+      rol: "",
     });
   };
 
@@ -95,7 +97,8 @@ export default function TablaEventosEnVivo({
     filtros.busqueda ||
       filtros.nivel_riesgo ||
       filtros.clasificacion ||
-      filtros.tipo_evento
+      filtros.tipo_evento ||
+      filtros.rol
   );
 
   // Filtrado de eventos en memoria para el TanStack Table
@@ -109,7 +112,8 @@ export default function TablaEventosEnVivo({
         const matchesOficina = ev.name_oficina?.toLowerCase().includes(q);
         const matchesTipo = ev.name_tipo_evento?.toLowerCase().includes(q);
         const matchesId = String(ev.id_evento).includes(q);
-        if (!matchesUser && !matchesDoc && !matchesOficina && !matchesTipo && !matchesId) {
+        const matchesRole = (ev.name_role || ev.rol || ev.role)?.toLowerCase().includes(q);
+        if (!matchesUser && !matchesDoc && !matchesOficina && !matchesTipo && !matchesId && !matchesRole) {
           return false;
         }
       }
@@ -140,6 +144,14 @@ export default function TablaEventosEnVivo({
       // Filtro tipo de evento
       if (filtros.tipo_evento) {
         if (ev.name_tipo_evento?.toUpperCase() !== filtros.tipo_evento.toUpperCase()) {
+          return false;
+        }
+      }
+
+      // Filtro rol institucional
+      if (filtros.rol) {
+        const evRol = (ev.name_role || ev.rol || ev.role || "USER").toUpperCase();
+        if (evRol !== filtros.rol.toUpperCase()) {
           return false;
         }
       }
@@ -220,7 +232,7 @@ export default function TablaEventosEnVivo({
         id: "usuario",
         accessorKey: "name_user",
         header: "Usuario & Oficina",
-        meta: { align: "left", width: "19%" },
+        meta: { align: "left", width: "20%" },
         cell: ({ row }) => {
           const ev = row.original;
           const initial = ev.name_user
@@ -233,9 +245,12 @@ export default function TablaEventosEnVivo({
                 <span className={styles.userName} title={ev.name_user}>
                   {ev.name_user || "Usuario Desconocido"}
                 </span>
-                <span className={styles.userId}>
-                  {ev.name_oficina || `ID: ${ev.id_user}`}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: 2, flexWrap: "wrap" }}>
+                  <RoleBadge role={ev.name_role || ev.rol || ev.role} size="small" />
+                  <span className={styles.userId}>
+                    {ev.name_oficina || `ID: ${ev.id_user}`}
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -476,6 +491,21 @@ export default function TablaEventosEnVivo({
             <option value="EDITAR">EDITAR</option>
             <option value="ELIMINAR">ELIMINAR</option>
             <option value="GUARDAR_COPIA">GUARDAR_COPIA</option>
+          </select>
+
+          {/* Rol Institucional */}
+          <select
+            className={styles.select}
+            value={filtros.rol || ""}
+            onChange={(e) => handleFilterChange("rol", e.target.value)}
+          >
+            <option value="">Todos los Roles</option>
+            <option value="EJECUTIVO">👑 EJECUTIVO</option>
+            <option value="JEFE_SD_DPT">💼 JEFE SD/DPT</option>
+            <option value="JEFE_UU">🛡️ JEFE UU</option>
+            <option value="CENTRO DE MENSAJES">✉️ CENTRO DE MENSAJES</option>
+            <option value="USER">👤 USER</option>
+            <option value="USER 2">👤 USER 2</option>
           </select>
 
           {/* Limpiar Filtros */}

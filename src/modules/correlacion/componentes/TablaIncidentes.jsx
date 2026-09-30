@@ -26,6 +26,7 @@ import {
   FaRotateLeft,
   FaClock,
 } from "react-icons/fa6";
+import RoleBadge from "../../../components/RoleBadge";
 
 const getClasifClass = (clasif) => {
   switch (clasif?.toUpperCase()) {
@@ -201,7 +202,7 @@ export default function TablaIncidentes({
         id: "usuario",
         accessorKey: "nombre_usuario",
         header: "Usuario Involucrado",
-        meta: { align: "left", width: "18%" },
+        meta: { align: "left", width: "19%" },
         cell: ({ row }) => {
           const inc = row.original;
           const initial = inc.nombre_usuario
@@ -214,7 +215,10 @@ export default function TablaIncidentes({
                 <span className={styles.userName} title={inc.nombre_usuario}>
                   {inc.nombre_usuario || "Desconocido"}
                 </span>
-                <span className={styles.userId}>ID: {inc.id_user}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: 2, flexWrap: "wrap" }}>
+                  <RoleBadge role={inc.name_role || inc.rol || inc.role} size="small" />
+                  <span className={styles.userId}>ID: {inc.id_user}</span>
+                </div>
               </div>
             </div>
           );

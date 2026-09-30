@@ -1,5 +1,6 @@
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis } from "recharts";
 import styles from "./ScatterDeteccion.module.css";
+import RoleBadge from "../../../../components/RoleBadge";
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
@@ -7,6 +8,9 @@ const CustomTooltip = ({ active, payload }) => {
   return (
     <div className={styles.tooltip}>
       <p><strong>{d.nombre}</strong></p>
+      <div style={{ margin: "0.25rem 0" }}>
+        <RoleBadge role={d.rol || d.role} size="small" />
+      </div>
       <p>Score IF: {d.score_if?.toFixed(4)}</p>
       <p>Total MB: {d.total_mb?.toFixed(1)}</p>
       <p>Eventos: {d.n_eventos}</p>

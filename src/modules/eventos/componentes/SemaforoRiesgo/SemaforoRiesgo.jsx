@@ -1,4 +1,5 @@
 import styles from "./SemaforoRiesgo.module.css";
+import RoleBadge from "../../../../components/RoleBadge";
 
 const NIVEL_CONFIG = {
   critico: { emoji: "🔴", color: "var(--color-critico, #ef4444)", label: "Crítico" },
@@ -18,8 +19,11 @@ export default function SemaforoRiesgo({ data = [] }) {
           return (
             <div key={user.user_id} className={styles.item} style={{ borderLeftColor: nivel.color }}>
               <div className={styles.header}>
-                <span className={styles.emoji}>{nivel.emoji}</span>
-                <span className={styles.nombre}>{user.nombre}</span>
+                <div className={styles.headerUser}>
+                  <span className={styles.emoji}>{nivel.emoji}</span>
+                  <span className={styles.nombre} title={user.nombre}>{user.nombre}</span>
+                </div>
+                <RoleBadge role={user.rol || user.role} size="small" />
               </div>
               <div className={styles.details}>
                 <span className={styles.oficina}>{user.oficina}</span>

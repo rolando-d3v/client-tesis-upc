@@ -38,6 +38,9 @@
   margin-bottom: 1.25rem; 
 }
 .userBtn { 
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.35rem 0.75rem; 
   border-radius: 8px; 
   border: 1px solid var(--border); 

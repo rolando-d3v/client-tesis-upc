@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import styles from "./TablaUsuarios.module.css";
 import TimelineUsuario from "../TimelineUsuario/TimelineUsuario";
+import RoleBadge from "../../../../components/RoleBadge";
 import { useD2UsuarioDetalle } from "../../../../api/apiEventos";
 
 const NIVEL_EMOJI = { critico: "🔴", alto: "🟠", medio: "🟡", bajo: "🟢" };
@@ -9,6 +10,7 @@ const PAGE_SIZE = 10;
 export default function TablaUsuarios({ usuarios = [] }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [page, setPage] = useState(1);
+  const [filtroRol, setFiltroRol] = useState("");
   const detalleQuery = useD2UsuarioDetalle(selectedUser);
 
   const closeModal = useCallback(() => setSelectedUser(null), []);
@@ -20,26 +22,71 @@ export default function TablaUsuarios({ usuarios = [] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedUser, closeModal]);
 
-  const totalPages = Math.max(1, Math.ceil(usuarios.length / PAGE_SIZE));
+  // Lista de roles únicos presentes en los datos
+  const availableRoles = useMemo(() => {
+    const roles = new Set();
+    usuarios.forEach((u) => {
+      const r = u.rol || u.role || u.name_role;
+      if (r) roles.add(r.trim());
+    });
+    return Array.from(roles).sort();
+  }, [usuarios]);
+
+  // Filtrado por rol
+  const filteredUsuarios = useMemo(() => {
+    if (!filtroRol) return usuarios;
+    return usuarios.filter((u) => {
+      const r = (u.rol || u.role || u.name_role || "").trim().toUpperCase();
+      return r === filtroRol.trim().toUpperCase();
+    });
+  }, [usuarios, filtroRol]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsuarios.length / PAGE_SIZE));
   const paginated = useMemo(
-    () => usuarios.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [usuarios, page]
+    () => filteredUsuarios.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredUsuarios, page]
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [filtroRol]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [totalPages, page]);
 
-  const selectedNombre = selectedUser
-    ? usuarios.find((u) => u.user_id === selectedUser)?.nombre
-    : "";
+  const selectedUserObj = useMemo(
+    () => (selectedUser ? usuarios.find((u) => u.user_id === selectedUser) : null),
+    [selectedUser, usuarios]
+  );
+  const selectedNombre = selectedUserObj?.nombre || "";
 
   if (!usuarios || usuarios.length === 0) return <p className={styles.empty}>Sin datos de usuarios</p>;
 
   return (
     <div className={styles.container}>
       <div className={styles.tableHeader}>
-        <span className={styles.tableCount}>{usuarios.length} usuarios</span>
+        <div className={styles.filterGroup}>
+          <label htmlFor="filtro-rol-usuarios" style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>
+            Filtrar por Rol:
+          </label>
+          <select
+            id="filtro-rol-usuarios"
+            className={styles.roleSelect}
+            value={filtroRol}
+            onChange={(e) => setFiltroRol(e.target.value)}
+          >
+            <option value="">Todos los roles ({usuarios.length})</option>
+            {availableRoles.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+        <span className={styles.tableCount}>
+          Mostrando {filteredUsuarios.length} de {usuarios.length} usuarios
+        </span>
       </div>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -48,6 +95,7 @@ export default function TablaUsuarios({ usuarios = [] }) {
               <th className={styles.thNum}>#</th>
               <th>Riesgo</th>
               <th>Usuario</th>
+              <th>Rol</th>
               <th>Oficina</th>
               <th>Eventos</th>
               <th>Secretos</th>
@@ -69,7 +117,10 @@ export default function TablaUsuarios({ usuarios = [] }) {
                   </div>
                 </td>
                 <td className={styles.nombre}>{u.nombre}</td>
-                <td>{u.oficina} </td>
+                <td>
+                  <RoleBadge role={u.rol || u.role || u.name_role} size="small" />
+                </td>
+                <td>{u.oficina}</td>
                 <td className={styles.td_item}>{u.n_eventos?.toLocaleString()}</td>
                 <td className={styles.td_item}>{u.n_docs_secreto}</td>
                 <td className={styles.td_item}>{u.n_descargas}</td>
@@ -123,10 +174,13 @@ export default function TablaUsuarios({ usuarios = [] }) {
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <span className={styles.modalTitle}>
-                📋 Timeline de usuario:{" "}
-                <span className={styles.modalTitleAccent}>{selectedNombre}</span>
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+                <span className={styles.modalTitle}>
+                  📋 Timeline de usuario:{" "}
+                  <span className={styles.modalTitleAccent}>{selectedNombre}</span>
+                </span>
+                <RoleBadge role={selectedUserObj?.rol || selectedUserObj?.role || selectedUserObj?.name_role} size="small" />
+              </div>
               <button className={styles.modalCloseBtn} onClick={closeModal}>
                 ✕
               </button>

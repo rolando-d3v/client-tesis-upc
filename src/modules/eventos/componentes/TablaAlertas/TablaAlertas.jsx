@@ -1,4 +1,5 @@
 import styles from "./TablaAlertas.module.css";
+import RoleBadge from "../../../../components/RoleBadge";
 
 const NIVEL_EMOJI = { critico: "🔴", alto: "🟠", medio: "🟡", bajo: "🟢" };
 
@@ -10,7 +11,14 @@ export default function TablaAlertas({ data = [] }) {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Estado</th><th>Usuario</th><th>Oficina</th><th>Score</th><th>Eventos</th><th>Anómalos</th><th>Docs Secreto</th>
+            <th>Estado</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Oficina</th>
+            <th>Score</th>
+            <th>Eventos</th>
+            <th>Anómalos</th>
+            <th>Docs Secreto</th>
           </tr>
         </thead>
         <tbody>
@@ -18,6 +26,9 @@ export default function TablaAlertas({ data = [] }) {
             <tr key={i} className={styles[`row_${alerta.nivel_riesgo}`]}>
               <td>{NIVEL_EMOJI[alerta.nivel_riesgo]} {alerta.nivel_riesgo?.toUpperCase()}</td>
               <td className={styles.nombre}>{alerta.nombre}</td>
+              <td>
+                <RoleBadge role={alerta.rol || alerta.role || alerta.name_role} size="small" />
+              </td>
               <td>{alerta.oficina}</td>
               <td className={styles.score}>{alerta.score_riesgo?.toFixed(1)}</td>
               <td>{alerta.n_eventos}</td>

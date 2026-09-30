@@ -1,6 +1,7 @@
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { useState } from "react";
 import styles from "./RadarRiesgo.module.css";
+import RoleBadge from "../../../../components/RoleBadge";
 
 const COLORES = ["#ff0404ff", "#22c55e", "#eab308", "#38bdf8", "#c084fc", "#818cf8", "#f472b6"];
 
@@ -31,7 +32,9 @@ export default function RadarRiesgo({ usuarios = [] }) {
           <button key={idx} className={`${styles.userBtn} ${selectedUsers.includes(idx) ? styles.active : ""}`}
             style={selectedUsers.includes(idx) ? { borderColor: COLORES[selectedUsers.indexOf(idx)] } : {}}
             onClick={() => toggleUser(idx)}>
-            {u.nombre?.split(" ")[0]} ({u.score_riesgo?.toFixed(0)})
+            <span>{u.nombre?.split(" ")[0]}</span>
+            <RoleBadge role={u.rol || u.role} size="small" showIcon={false} />
+            <span style={{ opacity: 0.75, fontSize: "0.72rem" }}>({u.score_riesgo?.toFixed(0)})</span>
           </button>
         ))}
       </div>

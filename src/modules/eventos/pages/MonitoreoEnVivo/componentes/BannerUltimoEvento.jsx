@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./BannerUltimoEvento.module.css";
+import RoleBadge from "../../../../../components/RoleBadge";
 import {
   FaUser,
   FaFileLines,
@@ -85,9 +86,11 @@ export default function BannerUltimoEvento({ evento }) {
       <div className={styles.gridInfo}>
         <div className={styles.colInfo}>
           <h5>Usuario & Dependencia</h5>
-          <p>
-            <FaUser style={{ marginRight: "0.4rem", color: "#7c3aed" }} />
-            {evento.name_user} ({evento.name_oficina})
+          <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+            <FaUser style={{ color: "#7c3aed" }} />
+            <span>{evento.name_user}</span>
+            <RoleBadge role={evento.name_role || evento.rol || evento.role} size="small" />
+            <span style={{ color: "#6b7280" }}>({evento.name_oficina})</span>
           </p>
         </div>
 

@@ -115,6 +115,10 @@
 .rankingName {
   color: var(--text-primary);
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
 }
 
 .rankingValue {

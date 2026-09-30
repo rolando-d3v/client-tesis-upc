@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import styles from "./dash2.module.css";
 import TablaUsuarios from "../../componentes/TablaUsuarios/TablaUsuarios";
+import RoleBadge from "../../../../components/RoleBadge";
 import { useD2Usuarios } from "../../../../api/apiEventos";
 
 export default function Dashboard2Usuarios() {
@@ -50,7 +51,8 @@ export default function Dashboard2Usuarios() {
                     {data.rankings[key]?.map((item, i) => (
                       <div key={i} className={styles.rankingItem}>
                         <span className={styles.rankingName}>
-                          {i + 1}. {item.nombre}
+                          <span>{i + 1}. {item.nombre}</span>
+                          <RoleBadge role={item.rol || item.role} size="small" />
                         </span>
                         <span className={styles.rankingValue}>
                           {typeof item.valor === "number" ? item.valor.toLocaleString() : item.valor}

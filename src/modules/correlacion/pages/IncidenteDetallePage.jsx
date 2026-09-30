@@ -6,6 +6,7 @@ import ScoreGauge from "../componentes/ScoreGauge";
 import MotivosDesglose from "../componentes/MotivosDesglose";
 import StorylineTimeline from "../componentes/StorylineTimeline";
 import AccionesContencion from "../componentes/AccionesContencion";
+import RoleBadge from "../../../components/RoleBadge";
 import {
   FaArrowLeft,
   FaFileLines,
@@ -118,6 +119,12 @@ export default function IncidenteDetallePage() {
           <div className={styles.entityRow}>
             <span className={styles.entityLabel}>Nombre Completo:</span>
             <span className={styles.entityVal}>{incidente.nombre_usuario || "Desconocido"}</span>
+          </div>
+          <div className={styles.entityRow}>
+            <span className={styles.entityLabel}>Rol Institucional:</span>
+            <span className={styles.entityVal}>
+              <RoleBadge role={incidente.name_role || incidente.rol || incidente.role} size="medium" />
+            </span>
           </div>
           <div className={styles.entityRow}>
             <span className={styles.entityLabel}>ID / DNI Usuario:</span>

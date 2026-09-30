@@ -11,6 +11,7 @@ import {
   FaBan,
   FaCircleCheck,
 } from "react-icons/fa6";
+import RoleBadge from "../../../components/RoleBadge";
 
 export default function ModalReportePericial({ reporte, onClose }) {
   if (!reporte) return null;
@@ -179,7 +180,9 @@ export default function ModalReportePericial({ reporte, onClose }) {
                 </div>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Rol Institucional:</span>
-                  <span className={styles.infoVal}>{usr.rol || "USER"}</span>
+                  <span className={styles.infoVal}>
+                    <RoleBadge role={usr.rol || usr.name_role || "USER"} size="medium" />
+                  </span>
                 </div>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Oficina / Unidad:</span>
@@ -223,7 +226,9 @@ export default function ModalReportePericial({ reporte, onClose }) {
                         </td>
                         <td style={{ fontWeight: 600 }}>{item.usuario}</td>
                         <td>{item.id_user}</td>
-                        <td>{item.rol}</td>
+                        <td>
+                          <RoleBadge role={item.rol || item.name_role || "USER"} size="small" />
+                        </td>
                         <td>{item.oficina}</td>
                         <td>
                           {item.fuera_horario ? (

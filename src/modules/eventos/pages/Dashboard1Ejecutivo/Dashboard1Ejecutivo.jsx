@@ -4,6 +4,7 @@ import CardResumenEventos from "../../componentes/CardResumenEventos/CardResumen
 import SemaforoRiesgo from "../../componentes/SemaforoRiesgo/SemaforoRiesgo";
 import TopRiesgo from "../../componentes/TopRiesgo/TopRiesgo";
 import TablaAlertas from "../../componentes/TablaAlertas/TablaAlertas";
+import RoleBadge from "../../../../components/RoleBadge";
 import { useD1Resumen, useD1Semaforo, useD1TopRiesgo, useD1Alertas, useD1Timeline } from "../../../../api/apiEventos";
 import { FaRobot, FaTrafficLight, FaExclamationTriangle, FaStopwatch } from "react-icons/fa";
 
@@ -152,6 +153,7 @@ export default function Dashboard1Ejecutivo() {
                       <th>Fecha</th>
                       <th>Hora</th>
                       <th>Usuario</th>
+                      <th>Rol</th>
                       <th>Evento</th>
                       <th>Clasificación</th>
                       <th>Score</th>
@@ -164,6 +166,9 @@ export default function Dashboard1Ejecutivo() {
                         <td className={styles.timelineTdDate}>{ev.fecha}</td>
                         <td className={styles.timelineTdTime}>{ev.hora}</td>
                         <td className={styles.timelineTdUser}>{ev.usuario}</td>
+                        <td>
+                          <RoleBadge role={ev.rol || ev.role || ev.name_role} size="small" />
+                        </td>
                         <td className={styles.timelineTdEvent}>{ev.evento}</td>
                         <td className={styles.timelineTdClasificacion}>
                           <span className={`${styles.clasificacionBadge} ${getClasificacionClass(ev.clasificacion)}`}>

@@ -1,4 +1,5 @@
 import styles from "./TablaFueraHorario.module.css";
+import RoleBadge from "../../../../components/RoleBadge";
 
 export default function TablaFueraHorario({ data = [], kpi = {} }) {
   return (
@@ -24,6 +25,7 @@ export default function TablaFueraHorario({ data = [], kpi = {} }) {
               <tr>
                 <th>N°</th>
                 <th>Usuario</th>
+                <th>Rol</th>
                 <th>Fecha</th>
                 <th>Hora</th>
                 <th>Evento</th>
@@ -37,6 +39,9 @@ export default function TablaFueraHorario({ data = [], kpi = {} }) {
                 <tr key={i}>
                   <td>{i + 1}</td>
                   <td className={styles.nombre}>{ev.usuario}</td>
+                  <td>
+                    <RoleBadge role={ev.rol || ev.role || ev.name_role} size="small" />
+                  </td>
                   <td>{ev.fecha}</td>
                   <td className={styles.hora}>{ev.hora}</td>
                   <td>{ev.evento}</td>

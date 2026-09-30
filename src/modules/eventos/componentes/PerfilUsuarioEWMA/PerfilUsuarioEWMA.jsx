@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useState, useMemo } from "react";
 import styles from "./PerfilUsuarioEWMA.module.css";
+import RoleBadge from "../../../../components/RoleBadge";
 
 const COLORES = ["#f85151ff", "#38a525ff", "#7f65f2ff", "#38bdf8", "#c084fc", "#818cf8", "#f472b6"];
 
@@ -10,7 +11,7 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
   const itemsPerPage = 15;
 
   const topUsers = useMemo(() =>
-    perfiles.slice(0, 50).map(p => ({ user_id: p.user_id, nombre: p.nombre })),
+    perfiles.slice(0, 50).map(p => ({ user_id: p.user_id, nombre: p.nombre, rol: p.rol || p.role })),
     [perfiles]
   );
 
@@ -45,7 +46,8 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
             <button key={u.user_id} className={`${styles.userBtn} ${selectedUsers.includes(u.user_id) ? styles.active : ""}`}
               style={selectedUsers.includes(u.user_id) ? { borderColor: COLORES[selectedUsers.indexOf(u.user_id) % COLORES.length] } : {}}
               onClick={() => toggleUser(u.user_id)}>
-              {u.nombre?.split(" ")[0]}
+              <span>{u.nombre?.split(" ")[0]}</span>
+              <RoleBadge role={u.rol} size="small" showIcon={false} />
             </button>
           ))}
         </div>
@@ -71,7 +73,7 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead><tr>
-              <th>N°</th><th>Nivel</th><th>Usuario</th><th>Oficina</th><th>Eventos</th>
+              <th>N°</th><th>Nivel</th><th>Usuario</th><th>Rol</th><th>Oficina</th><th>Eventos</th>
               <th>Media Ev/Hr</th><th>Std</th><th>Media MB/Día</th><th>% Secreto</th><th>EWMA</th><th>Score</th>
             </tr></thead>
             <tbody>
@@ -80,6 +82,9 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
                   <td>{startIndex + i + 1}</td>
                   <td>{p.nivel_riesgo === "critico" ? "🔴" : p.nivel_riesgo === "alto" ? "🟠" : p.nivel_riesgo === "medio" ? "🟡" : "🟢"}</td>
                   <td className={styles.nombre}>{p.nombre}</td>
+                  <td>
+                    <RoleBadge role={p.rol || p.role} size="small" />
+                  </td>
                   <td>{p.oficina}</td>
                   <td>{p.n_eventos?.toLocaleString()}</td>
                   <td>{p.media_eventos_hora}</td>

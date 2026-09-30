@@ -1,0 +1,68 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  font-weight: 600;
+  border-radius: 4px;
+  line-height: 1.25;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+  user-select: none;
+  vertical-align: middle;
+}
+
+/* Tamaños */
+.sizeSmall {
+  font-size: 0.68rem;
+  padding: 0.15rem 0.45rem;
+}
+
+.sizeMedium {
+  font-size: 0.76rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+}
+
+.sizeLarge {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+}
+
+/* Variantes por Rol Institucional */
+.roleEjecutivo {
+  background: rgba(124, 58, 237, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+}
+
+.roleJefeSdDpt {
+  background: rgba(67, 56, 202, 0.12);
+  color: #4338ca;
+  border: 1px solid rgba(67, 56, 202, 0.35);
+}
+
+.roleJefeUu {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(15, 118, 110, 0.35);
+}
+
+.roleCentroMensajes {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+}
+
+.roleUser {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85em;
+}

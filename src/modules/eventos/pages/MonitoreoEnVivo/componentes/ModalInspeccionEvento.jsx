@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "./ModalInspeccionEvento.module.css";
 import { FaCopy, FaCheck, FaShieldHalved } from "react-icons/fa6";
+import RoleBadge from "../../../../../components/RoleBadge";
 
 export default function ModalInspeccionEvento({ evento, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -40,6 +41,12 @@ export default function ModalInspeccionEvento({ evento, onClose }) {
             <span className={styles.summaryLabel}>Usuario</span>
             <span className={styles.summaryVal}>
               {evento.name_user} (ID: {evento.id_user})
+            </span>
+          </div>
+          <div className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Rol Institucional</span>
+            <span className={styles.summaryVal}>
+              <RoleBadge role={evento.name_role || evento.rol || evento.role} size="medium" />
             </span>
           </div>
           <div className={styles.summaryItem}>
