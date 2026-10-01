@@ -82,7 +82,7 @@ export default function RoleBadge({
           <Icon />
         </span>
       )}
-      <span>{label}</span>
+      <span style={{ fontSize: "0.65rem" }}>{label}</span>
     </span>
   );
 }

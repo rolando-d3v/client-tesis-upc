@@ -10,6 +10,16 @@ import {
   FaDownload,
 } from "react-icons/fa6";
 
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
+
 const getColorByLevel = (nivel) => {
   switch (nivel?.toLowerCase()) {
     case "critico":
@@ -52,11 +62,21 @@ export default function ScoreGauge({ incidente }) {
 
   const esAccionCritica = tieneDescarga || tieneBorrado || incidente.storyline?.some((s) => s.fase?.includes("Desvío") || s.fase?.includes("Exfiltración"));
 
+  // Vector de amenaza multidimensional para el Radar
+  const radarData = [
+    { dimension: "Traza Doc.", valor: Math.round(scoreTraza * 100), fullMark: 100 },
+    { dimension: "UEBA Usuario", valor: Math.round(scoreEv * 100), fullMark: 100 },
+    { dimension: "Clasificación", valor: esSecreto ? 100 : esReservado ? 75 : 25, fullMark: 100 },
+    { dimension: "Trámite Ext.", valor: esExterior ? 100 : 15, fullMark: 100 },
+    { dimension: "Descarga/Copia", valor: tieneDescarga ? 100 : tieneBorrado ? 90 : 15, fullMark: 100 },
+    { dimension: "Fuera Horario", valor: tieneFueraHorario ? 100 : 15, fullMark: 100 },
+  ];
+
   return (
     <div className={styles.card}>
       <div className={styles.title}>
         <FaBolt style={{ color: "#7c3aed" }} />
-        Evaluación de Amenaza Multi-Dominio
+        Evaluación de Amenaza Multi-Dominio y Vector de Riesgo
       </div>
       <p className={styles.subtitle}>
         Fusión algorítmica de trazabilidad documental (45%) y comportamiento de usuario (55%) con factores de contexto.
@@ -83,6 +103,28 @@ export default function ScoreGauge({ incidente }) {
           >
             Riesgo {nivel}
           </div>
+        </div>
+
+        {/* Radar del vector de amenaza multidimensional */}
+        <div className={styles.radarWrapper}>
+          <div className={styles.radarHeader}>
+            <span>Vector de Ataque (6 Dimensiones)</span>
+          </div>
+          <ResponsiveContainer width="100%" height={210}>
+            <RadarChart cx="50%" cy="50%" outerRadius={70} data={radarData}>
+              <PolarGrid stroke="#e2e8f0" />
+              <PolarAngleAxis dataKey="dimension" tick={{ fill: "#475569", fontSize: 10, fontWeight: 600 }} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+              <Radar
+                name="Severidad"
+                dataKey="valor"
+                stroke={colors.border}
+                fill={colors.border}
+                fillOpacity={0.35}
+              />
+              <RechartsTooltip formatter={(val) => [`${val}%`, "Intensidad"]} />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
 
         {/* Barras de desglose por fuente */}

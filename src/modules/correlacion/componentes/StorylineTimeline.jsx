@@ -69,6 +69,31 @@ export default function StorylineTimeline({ storyline = [] }) {
     );
   }
 
+  const hasTransito = storyline.some(
+    (s) =>
+      (s.fase || "").toLowerCase().includes("tránsito") ||
+      (s.fase || "").toLowerCase().includes("acceso") ||
+      s.origen === "trazabilidad"
+  );
+  const hasDesvio = storyline.some(
+    (s) =>
+      (s.fase || "").toLowerCase().includes("desvío") ||
+      (s.fase || "").toLowerCase().includes("desvio") ||
+      (s.fase || "").toLowerCase().includes("irregular")
+  );
+  const hasExfiltracion = storyline.some(
+    (s) =>
+      (s.fase || "").toLowerCase().includes("exfiltración") ||
+      (s.fase || "").toLowerCase().includes("exfiltracion") ||
+      s.icono === "download"
+  );
+  const hasEvasion = storyline.some(
+    (s) =>
+      (s.fase || "").toLowerCase().includes("evasión") ||
+      (s.fase || "").toLowerCase().includes("evasion") ||
+      s.icono === "trash"
+  );
+
   return (
     <div className={styles.container}>
       <div className={styles.titleRow}>
@@ -83,6 +108,47 @@ export default function StorylineTimeline({ storyline = [] }) {
       <p className={styles.subtitle}>
         Línea de tiempo unificada que evidencia el desvío del documento y las acciones realizadas por el usuario en cada fase de la amenaza.
       </p>
+
+      {/* Fases del Ciclo de Amenaza Interna (Insider Threat Kill Chain) */}
+      <div className={styles.killChainBar}>
+        <div className={`${styles.kcStep} ${hasTransito ? styles.kcStepActive : ""}`}>
+          <span className={styles.kcNum}>1</span>
+          <div className={styles.kcText}>
+            <span className={styles.kcTitle}>Acceso / Trámite</span>
+            <span className={styles.kcSub}>{hasTransito ? "Confirmado" : "No detectado"}</span>
+          </div>
+        </div>
+
+        <span className={styles.kcArrow}>➔</span>
+
+        <div className={`${styles.kcStep} ${hasDesvio ? styles.kcStepAlert : ""}`}>
+          <span className={styles.kcNum}>2</span>
+          <div className={styles.kcText}>
+            <span className={styles.kcTitle}>Desvío / Exterior</span>
+            <span className={styles.kcSub}>{hasDesvio ? "Alerta de Ruta" : "Sin desvío"}</span>
+          </div>
+        </div>
+
+        <span className={styles.kcArrow}>➔</span>
+
+        <div className={`${styles.kcStep} ${hasExfiltracion ? styles.kcStepCritico : ""}`}>
+          <span className={styles.kcNum}>3</span>
+          <div className={styles.kcText}>
+            <span className={styles.kcTitle}>Exfiltración</span>
+            <span className={styles.kcSub}>{hasExfiltracion ? "Descarga / Copia" : "Sin descarga"}</span>
+          </div>
+        </div>
+
+        <span className={styles.kcArrow}>➔</span>
+
+        <div className={`${styles.kcStep} ${hasEvasion ? styles.kcStepEvasion : ""}`}>
+          <span className={styles.kcNum}>4</span>
+          <div className={styles.kcText}>
+            <span className={styles.kcTitle}>Evasión</span>
+            <span className={styles.kcSub}>{hasEvasion ? "Borrado detectado" : "Limpio"}</span>
+          </div>
+        </div>
+      </div>
 
       <div className={styles.timeline}>
         {storyline.map((paso, index) => {

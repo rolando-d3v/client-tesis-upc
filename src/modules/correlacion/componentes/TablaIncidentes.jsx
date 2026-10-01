@@ -2,12 +2,7 @@ import { Fragment, useMemo, useState } from "react";
 import { Link } from "react-router";
 import styles from "./TablaIncidentes.module.css";
 import dayjs from "dayjs";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-} from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from "@tanstack/react-table";
 import {
   FaMagnifyingGlass,
   FaXmark,
@@ -77,14 +72,14 @@ export default function TablaIncidentes({
   setPageSize,
   filtros = {},
   setFiltros,
+  resumen,
   onEjecutarCorrelacion,
   isExecuting = false,
   isLoading = false,
 }) {
   const incidentes = useMemo(() => data?.incidentes || [], [data?.incidentes]);
   const total = data?.total || 0;
-  const totalPaginas =
-    data?.total_paginas || Math.max(1, Math.ceil(total / pageSize));
+  const totalPaginas = data?.total_paginas || Math.max(1, Math.ceil(total / pageSize));
 
   const [sorting, setSorting] = useState([]);
   const [expandedRows, setExpandedRows] = useState({});
@@ -107,7 +102,14 @@ export default function TablaIncidentes({
   };
 
   const handleFilterChange = (key, value) => {
-    setFiltros((prev) => ({ ...prev, [key]: value }));
+    setFiltros((prev) => {
+      const next = { ...prev, [key]: value };
+      // Si se filtra por crítico o alto, resetear estado para evitar conflicto de contención
+      if (key === "nivel_riesgo" && (value === "critico" || value === "alto")) {
+        next.estado = "";
+      }
+      return next;
+    });
     setPage(1);
   };
 
@@ -117,45 +119,44 @@ export default function TablaIncidentes({
       nivel_riesgo: "",
       estado: "",
       clasificacion: "",
+      tipo_evento: "",
+      mes: "",
     });
     setPage(1);
   };
 
   const hasActiveFilters = Boolean(
     filtros.busqueda ||
-      filtros.nivel_riesgo ||
-      filtros.estado ||
-      filtros.clasificacion
+    filtros.nivel_riesgo ||
+    filtros.estado ||
+    filtros.clasificacion ||
+    filtros.tipo_evento ||
+    filtros.mes,
   );
 
-  // TanStack Table Column Definitions with exact sizing & alignment metadata for UX balance
+  // TanStack Table Column Definitions — Compact inline layout for optimal UX density
   const columns = useMemo(
     () => [
       {
+        id: "id_fecha",
         accessorKey: "id",
-        header: "ID",
-        meta: { align: "center", width: "6%" },
-        cell: (info) => (
-          <span className={styles.idBadge}>#{info.getValue()}</span>
-        ),
-      },
-      {
-        accessorKey: "fecha_deteccion",
-        header: "Fecha Detección",
-        meta: { align: "left", width: "13%" },
-        cell: (info) => {
-          const val = info.getValue();
-          if (!val) return <span style={{ color: "#9ca3af" }}>N/A</span>;
-          const dt = dayjs(val);
+        header: "ID / Fecha",
+        meta: { align: "left", width: "17%" },
+        cell: ({ row }) => {
+          const inc = row.original;
+          const dt = inc.fecha_deteccion ? dayjs(inc.fecha_deteccion) : null;
           return (
-            <div className={styles.fechaCell}>
-              <span className={styles.fechaMain}>
-                {dt.format("DD/MM/YYYY")}
-              </span>
-              <span className={styles.fechaTime}>
-                <FaClock style={{ fontSize: "0.68rem" }} />
-                {dt.format("HH:mm:ss")}
-              </span>
+            <div className={styles.idFechaCell}>
+              <span className={styles.idBadge}>ID_REG:{inc.id}</span>
+              {dt ? (
+                <span className={styles.fechaInline}>
+                  {dt.format("DD/MM/YY")} <FaClock className={styles.fechaClockIcon} /> {dt.format("HH:mm")}
+                </span>
+              ) : (
+                <span className={styles.fechaInline} style={{ color: "#9ca3af" }}>
+                  N/A
+                </span>
+              )}
             </div>
           );
         },
@@ -163,36 +164,24 @@ export default function TablaIncidentes({
       {
         id: "documento",
         accessorKey: "numero_documento",
-        header: "Documento Afectado",
-        meta: { align: "left", width: "23%" },
+        header: "Documento",
+        meta: { align: "left", width: "26%" },
         cell: ({ row }) => {
           const inc = row.original;
           return (
-            <div className={styles.docCell}>
-              <span
-                className={styles.docNum}
-                title={`Doc #${inc.id_documento} (${inc.numero_documento || "S/N"})`}
-              >
-                Doc #{inc.id_documento} ({inc.numero_documento || "S/N"})
-              </span>
-              <div className={styles.docMetaRow}>
-                {inc.tipo_documento && (
-                  <span className={styles.docTipo}>{inc.tipo_documento}</span>
-                )}
-                <span
-                  className={`${styles.clasifBadge} ${getClasifClass(
-                    inc.clasificacion_doc
-                  )}`}
-                >
+            <div className={styles.docCellCompact}>
+              <div className={styles.docTopLine}>
+                <span className={styles.docNum} title={`Doc #${inc.id_documento} (${inc.numero_documento || "S/N"})`}>
+                  #{inc.id_documento}
+                </span>
+                {/* {inc.numero_documento && <span className={styles.docNumSec}>· {inc.numero_documento}</span>} */}
+                <span className={`${styles.clasifBadge} ${getClasifClass(inc.clasificacion_doc)}`}>
                   {inc.clasificacion_doc || "COMUN"}
                 </span>
-                <span
-                  className={`${styles.docDestino} ${
-                    inc.destino_doc === "exterior" ? styles.docDestinoExt : ""
-                  }`}
-                >
-                  {inc.destino_doc === "exterior" ? "🌐 Ext" : "🏢 Int"}
+                <span className={`${styles.docDestino} ${inc.destino_doc === "exterior" ? styles.docDestinoExt : ""}`}>
+                  {inc.destino_doc === "exterior" ? "🌐" : "🏢"}
                 </span>
+                {inc.tipo_documento && <span className={styles.docTipo}>{inc.tipo_documento}</span>}
               </div>
             </div>
           );
@@ -201,23 +190,23 @@ export default function TablaIncidentes({
       {
         id: "usuario",
         accessorKey: "nombre_usuario",
-        header: "Usuario Involucrado",
-        meta: { align: "left", width: "19%" },
+        header: "Usuario",
+        meta: { align: "left", width: "23%" },
         cell: ({ row }) => {
           const inc = row.original;
-          const initial = inc.nombre_usuario
-            ? inc.nombre_usuario.charAt(0).toUpperCase()
-            : "U";
+          const initial = inc.nombre_usuario ? inc.nombre_usuario.charAt(0).toUpperCase() : "U";
           return (
-            <div className={styles.userCell}>
-              <div className={styles.userAvatar}>{initial}</div>
-              <div className={styles.userInfo}>
-                <span className={styles.userName} title={inc.nombre_usuario}>
-                  {inc.nombre_usuario || "Desconocido"}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: 2, flexWrap: "wrap" }}>
+            <div className={styles.userCellCompact}>
+              
+              <div className={styles.userInfoCompact}>
+                <div className={styles.userMetaLine}>
                   <RoleBadge role={inc.name_role || inc.rol || inc.role} size="small" />
-                  <span className={styles.userId}>ID: {inc.id_user}</span>
+                  <div style={{ display: "flex", flexDirection: "row", gap: 5, alignItems: "center" }}>
+                    <span className={styles.userName} title={inc.nombre_usuario}>
+                      {inc.nombre_usuario || "Desconocido"}
+                    </span>
+                    <span className={styles.userId}>ID_USER: {inc.id_user}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -226,8 +215,8 @@ export default function TablaIncidentes({
       },
       {
         accessorKey: "score_correlacion",
-        header: "Nivel & Score",
-        meta: { align: "left", width: "15%" },
+        header: "Score / Riesgo",
+        meta: { align: "left", width: "16%" },
         cell: ({ row }) => {
           const inc = row.original;
           const score = Number(inc.score_correlacion || 0);
@@ -240,93 +229,74 @@ export default function TablaIncidentes({
           else if (riesgo === "medio") barClass = styles.barMedio;
 
           return (
-            <div className={styles.scoreCell}>
+            <div className={styles.scoreCellCompact}>
               <div className={styles.scoreTopRow}>
                 <span className={styles.scoreVal}>{scorePercent}%</span>
-                <span
-                  className={`${styles.badgeRiesgo} ${getRiesgoClass(
-                    inc.nivel_riesgo
-                  )}`}
-                >
+                <div className={styles.scoreSubLine}>
+                  T:{Math.round(Number(inc.score_trazabilidad || 0) * 100)}%{" · "}
+                  E:{Math.round(Number(inc.score_eventos || 0) * 100)}%
+                  {inc.total_pasos_storyline > 0 && ` · ${inc.total_pasos_storyline}p`}
+                </div>
+                <span className={`${styles.badgeRiesgo} ${getRiesgoClass(inc.nivel_riesgo)}`}>
                   {inc.nivel_riesgo || "Bajo"}
                 </span>
               </div>
               <div className={styles.scoreBarWrapper}>
-                <div
-                  className={`${styles.scoreBarFill} ${barClass}`}
-                  style={{ width: `${scorePercent}%` }}
-                />
+                <div className={`${styles.scoreBarFill} ${barClass}`} style={{ width: `${scorePercent}%` }} />
               </div>
             </div>
           );
         },
       },
       {
-        accessorKey: "total_pasos_storyline",
-        header: "Storyline",
-        meta: { align: "center", width: "10%" },
+        id: "estado_accion",
+        accessorKey: "estado",
+        header: "Estado",
+        meta: { align: "center", width: "6%" },
         cell: ({ row }) => {
           const inc = row.original;
-          const pasos = inc.total_pasos_storyline || 0;
+          const estado = inc.estado || "abierto";
+          const isExpanded = !!expandedRows[row.id];
           return (
-            <div style={{ textAlign: "center" }}>
-              <span className={styles.storylineBadge}>{pasos} pasos</span>
-              {(inc.total_motivos_traza > 0 || inc.total_motivos_eventos > 0) && (
-                <div className={styles.storylineDots}>
-                  {inc.total_motivos_traza || 0} tr · {inc.total_motivos_eventos || 0} ev
-                </div>
-              )}
+            <div className={styles.estadoAccionCell}>
+              <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
+                <span className={styles.statusDot} />
+                {estado.replace(/_/g, " ")}
+              </span>
             </div>
           );
         },
       },
       {
-        accessorKey: "estado",
-        header: "Estado",
-        meta: { align: "center", width: "12%" },
-        cell: (info) => {
-          const estado = info.getValue() || "abierto";
-          return (
-            <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
-              <span className={styles.statusDot} />
-              {estado.replace(/_/g, " ")}
-            </span>
-          );
-        },
-      },
-      {
-        id: "acciones",
+        id: "estado_accion",
+        accessorKey: "accion_tomada",
         header: "Acción",
-        enableSorting: false,
-        meta: { align: "right", width: "13%" },
+        meta: { align: "center", width: "6%" },
         cell: ({ row }) => {
           const inc = row.original;
+          const estado = inc.estado || "abierto";
           const isExpanded = !!expandedRows[row.id];
           return (
-            <div className={styles.actionsCell}>
-              <button
-                type="button"
-                className={`${styles.btnExpand} ${
-                  isExpanded ? styles.btnExpandActive : ""
-                }`}
-                onClick={() => toggleRowExpand(row.id)}
-                title={
-                  isExpanded
-                    ? "Ocultar telemetría rápida"
-                    : "Ver telemetría rápida"
-                }
-              >
-                {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-              </button>
-              <Link to={`/incidentes/${inc.id}`} className={styles.btnDetalle}>
-                Auditoría <FaArrowRight />
-              </Link>
+            <div className={styles.estadoAccionCell}>
+              <div className={styles.actionsBtnRow}>
+                <button
+                  type="button"
+                  className={`${styles.btnExpandCompact} ${isExpanded ? styles.btnExpandActive : ""}`}
+                  onClick={() => toggleRowExpand(row.id)}
+                  title={isExpanded ? "Ocultar telemetría" : "Ver telemetría"}
+                >
+                  {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                </button>
+                <Link to={`/incidentes/${inc.id}`} className={styles.btnDetalleCompact} title="Ver auditoría completa">
+                  <FaArrowRight />
+                </Link>
+              </div>
             </div>
           );
         },
       },
     ],
-    [expandedRows]
+    [expandedRows],
   );
 
   // TanStack Table Instance
@@ -343,18 +313,11 @@ export default function TablaIncidentes({
     },
     manualPagination: true,
     onPaginationChange: (updater) => {
-      const nextPagination =
-        typeof updater === "function"
-          ? updater({ pageIndex: page - 1, pageSize })
-          : updater;
+      const nextPagination = typeof updater === "function" ? updater({ pageIndex: page - 1, pageSize }) : updater;
       if (nextPagination.pageIndex !== undefined) {
         setPage(nextPagination.pageIndex + 1);
       }
-      if (
-        setPageSize &&
-        nextPagination.pageSize !== undefined &&
-        nextPagination.pageSize !== pageSize
-      ) {
+      if (setPageSize && nextPagination.pageSize !== undefined && nextPagination.pageSize !== pageSize) {
         setPageSize(nextPagination.pageSize);
         setPage(1);
       }
@@ -370,11 +333,7 @@ export default function TablaIncidentes({
     const range = [];
     const rangeWithDots = [];
 
-    for (
-      let i = Math.max(1, page - delta);
-      i <= Math.min(totalPaginas, page + delta);
-      i++
-    ) {
+    for (let i = Math.max(1, page - delta); i <= Math.min(totalPaginas, page + delta); i++) {
       range.push(i);
     }
 
@@ -402,8 +361,7 @@ export default function TablaIncidentes({
     const isSorted = column.getIsSorted();
     if (isSorted === "asc") return <FaArrowUp className={styles.sortIcon} />;
     if (isSorted === "desc") return <FaArrowDown className={styles.sortIcon} />;
-    if (column.getCanSort())
-      return <FaSort className={styles.sortIconNeutral} />;
+    if (column.getCanSort()) return <FaSort className={styles.sortIconNeutral} />;
     return null;
   };
 
@@ -421,12 +379,7 @@ export default function TablaIncidentes({
             onChange={handleSearchChange}
           />
           {filtros.busqueda && (
-            <button
-              type="button"
-              className={styles.searchClearBtn}
-              onClick={handleClearSearch}
-              title="Borrar búsqueda"
-            >
+            <button type="button" className={styles.searchClearBtn} onClick={handleClearSearch} title="Borrar búsqueda">
               <FaXmark />
             </button>
           )}
@@ -473,6 +426,29 @@ export default function TablaIncidentes({
             <option value="COMUN">COMUN</option>
           </select>
 
+          {/* Tipo de Evento */}
+          <select
+            className={styles.select}
+            value={filtros.tipo_evento || ""}
+            onChange={(e) => handleFilterChange("tipo_evento", e.target.value)}
+            title="Filtrar por tipo de evento dinámico según registros detectados"
+          >
+            <option value="">Todos los Eventos</option>
+            {resumen?.tipos_eventos && resumen.tipos_eventos.filter((ev) => ev.cantidad > 0).length > 0 ? (
+              resumen.tipos_eventos
+                .filter((ev) => ev.cantidad > 0)
+                .map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.nombre} ({ev.cantidad})
+                  </option>
+                ))
+            ) : (
+              <option value="VISTA" disabled>
+                Sin Eventos Específicos
+              </option>
+            )}
+          </select>
+
           {/* Limpiar Filtros */}
           {hasActiveFilters && (
             <button
@@ -506,43 +482,26 @@ export default function TablaIncidentes({
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
-                  const align =
-                    header.column.columnDef.meta?.align || "left";
+                  const align = header.column.columnDef.meta?.align || "left";
                   const width = header.column.columnDef.meta?.width;
 
                   return (
                     <th
                       key={header.id}
-                      className={`${styles.th} ${
-                        canSort ? styles.thSortable : ""
-                      }`}
+                      className={`${styles.th} ${canSort ? styles.thSortable : ""}`}
                       style={{
                         width: width,
                         textAlign: align,
                       }}
-                      onClick={
-                        canSort
-                          ? header.column.getToggleSortingHandler()
-                          : undefined
-                      }
+                      onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                     >
                       <div
                         className={styles.thContent}
                         style={{
-                          justifyContent:
-                            align === "right"
-                              ? "flex-end"
-                              : align === "center"
-                              ? "center"
-                              : "flex-start",
+                          justifyContent: align === "right" ? "flex-end" : align === "center" ? "center" : "flex-start",
                         }}
                       >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                         {canSort && renderSortIcon(header.column)}
                       </div>
                     </th>
@@ -563,34 +522,18 @@ export default function TablaIncidentes({
               table.getRowModel().rows.map((row) => {
                 const isExpanded = !!expandedRows[row.id];
                 const inc = row.original;
-                const scoreTrazaPct = Math.round(
-                  Number(inc.score_trazabilidad || 0) * 100
-                );
-                const scoreEventosPct = Math.round(
-                  Number(inc.score_eventos || 0) * 100
-                );
+                const scoreTrazaPct = Math.round(Number(inc.score_trazabilidad || 0) * 100);
+                const scoreEventosPct = Math.round(Number(inc.score_eventos || 0) * 100);
 
                 return (
                   <Fragment key={row.id}>
                     {/* Fila Principal */}
-                    <tr
-                      className={`${styles.tr} ${
-                        isExpanded ? styles.trExpanded : ""
-                      }`}
-                    >
+                    <tr className={`${styles.tr} ${isExpanded ? styles.trExpanded : ""}`}>
                       {row.getVisibleCells().map((cell) => {
-                        const align =
-                          cell.column.columnDef.meta?.align || "left";
+                        const align = cell.column.columnDef.meta?.align || "left";
                         return (
-                          <td
-                            key={cell.id}
-                            className={styles.td}
-                            style={{ textAlign: align }}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
+                          <td key={cell.id} className={styles.td} style={{ textAlign: align }}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         );
                       })}
@@ -599,10 +542,7 @@ export default function TablaIncidentes({
                     {/* Fila Expandible Inline con Telemetría Forense */}
                     {isExpanded && (
                       <tr className={styles.expandedRow}>
-                        <td
-                          colSpan={columns.length}
-                          className={styles.expandedTd}
-                        >
+                        <td colSpan={columns.length} className={styles.expandedTd}>
                           <div className={styles.expandedContent}>
                             <div
                               style={{
@@ -619,8 +559,7 @@ export default function TablaIncidentes({
                                   fontSize: "0.88rem",
                                 }}
                               >
-                                ⚡ Telemetría Rápida — Incidente #{inc.id} (
-                                {inc.nombre_usuario || "Desconocido"})
+                                ⚡ Telemetría Rápida — Incidente #{inc.id} ({inc.nombre_usuario || "Desconocido"})
                               </span>
                               <button
                                 type="button"
@@ -634,49 +573,30 @@ export default function TablaIncidentes({
 
                             <div className={styles.telemetryGrid}>
                               <div className={styles.telemetryCard}>
-                                <div className={styles.telemetryLabel}>
-                                  Score Trazabilidad Doc
-                                </div>
-                                <div className={styles.telemetryValue}>
-                                  {scoreTrazaPct}%
-                                </div>
+                                <div className={styles.telemetryLabel}>Score Trazabilidad Doc</div>
+                                <div className={styles.telemetryValue}>{scoreTrazaPct}%</div>
                                 <div className={styles.telemetrySub}>
                                   {inc.total_motivos_traza || 0} anomalías documentales
                                 </div>
                               </div>
 
                               <div className={styles.telemetryCard}>
-                                <div className={styles.telemetryLabel}>
-                                  Score Eventos Usuario
-                                </div>
-                                <div className={styles.telemetryValue}>
-                                  {scoreEventosPct}%
-                                </div>
+                                <div className={styles.telemetryLabel}>Score Eventos Usuario</div>
+                                <div className={styles.telemetryValue}>{scoreEventosPct}%</div>
                                 <div className={styles.telemetrySub}>
                                   {inc.total_motivos_eventos || 0} anomalías de conducta
                                 </div>
                               </div>
 
                               <div className={styles.telemetryCard}>
-                                <div className={styles.telemetryLabel}>
-                                  Trazabilidad & Pasos
-                                </div>
-                                <div className={styles.telemetryValue}>
-                                  {inc.total_pasos_storyline || 0} pasos
-                                </div>
-                                <div className={styles.telemetrySub}>
-                                  Línea temporal reconstruida
-                                </div>
+                                <div className={styles.telemetryLabel}>Trazabilidad & Pasos</div>
+                                <div className={styles.telemetryValue}>{inc.total_pasos_storyline || 0} pasos</div>
+                                <div className={styles.telemetrySub}>Línea temporal reconstruida</div>
                               </div>
 
                               <div className={styles.telemetryCard}>
-                                <div className={styles.telemetryLabel}>
-                                  Sesiones de Auditoría
-                                </div>
-                                <div
-                                  className={styles.telemetrySub}
-                                  style={{ marginTop: "0.2rem" }}
-                                >
+                                <div className={styles.telemetryLabel}>Sesiones de Auditoría</div>
+                                <div className={styles.telemetrySub} style={{ marginTop: "0.2rem" }}>
                                   Doc: {inc.sesion_traza_id || "S/N"}
                                   <br />
                                   Eventos: {inc.sesion_eventos_id || "S/N"}
@@ -694,19 +614,12 @@ export default function TablaIncidentes({
               <tr>
                 <td colSpan={columns.length} className={styles.emptyState}>
                   <FaTriangleExclamation className={styles.emptyIcon} />
-                  <div className={styles.emptyTitle}>
-                    No se encontraron incidentes
-                  </div>
+                  <div className={styles.emptyTitle}>No se encontraron incidentes</div>
                   <p className={styles.emptyText}>
-                    No hay registros de fuga que coincidan con los filtros o
-                    parámetros de búsqueda aplicados.
+                    No hay registros de fuga que coincidan con los filtros o parámetros de búsqueda aplicados.
                   </p>
                   {hasActiveFilters && (
-                    <button
-                      type="button"
-                      className={styles.btnResetFilters}
-                      onClick={handleResetFilters}
-                    >
+                    <button type="button" className={styles.btnResetFilters} onClick={handleResetFilters}>
                       <FaRotateLeft /> Restablecer filtros
                     </button>
                   )}
@@ -720,20 +633,14 @@ export default function TablaIncidentes({
       {/* Paginador Avanzado TanStack Table */}
       <div className={styles.pagination}>
         <div className={styles.paginationInfo}>
-          Mostrando{" "}
-          <span className={styles.paginationHighlight}>{fromRecord}</span> -{" "}
+          Mostrando <span className={styles.paginationHighlight}>{fromRecord}</span> -{" "}
           <span className={styles.paginationHighlight}>{toRecord}</span> de{" "}
           <span className={styles.paginationHighlight}>{total}</span> incidentes
         </div>
 
         <div className={styles.paginationControls}>
           {/* Primera página */}
-          <button
-            className={styles.pagBtn}
-            disabled={page <= 1}
-            onClick={() => setPage(1)}
-            title="Primera página"
-          >
+          <button className={styles.pagBtn} disabled={page <= 1} onClick={() => setPage(1)} title="Primera página">
             <FaAnglesLeft />
           </button>
 
@@ -756,14 +663,12 @@ export default function TablaIncidentes({
             ) : (
               <button
                 key={`page-${pageNum}`}
-                className={`${styles.pagBtn} ${
-                  page === pageNum ? styles.pagBtnActive : ""
-                }`}
+                className={`${styles.pagBtn} ${page === pageNum ? styles.pagBtnActive : ""}`}
                 onClick={() => setPage(pageNum)}
               >
                 {pageNum}
               </button>
-            )
+            ),
           )}
 
           {/* Siguiente */}

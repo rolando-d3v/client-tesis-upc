@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.32rem;
+  font-size: 0.5rem;
   font-weight: 600;
   border-radius: 4px;
   line-height: 1.25;
@@ -14,18 +15,18 @@
 
 /* Tamaños */
 .sizeSmall {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   padding: 0.15rem 0.45rem;
 }
 
 .sizeMedium {
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   padding: 0.25rem 0.6rem;
   border-radius: 5px;
 }
 
 .sizeLarge {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   padding: 0.35rem 0.75rem;
   border-radius: 6px;
 }
@@ -64,5 +65,5 @@
 .icon {
   display: inline-flex;
   align-items: center;
-  font-size: 0.85em;
+  font-size: 0.5rem;
 }

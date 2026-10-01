@@ -133,6 +133,7 @@ export const useEjecutarCorrelacion = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["incidentes"] });
       queryClient.invalidateQueries({ queryKey: ["resumen_soc"] });
+      queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
     },
   });
 };

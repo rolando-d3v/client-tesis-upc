@@ -26,7 +26,112 @@
 .subtitle {
   font-size: 0.85rem;
   color: #6b7280;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Barra Kill Chain de Amenaza Interna */
+.killChainBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.kcStep {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0.45;
+  transition: all 0.2s ease;
+}
+
+.kcStepActive {
+  opacity: 1;
+}
+
+.kcStepAlert {
+  opacity: 1;
+}
+
+.kcStepAlert .kcNum {
+  background: #ea580c;
+  color: #ffffff;
+}
+
+.kcStepAlert .kcTitle {
+  color: #c2410c;
+}
+
+.kcStepCritico {
+  opacity: 1;
+}
+
+.kcStepCritico .kcNum {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.kcStepCritico .kcTitle {
+  color: #b91c1c;
+}
+
+.kcStepEvasion {
+  opacity: 1;
+}
+
+.kcStepEvasion .kcNum {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.kcStepEvasion .kcTitle {
+  color: #6d28d9;
+}
+
+.kcNum {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kcStepActive .kcNum {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.kcText {
+  display: flex;
+  flex-direction: column;
+}
+
+.kcTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.kcSub {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.kcArrow {
+  color: #cbd5e1;
+  font-size: 0.85rem;
 }
 
 .timeline {
