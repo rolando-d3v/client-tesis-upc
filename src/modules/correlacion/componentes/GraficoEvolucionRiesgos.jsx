@@ -105,10 +105,10 @@ export default function GraficoEvolucionRiesgos({
           mesCompleto: item.mes_completo || item.label || item.mes,
         }));
       }
-      // Datos de respaldo predeterminados por mes
+      // Datos de respaldo predeterminados por mes (vacíos)
       return [
-        { label: "Ene", critico: 72, alto: 88, medio: 1047, bajo: 1, total: 1208 },
-        { label: "Feb", critico: 0, alto: 0, medio: 14, bajo: 0, total: 14 },
+        { label: "Ene", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
+        { label: "Feb", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
         { label: "Mar", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
         { label: "Abr", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
         { label: "May", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
@@ -124,15 +124,7 @@ export default function GraficoEvolucionRiesgos({
       if (evolucion_diaria && evolucion_diaria.length > 0) {
         return evolucion_diaria;
       }
-      return [
-        { label: "10 sep", critico: 1, alto: 3, medio: 3, bajo: 3, total: 10 },
-        { label: "11 sep", critico: 2, alto: 4, medio: 5, bajo: 9, total: 20 },
-        { label: "12 sep", critico: 7, alto: 8, medio: 12, bajo: 14, total: 41 },
-        { label: "13 sep", critico: 8, alto: 9, medio: 11, bajo: 14, total: 42 },
-        { label: "14 sep", critico: 4, alto: 6, medio: 6, bajo: 10, total: 26 },
-        { label: "15 sep", critico: 4, alto: 4, medio: 6, bajo: 6, total: 20 },
-        { label: "16 sep", critico: 2, alto: 3, medio: 4, bajo: 5, total: 14 },
-      ];
+      return [];
     }
   }, [granularidad, evolucion_mensual, evolucion_diaria]);
 
