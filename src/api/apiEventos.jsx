@@ -42,8 +42,10 @@ export const getD1Timeline = async () => {
 };
 
 // Dashboard 2
-export const getD2Usuarios = async () => {
-  const response = await api.get("/eventos/dashboard2/usuarios");
+export const getD2Usuarios = async (mes) => {
+  const response = await api.get("/eventos/dashboard2/usuarios", {
+    params: mes ? { mes } : undefined,
+  });
   return response.data;
 };
 
@@ -136,10 +138,10 @@ export const useD1Timeline = () => {
 };
 
 // Dashboard 2
-export const useD2Usuarios = () => {
+export const useD2Usuarios = (mes) => {
   return useQuery({
-    queryKey: ["eventos_d2_usuarios"],
-    queryFn: getD2Usuarios,
+    queryKey: ["eventos_d2_usuarios", mes || "todos"],
+    queryFn: () => getD2Usuarios(mes),
     staleTime: 1000 * 30,
   });
 };
@@ -239,7 +241,19 @@ export const ingestarEventoAPI = async (evento) => {
   return response.data;
 };
 
-export const cargarCSVSimuladorAPI = async ({ file, intervalo = 5.0, autoIniciar = true }) => {
+export const cargarCSVSimuladorAPI = async (param) => {
+  let file = null;
+  let intervalo = 5.0;
+  let autoIniciar = true;
+
+  if (param instanceof File || (param && param.name && param.size !== undefined)) {
+    file = param;
+  } else if (param && param.file) {
+    file = param.file;
+    if (param.intervalo !== undefined) intervalo = param.intervalo;
+    if (param.autoIniciar !== undefined) autoIniciar = param.autoIniciar;
+  }
+
   const formData = new FormData();
   formData.append("file", file);
   formData.append("intervalo", String(intervalo));
@@ -253,5 +267,11 @@ export const cargarCSVSimuladorAPI = async ({ file, intervalo = 5.0, autoIniciar
 export const useCargarCSVSimulador = () => {
   return useMutation({ mutationFn: cargarCSVSimuladorAPI });
 };
+
+export const limpiarSimuladorAPI = async () => {
+  const response = await api.post("/eventos/simulador/limpiar");
+  return response.data;
+};
+
 
 

@@ -73,37 +73,147 @@
   font-size: 1.2rem;
 }
 
-/* Charts Grid */
-.chartsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
-@media (max-width: 900px) {
+.chartHeader h3 {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.monthFilter select {
+  max-width: 135px;
+  padding: 0.35rem 0.55rem;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.monthFilter select:hover {
+  border-color: var(--accent);
+}
+
+.monthFilter select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.rankingStatus {
+  margin: 0;
+  padding: 0.75rem 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Charts Grid — 3 Columnas Horizontales con Responsive UX */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+
+.chartsGrid .chartCard {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Colores semánticos diferenciadores en la barra superior de cada ranking */
+.chartsGrid .chartCard:nth-child(1)::before {
+  background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+}
+
+.chartsGrid .chartCard:nth-child(2)::before {
+  background: linear-gradient(90deg, #dc2626 0%, #f97316 100%);
+}
+
+.chartsGrid .chartCard:nth-child(3)::before {
+  background: linear-gradient(90deg, #7c3aed 0%, #c084fc 100%);
+}
+
+@media (max-width: 1080px) {
+  .chartsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
   .chartsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .chartHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .monthFilter select {
+    max-width: 100%;
+    width: 100%;
   }
 }
 
 /* Rankings */
 .rankingsList {
   font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
 }
 
 .rankingItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0.5rem;
+  padding: 0.6rem 0.55rem;
   border-bottom: 1px solid var(--border);
   transition: all 0.2s ease;
-  border-radius: 6px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .rankingItem:hover {
-  background: var(--accent-bg, rgba(124, 58, 237, 0.04));
+  background: var(--accent-bg, rgba(124, 58, 237, 0.08));
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  transform: translateX(2px);
+}
+
+.rankingItemActive {
+  background: rgba(99, 102, 241, 0.15) !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent);
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
@@ -128,6 +238,90 @@
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   font-size: 0.75rem;
+}
+
+/* Radar de Riesgo Card */
+.radarCard {
+  background: var(--bg-card);
+  border-radius: 14px;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  animation: fadeInUp 0.4s ease;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.radarCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ec4899 0%, var(--accent) 50%, #38bdf8 100%);
+  opacity: 0.9;
+}
+
+.radarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.radarTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radarSubtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
+}
+
+.closeRadarBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.closeRadarBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+  border-color: #ef4444;
+}
+
+.chartHelper {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  margin-bottom: 1.25rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  display: inline-block;
+  border: 1px solid var(--border);
+  font-weight: 500;
 }
 
 /* Link */

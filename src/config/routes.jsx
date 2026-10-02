@@ -10,16 +10,13 @@ import CargaAnomalias from "../modules/anomalias/pages/carga_csv_anomalias/Carga
 
 // Eventos — Risk Dashboard
 import CargaCSVEventos from "../modules/eventos/pages/CargaCSVEventos/CargaCSVEventos";
-import Dashboard1Ejecutivo from "../modules/eventos/pages/Dashboard1Ejecutivo/Dashboard1Ejecutivo";
 import Dashboard2Usuarios from "../modules/eventos/pages/Dashboard2Usuarios/Dashboard2Usuarios";
 import Dashboard4Clasificacion from "../modules/eventos/pages/Dashboard4Clasificacion/Dashboard4Clasificacion";
-import Dashboard5Deteccion from "../modules/eventos/pages/Dashboard5Deteccion/Dashboard5Deteccion";
-import Modulo6Perfiles from "../modules/eventos/pages/Modulo6Perfiles/Modulo6Perfiles";
-import MonitoreoEnVivo from "../modules/eventos/pages/MonitoreoEnVivo/MonitoreoEnVivo";
+import MotorDeteccion from "../modules/eventos/pages/MotorDeteccion/MotorDeteccion";
 
-// Incidentes Correlacionados (Opción B)
-import IncidentesPage from "../modules/correlacion/pages/IncidentesPage";
-import IncidenteDetallePage from "../modules/correlacion/pages/IncidenteDetallePage";
+// Módulo de Entrenamiento & Calibración
+import EntrenamientoPage from "../modules/entrenamiento/pages/EntrenamientoPage";
+import IncidenteDetallePage from "../modules/entrenamiento/pages/IncidenteDetallePage";
 
 
 const NoFount = () => {
@@ -62,17 +59,17 @@ export const router = createBrowserRouter([
           { path: "/anomalias/tabla", element: <TablaAnomaliasPage /> },
           { path: "/anomalias/timeline", element: <TimelineAnomalias /> },
 
-          // Eventos — Risk Dashboard
+          // Eventos — Risk Dashboard & Motor de Detección
           { path: "/carga_eventos", element: <CargaCSVEventos /> },
-          { path: "/eventos/dashboard-ejecutivo", element: <Dashboard1Ejecutivo /> },
           { path: "/eventos/usuarios", element: <Dashboard2Usuarios /> },
           { path: "/eventos/clasificacion", element: <Dashboard4Clasificacion /> },
-          { path: "/eventos/deteccion", element: <Dashboard5Deteccion /> },
-          { path: "/eventos/perfiles", element: <Modulo6Perfiles /> },
-          { path: "/eventos/monitoreo-vivo", element: <MonitoreoEnVivo /> },
+          { path: "/eventos/motor-deteccion", element: <MotorDeteccion /> },
+          { path: "/eventos/monitoreo-vivo", element: <MotorDeteccion /> },
 
-          // Incidentes Correlacionados de Fuga (Opción B)
-          { path: "/incidentes", element: <IncidentesPage /> },
+          // Módulo de Entrenamiento y Calibración
+          { path: "/entrenamiento", element: <EntrenamientoPage /> },
+          { path: "/entrenamiento/:id", element: <IncidenteDetallePage /> },
+          { path: "/incidentes", element: <EntrenamientoPage /> },
           { path: "/incidentes/:id", element: <IncidenteDetallePage /> },
         ],
       },

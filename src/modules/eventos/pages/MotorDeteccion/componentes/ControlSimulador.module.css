@@ -243,10 +243,34 @@
   cursor: not-allowed;
 }
 
+.uploadingNotice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
+
 .metaInfo {
   display: flex;
   align-items: center;
   gap: 1rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+
+.defaultContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.defaultLabel {
   font-size: 0.82rem;
   color: #6b7280;
 }
@@ -259,3 +283,52 @@
   font-size: 0.8rem;
   color: #374151;
 }
+
+.testingContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.testingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  color: #047857;
+  font-size: 0.84rem;
+}
+
+.testingDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.65;
+  }
+}
+
+.activeTestingTag {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.28rem 0.75rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #065f46;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.15);
+}
+

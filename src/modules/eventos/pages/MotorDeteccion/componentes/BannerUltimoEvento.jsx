@@ -9,7 +9,11 @@ import {
   FaClock,
 } from "react-icons/fa6";
 
-export default function BannerUltimoEvento({ evento }) {
+export default function BannerUltimoEvento({
+  evento,
+  onNeutralizarUsuario,
+  isNeutralizado = false,
+}) {
   if (!evento) {
     return (
       <div className={styles.banner} style={{ textAlign: "center", padding: "1.75rem 1rem" }}>
@@ -74,6 +78,46 @@ export default function BannerUltimoEvento({ evento }) {
         </div>
 
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          {isNeutralizado ? (
+            <span
+              style={{
+                background: "#fee2e2",
+                color: "#dc2626",
+                border: "1px solid #fca5a5",
+                padding: "0.2rem 0.55rem",
+                borderRadius: "6px",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+              }}
+            >
+              🚫 Cuenta Bloqueada
+            </span>
+          ) : (
+            onNeutralizarUsuario && (nivel === "critico" || nivel === "alto") && (
+              <button
+                type="button"
+                style={{
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "0.25rem 0.65rem",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 6px rgba(220, 38, 38, 0.3)",
+                }}
+                onClick={() => {
+                  const confirm = window.confirm(
+                    `¿Confirmas la neutralización inmediata de ${evento.name_user}?`
+                  );
+                  if (confirm) onNeutralizarUsuario(evento);
+                }}
+              >
+                🚫 Neutralizar Usuario
+              </button>
+            )
+          )}
           <span className={`${styles.badgeRiesgo} ${getBadgeClass()}`}>
             Riesgo {evento.nivel_riesgo}
           </span>

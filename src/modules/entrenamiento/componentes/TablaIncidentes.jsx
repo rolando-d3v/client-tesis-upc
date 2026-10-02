@@ -68,7 +68,7 @@ export default function TablaIncidentes({
   data,
   page = 1,
   setPage,
-  pageSize = 15,
+  pageSize = 10,
   setPageSize,
   filtros = {},
   setFiltros,

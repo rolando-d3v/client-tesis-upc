@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import styles from "./ModalInspeccionEvento.module.css";
-import { FaCopy, FaCheck, FaShieldHalved } from "react-icons/fa6";
+import { FaCopy, FaCheck, FaShieldHalved, FaBan } from "react-icons/fa6";
 import RoleBadge from "../../../../../components/RoleBadge";
 
-export default function ModalInspeccionEvento({ evento, onClose }) {
+export default function ModalInspeccionEvento({
+  evento,
+  onClose,
+  onNeutralizarUsuario,
+  isNeutralizado = false,
+}) {
   const [copied, setCopied] = useState(false);
 
   if (!evento) return null;
@@ -30,9 +35,58 @@ export default function ModalInspeccionEvento({ evento, onClose }) {
               Fecha/Hora: {evento.fecha_evento}
             </span>
           </div>
-          <button className={styles.modalClose} onClick={onClose}>
-            ✕
-          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            {isNeutralizado ? (
+              <span
+                style={{
+                  background: "#fee2e2",
+                  color: "#dc2626",
+                  border: "1px solid #fca5a5",
+                  padding: "0.3rem 0.65rem",
+                  borderRadius: "6px",
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                <FaBan /> Cuenta Bloqueada
+              </span>
+            ) : (
+              onNeutralizarUsuario && (
+                <button
+                  type="button"
+                  style={{
+                    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "0.4rem 0.8rem",
+                    fontSize: "0.78rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
+                  }}
+                  onClick={() => {
+                    const confirm = window.confirm(
+                      `¿Confirmas el bloqueo preventivo y neutralización de ${evento.name_user}?`
+                    );
+                    if (confirm) onNeutralizarUsuario(evento);
+                  }}
+                >
+                  <FaBan /> Neutralizar Usuario
+                </button>
+              )
+            )}
+            <button className={styles.modalClose} onClick={onClose}>
+              ✕
+            </button>
+          </div>
         </div>
 
         {/* Resumen principal */}

@@ -49,10 +49,8 @@ const NOMBRES_ESTADO = {
   falso_positivo: "Falso Positivo",
 };
 
-export default function DashboardSOCAnalytics({ resumen, filtros, setFiltros, setPage, incidentesList = [] }) {
+export default function DashboardSOCAnalytics({ resumen, filtros = {}, setFiltros, setPage, incidentesList = [] }) {
   const [colapsado, setColapsado] = useState(false);
-
-  if (!resumen) return null;
 
   const {
     total_incidentes = 0,
@@ -63,10 +61,11 @@ export default function DashboardSOCAnalytics({ resumen, filtros, setFiltros, se
     top_usuarios = [],
     por_clasificacion = {},
     evolucion_mensual = [],
-  } = resumen;
+  } = resumen || {};
 
   // 1. Datos para gráfico Donut de Clasificación
   const clasifData = useMemo(() => {
+    if (!por_clasificacion) return [];
     return Object.entries(por_clasificacion).map(([key, val]) => ({
       name: key,
       value: val,
@@ -76,6 +75,7 @@ export default function DashboardSOCAnalytics({ resumen, filtros, setFiltros, se
 
   // 2. Datos para gráfico de Estado de Gestión
   const estadoData = useMemo(() => {
+    if (!por_estado) return [];
     return Object.entries(por_estado)
       .filter(([_, val]) => val > 0)
       .map(([key, val]) => ({
@@ -103,6 +103,8 @@ export default function DashboardSOCAnalytics({ resumen, filtros, setFiltros, se
       return Number(b.incidentes || 0) - Number(a.incidentes || 0);
     });
   }, [top_documentos]);
+
+  if (!resumen) return null;
 
   // Manejador de Cross-Filtering por Clasificación
   const handleClasificacionClick = (clasif) => {

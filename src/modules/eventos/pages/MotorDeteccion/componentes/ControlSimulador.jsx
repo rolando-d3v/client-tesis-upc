@@ -29,7 +29,7 @@ export default function ControlSimulador({
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.name.toLowerCase().endsWith(".csv")) {
@@ -37,6 +37,16 @@ export default function ControlSimulador({
         return;
       }
       setSelectedFile(file);
+      // Carga inmediata automática del dataset de testing para inferencia
+      if (onUploadCSV) {
+        const ok = await onUploadCSV(file);
+        if (ok) {
+          setSelectedFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }
+      }
     }
   };
 
@@ -47,11 +57,28 @@ export default function ControlSimulador({
     }
   };
 
-  const handleExecuteUpload = () => {
+  const handleExecuteUpload = async () => {
     if (selectedFile && onUploadCSV) {
-      onUploadCSV(selectedFile);
+      const ok = await onUploadCSV(selectedFile);
+      if (ok) {
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
     }
   };
+
+  // Extraer nombre amigable y verificar si corresponde a un dataset de testing
+  const nombreArchivoRaw =
+    simuladorEstado.archivo_nombre ||
+    (simuladorEstado.archivo
+      ? simuladorEstado.archivo.split(/[/\\]/).pop().replace(/^sim_/, "")
+      : "dt_eventos_5000.csv");
+
+  const esTesting =
+    nombreArchivoRaw.toLowerCase().includes("test") ||
+    !nombreArchivoRaw.includes("5000");
 
   return (
     <div className={styles.panel}>
@@ -144,7 +171,7 @@ export default function ControlSimulador({
         </div>
       </div>
 
-      {/* FILA INFERIOR: INPUT DE CARGA CSV PARA MONITOREO ONLINE */}
+      {/* FILA INFERIOR: INPUT DE CARGA CSV PARA DATASET DE TESTING / INFERENCIA ONLINE */}
       <div className={styles.uploadSection}>
         <div className={styles.uploadWrapper}>
           <input
@@ -154,13 +181,24 @@ export default function ControlSimulador({
             onChange={handleFileChange}
             className={styles.hiddenInput}
             id="csv-simulador-input"
+            disabled={isUploadingCSV}
           />
           <label htmlFor="csv-simulador-input" className={styles.fileInputLabel}>
             <FaFileCsv style={{ fontSize: "1.1rem" }} />
-            {selectedFile ? "Cambiar CSV..." : "Seleccionar CSV para Simular Online"}
+            {isUploadingCSV
+              ? "Cargando Dataset..."
+              : esTesting
+              ? "Cambiar Dataset de Testing (.csv)"
+              : "Cargar Dataset de Testing (Inferencia Online)..."}
           </label>
 
-          {selectedFile && (
+          {isUploadingCSV && (
+            <span className={styles.uploadingNotice}>
+              <FaArrowsRotate style={{ animation: "spin 1s linear infinite" }} /> Cargando e iniciando inferencia online...
+            </span>
+          )}
+
+          {selectedFile && !isUploadingCSV && (
             <>
               <span className={styles.fileBadge}>
                 {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
@@ -186,18 +224,31 @@ export default function ControlSimulador({
                 onClick={handleExecuteUpload}
                 disabled={isUploadingCSV}
               >
-                <FaCloudArrowUp className={isUploadingCSV ? "spin" : ""} />
-                {isUploadingCSV ? "Cargando e Iniciando..." : "Subir y Simular Online"}
+                <FaCloudArrowUp />
+                Subir y Simular Online
               </button>
             </>
           )}
         </div>
 
         <div className={styles.metaInfo}>
-          <span>Archivo activo:</span>
-          <span className={styles.activeFileTag}>
-            {simuladorEstado.archivo || "dataset/dt_eventos_5000.csv"}
-          </span>
+          {esTesting ? (
+            <div className={styles.testingContainer}>
+              <span className={styles.testingBadge}>
+                <span className={styles.testingDot} /> Dataset de Testing Activo:
+              </span>
+              <span className={styles.activeTestingTag} title="Dataset en inferencia online con modelo previamente entrenado">
+                {nombreArchivoRaw}
+              </span>
+            </div>
+          ) : (
+            <div className={styles.defaultContainer}>
+              <span className={styles.defaultLabel}>Dataset activo:</span>
+              <span className={styles.activeFileTag} title="Dataset de eventos base">
+                {nombreArchivoRaw}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

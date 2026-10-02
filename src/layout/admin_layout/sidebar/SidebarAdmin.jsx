@@ -18,10 +18,9 @@ import {
   FaFileCsv,
   FaUsers,
   FaShieldHalved,
-  FaBrain,
-  FaUserShield,
   FaTriangleExclamation,
   FaBolt,
+  FaBrain,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -66,12 +65,6 @@ export default function SidebarAdmin() {
       icon: <FaFileCsv />,
     },
     {
-      id: 2,
-      url: "/eventos/dashboard-ejecutivo",
-      name: "Resumen Ejecutivo",
-      icon: <FaChartLine />,
-    },
-    {
       id: 3,
       url: "/eventos/usuarios",
       name: "Por Usuario",
@@ -84,15 +77,9 @@ export default function SidebarAdmin() {
       icon: <FaShieldHalved />,
     },
     {
-      id: 6,
-      url: "/eventos/deteccion",
-      name: "Motor Detección",
-      icon: <FaBrain />,
-    },
-    {
       id: 7,
-      url: "/eventos/monitoreo-vivo",
-      name: "Monitoreo en Vivo",
+      url: "/eventos/motor-deteccion",
+      name: "Motor de Detección",
       icon: <FaBolt style={{ color: "#38bdf8" }} />,
     },
   ];
@@ -100,9 +87,9 @@ export default function SidebarAdmin() {
   const correlacionLinks = [
     {
       id: 20,
-      url: "/incidentes",
-      name: "Incidentes de Fuga",
-      icon: <FaTriangleExclamation />,
+      url: "/entrenamiento",
+      name: "Módulo Entrenamiento",
+      icon: <FaBrain />,
     },
   ];
 
@@ -171,8 +158,8 @@ export default function SidebarAdmin() {
 
       <hr className={styles.divider} />
 
-      <div className={styles.sectionTitle} style={{ color: "#ef4444" }}>
-        Centro de Amenazas (SOC)
+      <div className={styles.sectionTitle} style={{ color: "#7c3aed" }}>
+        Entrenamiento & Modelos
       </div>
 
       <div className={styles.listUrl}>
@@ -184,7 +171,7 @@ export default function SidebarAdmin() {
             }`}
             to={link.url}
           >
-            <span className={styles.icon} style={{ color: "#ef4444" }}>
+            <span className={styles.icon} style={{ color: "#7c3aed" }}>
               {link.icon}
             </span>
             {link.name}

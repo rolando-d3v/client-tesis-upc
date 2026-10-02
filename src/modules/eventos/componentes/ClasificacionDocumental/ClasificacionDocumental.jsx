@@ -1,7 +1,4 @@
 import {
-  PieChart,
-  Pie,
-  Cell,
   Tooltip,
   ResponsiveContainer,
   Legend,
@@ -13,144 +10,126 @@ import {
 } from "recharts";
 import styles from "./ClasificacionDocumental.module.css";
 
-const COLORES = { SECRETO: "#ef4444", RESERVADO: "#f97316", CONFIDENCIAL: "#eab308", COMUN: "#22c55e" };
+export function TablaClasificacion({ porClasificacion = [] }) {
+  if (!porClasificacion || porClasificacion.length === 0) {
+    return <p className={styles.empty}>Sin datos de clasificación</p>;
+  }
+
+  return (
+    <div className={styles.tableWrapper}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Clasificación</th>
+            <th className={styles.textRight}>Eventos</th>
+            <th className={styles.textRight}>Descargas</th>
+            <th className={styles.textRight}>Total MB</th>
+            <th className={styles.textRight}>Fuera Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {porClasificacion.map((c, i) => (
+            <tr key={i}>
+              <td>
+                <span className={styles[`badge_${c.clasificacion?.toLowerCase()}`]}>
+                  {c.clasificacion}
+                </span>
+              </td>
+              <td className={styles.textRight}>{c.total_eventos?.toLocaleString()}</td>
+              <td className={styles.textRight}>{c.n_descargas?.toLocaleString()}</td>
+              <td className={styles.textRight}>{c.total_mb?.toFixed(1)} MB</td>
+              <td className={styles.textRight}>{c.n_fuera_horario?.toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function CruceClasificacionHorario({ cruce = [] }) {
+  if (!cruce || cruce.length === 0) {
+    return <p className={styles.empty}>Sin datos de cruce horario</p>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={320}>
+      <BarChart data={cruce} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+        <XAxis dataKey="clasificacion" tick={{ fill: "#475569", fontSize: 11 }} />
+        <YAxis tick={{ fill: "#475569", fontSize: 11 }} unit=" MB" />
+        <Tooltip
+          formatter={(value) => [`${Number(value).toFixed(1)} MB`]}
+          contentStyle={{
+            background: "rgba(255, 255, 255, 0.95)",
+            border: "1px solid #e2e8f0",
+            borderRadius: 8,
+            color: "#1e293b",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+          }}
+        />
+        <Legend wrapperStyle={{ fontSize: 11, color: "#475569", paddingTop: 8 }} />
+        <Bar dataKey="mb_fuera_horario" name="MB Fuera Horario" fill="#f97316" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="mb_en_horario" name="MB En Horario" fill="#818cf8" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function TopTiposDocumento({ porTipoDocumento = [] }) {
+  if (!porTipoDocumento || porTipoDocumento.length === 0) {
+    return <p className={styles.empty}>Sin datos de tipos de documento</p>;
+  }
+
+  return (
+    <div className={styles.scrollWrapper}>
+      <ResponsiveContainer width="100%" height={Math.max(porTipoDocumento.length * 36, 280)}>
+        <BarChart data={porTipoDocumento} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+          <XAxis type="number" tick={{ fill: "#475569", fontSize: 11 }} />
+          <YAxis
+            dataKey="NAME_TIPO_DOCUMENTO"
+            type="category"
+            width={140}
+            tick={{ fill: "#1e293b", fontSize: 10, fontWeight: 500 }}
+            tickFormatter={(val) => (val && val.length > 20 ? `${val.substring(0, 18)}...` : val)}
+          />
+          <Tooltip
+            formatter={(value) => [Number(value).toLocaleString(), "Eventos"]}
+            contentStyle={{
+              background: "rgba(255, 255, 255, 0.95)",
+              border: "1px solid #e2e8f0",
+              borderRadius: 8,
+              color: "#1e293b",
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+            }}
+          />
+          <Bar dataKey="total_eventos" fill="#c084fc" radius={[0, 6, 6, 0]} name="Eventos" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export default function ClasificacionDocumental({ porClasificacion = [], cruce = [], porTipoDocumento = [] }) {
   return (
     <div className={styles.container}>
-      <div className={styles.row}>
-        <div className={styles.section}>
-          <h4 className={styles.subtitle}>📊 Eventos por Clasificación</h4>
-          {porClasificacion.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={porClasificacion}
-                  dataKey="total_eventos"
-                  nameKey="clasificacion"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  innerRadius={55}
-                  paddingAngle={3}
-                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, clasificacion }) => {
-                    const RADIAN = Math.PI / 180;
-                    const radius = innerRadius + (outerRadius - innerRadius) * 1.4;
-                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                    return (
-                      <text
-                        x={x}
-                        y={y}
-                        fill="#475569"
-                        textAnchor={x > cx ? "start" : "end"}
-                        dominantBaseline="central"
-                        fontSize={11}
-                        fontWeight={500}
-                      >
-                        {`${clasificacion} ${(percent * 100).toFixed(0)}%`}
-                      </text>
-                    );
-                  }}
-                >
-                  {porClasificacion.map((entry, i) => (
-                    <Cell key={i} fill={COLORES[entry.clasificacion] || "#818cf8"} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "rgba(255, 255, 255, 0.95)",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 8,
-                    color: "#1e293b",
-                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className={styles.empty}>Sin datos</p>
-          )}
-        </div>
-        <div className={styles.section}>
-          <h4 className={styles.subtitle}>📋 Detalle por Clasificación</h4>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Clasificación</th>
-                <th>Eventos</th>
-                <th>Descargas</th>
-                <th>MB</th>
-                <th>Fuera Hr</th>
-              </tr>
-            </thead>
-            <tbody>
-              {porClasificacion.map((c, i) => (
-                <tr key={i}>
-                  <td>
-                    <span className={styles[`badge_${c.clasificacion?.toLowerCase()}`]}>{c.clasificacion}</span>
-                  </td>
-                  <td>{c.total_eventos?.toLocaleString()}</td>
-                  <td>{c.n_descargas}</td>
-                  <td>{c.total_mb?.toFixed(1)}</td>
-                  <td>{c.n_fuera_horario}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className={styles.sectionFull}>
+        <h4 className={styles.subtitle}>📋 Detalle por Clasificación</h4>
+        <TablaClasificacion porClasificacion={porClasificacion} />
       </div>
 
       {cruce.length > 0 && (
         <div className={styles.sectionFull}>
           <h4 className={styles.subtitle}>🔗 Cruce: Clasificación × Horario</h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={cruce}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-              <XAxis dataKey="clasificacion" tick={{ fill: "#475569", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#475569", fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{
-                  background: "rgba(255, 255, 255, 0.95)",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 8,
-                  color: "#1e293b",
-                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: 11, color: "#475569" }} />
-              <Bar dataKey="mb_fuera_horario" name="MB Fuera Horario" fill="#f97316" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="mb_en_horario" name="MB En Horario" fill="#818cf8" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <CruceClasificacionHorario cruce={cruce} />
         </div>
       )}
 
       {porTipoDocumento.length > 0 && (
         <div className={styles.sectionFull}>
           <h4 className={styles.subtitle}>📄 Top Tipos de Documento</h4>
-          <ResponsiveContainer width="100%" height={500}>
-            <BarChart data={porTipoDocumento} layout="vertical" margin={{ left: 250 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-              <XAxis type="number" tick={{ fill: "#475569", fontSize: 11 }} />
-              <YAxis
-                dataKey="NAME_TIPO_DOCUMENTO"
-                type="category"
-                width={180}
-                tick={{ fill: "#1e293b", fontSize: 10, fontWeight: 500 }}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "rgba(255, 255, 255, 0.95)",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 8,
-                  color: "#1e293b",
-                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-                }}
-              />
-              <Bar dataKey="total_eventos" fill="#c084fc" radius={[0, 6, 6, 0]} name="Eventos" />
-            </BarChart>
-          </ResponsiveContainer>
+          <TopTiposDocumento porTipoDocumento={porTipoDocumento} />
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "./IncidentesPage.module.css";
+import styles from "./EntrenamientoPage.module.css";
 import KPICardsSOC from "../componentes/KPICardsSOC";
 import GraficoEvolucionRiesgos from "../componentes/GraficoEvolucionRiesgos";
 import GraficoTipoEvento from "../componentes/GraficoTipoEvento";
@@ -13,11 +13,11 @@ import {
   useAlertasBloqueados,
 } from "../../../api/apiCorrelacion";
 import { toast } from "sonner";
-import { FaShieldHalved } from "react-icons/fa6";
+import { FaShieldHalved, FaBrain, FaArrowsRotate, FaGear } from "react-icons/fa6";
 
-export default function IncidentesPage() {
+export default function EntrenamientoPage() {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(10);
   const [filtros, setFiltros] = useState({
     nivel_riesgo: "",
     estado: "",
@@ -26,6 +26,11 @@ export default function IncidentesPage() {
     mes: "",
     tipo_evento: "",
   });
+
+  // Parámetros de calibración MLOps
+  const [contaminacion, setContaminacion] = useState("0.03");
+  const [umbralCritico, setUmbralCritico] = useState("0.80");
+  const [pesoSecreto, setPesoSecreto] = useState("3.0");
 
   const { data: resumen } = useResumenSOC();
   const { data: alertasBloqueo } = useAlertasBloqueados();
@@ -43,11 +48,17 @@ export default function IncidentesPage() {
 
   const handleEjecutar = async () => {
     try {
-      const res = await ejecutarMutation.mutateAsync();
-      toast.success(`Correlación finalizada: ${res.total_incidentes_generados} incidentes analizados.`);
+      const res = await ejecutarMutation.mutateAsync({
+        contaminacion: Number(contaminacion),
+        umbral_critico: Number(umbralCritico),
+        peso_secreto: Number(pesoSecreto),
+      });
+      toast.success(
+        `Entrenamiento y correlación completada: ${res.total_incidentes_generados} incidentes analizados y sincronizados.`
+      );
       refetch();
     } catch (error) {
-      toast.error(error?.response?.data?.detail || "Error al ejecutar correlación.");
+      toast.error(error?.response?.data?.detail || "Error al ejecutar entrenamiento.");
     }
   };
 
@@ -84,12 +95,81 @@ export default function IncidentesPage() {
     <div className={styles.page}>
       <div className={styles.headerRow}>
         <div>
-          <h1 className={styles.title}>Incidentes Correlacionados de Fuga</h1>
-        </div>
-        <div>
+          <h1 className={styles.title}>
+            <FaBrain style={{ color: "#7c3aed" }} /> Módulo de Entrenamiento y Calibración
+          </h1>
           <p className={styles.subtitle}>
-            Centro de Operaciones de Seguridad (SOC): Fusión de Trazabilidad Documental y Comportamiento de Usuarios
+            Fase de Aprendizaje MLOps: Calibración de Isolation Forest Dual, Ponderación de Riesgo y Serialización (.joblib)
           </p>
+        </div>
+      </div>
+
+      {/* Panel MLOps de Entrenamiento y Calibración */}
+      <div className={styles.trainingPanel}>
+        <div className={styles.trainingTop}>
+          <div className={styles.trainingHeaderLeft}>
+            <h3>
+              <FaGear style={{ color: "#7c3aed" }} /> Parámetros de Calibración del Modelo Predictivo
+            </h3>
+            <p>Ajusta los hiperparámetros antes de reentrenar y correlacionar los patrones de tráfico</p>
+          </div>
+          <div className={styles.modelBadgeActive}>
+            <span className={styles.activeDot} />
+            Modelo Activo: Isolation Forest v2.1 (.joblib)
+          </div>
+        </div>
+
+        <div className={styles.trainingGrid}>
+          <div className={styles.paramBox}>
+            <label className={styles.paramLabel}>Tasa de Contaminación (Anomaly %)</label>
+            <select
+              className={styles.paramSelect}
+              value={contaminacion}
+              onChange={(e) => setContaminacion(e.target.value)}
+            >
+              <option value="0.01">1% (Muy Estricto)</option>
+              <option value="0.03">3% (Recomendado - Tesis)</option>
+              <option value="0.05">5% (Alta Sensibilidad)</option>
+              <option value="0.10">10% (Exploratorio)</option>
+            </select>
+          </div>
+
+          <div className={styles.paramBox}>
+            <label className={styles.paramLabel}>Umbral Score Crítico (Disparador)</label>
+            <select
+              className={styles.paramSelect}
+              value={umbralCritico}
+              onChange={(e) => setUmbralCritico(e.target.value)}
+            >
+              <option value="0.75">Score ≥ 0.75 (Sensible)</option>
+              <option value="0.80">Score ≥ 0.80 (Equilibrado)</option>
+              <option value="0.85">Score ≥ 0.85 (Alta Certeza)</option>
+            </select>
+          </div>
+
+          <div className={styles.paramBox}>
+            <label className={styles.paramLabel}>Ponderador Doc. Secreto / Reservado</label>
+            <select
+              className={styles.paramSelect}
+              value={pesoSecreto}
+              onChange={(e) => setPesoSecreto(e.target.value)}
+            >
+              <option value="2.0">2.0x (Estándar)</option>
+              <option value="3.0">3.0x (Prioridad Máxima)</option>
+              <option value="4.0">4.0x (Rigor Militar)</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            className={styles.btnTrainExecute}
+            onClick={handleEjecutar}
+            disabled={ejecutarMutation.isPending}
+            title="Ejecutar reentrenamiento y correlación"
+          >
+            <FaArrowsRotate className={ejecutarMutation.isPending ? "fa-spin" : ""} />
+            {ejecutarMutation.isPending ? "Entrenando Modelo..." : "Reentrenar y Correlacionar"}
+          </button>
         </div>
       </div>
 

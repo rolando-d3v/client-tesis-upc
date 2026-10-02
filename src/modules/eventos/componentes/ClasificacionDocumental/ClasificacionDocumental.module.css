@@ -47,6 +47,42 @@
 .table tr:last-child td {
   border-bottom: none;
 }
+.table th.textRight,
+.table td.textRight {
+  text-align: right;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.scrollWrapper {
+  width: 100%;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+}
+
+.scrollWrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollWrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.scrollWrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+.scrollWrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
 /* Badges */
 .badge_secreto { background: rgba(239,68,68,0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(239,68,68,0.3); }
 .badge_reservado { background: rgba(249,115,22,0.15); color: #f97316; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(249,115,22,0.3); }

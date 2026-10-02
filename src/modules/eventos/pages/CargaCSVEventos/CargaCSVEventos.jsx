@@ -50,7 +50,7 @@ export default function CargaCSVEventos() {
         toast.success(
           `✅ Análisis completo: ${resumen?.total_eventos?.toLocaleString() || 0} eventos, ${resumen?.usuarios_anomalos || 0} usuarios de riesgo`
         );
-        navigate("/eventos/dashboard-ejecutivo");
+        navigate("/eventos/usuarios");
       },
       onError: (error) => {
         console.error(error);

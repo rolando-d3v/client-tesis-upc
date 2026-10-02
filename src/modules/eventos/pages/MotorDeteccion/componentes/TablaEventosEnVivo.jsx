@@ -24,6 +24,7 @@ import {
   FaAnglesRight,
   FaRotateLeft,
   FaTriangleExclamation,
+  FaBan,
 } from "react-icons/fa6";
 import RoleBadge from "../../../../../components/RoleBadge";
 
@@ -58,6 +59,8 @@ export default function TablaEventosEnVivo({
   filtros = {},
   setFiltros,
   onSeleccionarEvento,
+  onNeutralizarUsuario,
+  neutralizadosIds = [],
   autoScroll = true,
   setAutoScroll,
 }) {
@@ -238,13 +241,40 @@ export default function TablaEventosEnVivo({
           const initial = ev.name_user
             ? ev.name_user.charAt(0).toUpperCase()
             : "U";
+          const isNeutralizado =
+            neutralizadosIds.includes(String(ev.id_user)) ||
+            neutralizadosIds.includes(ev.name_user);
+
           return (
             <div className={styles.userCell}>
-              <div className={styles.userAvatar}>{initial}</div>
+              <div
+                className={styles.userAvatar}
+                style={isNeutralizado ? { borderColor: "#dc2626", background: "#fef2f2", color: "#dc2626" } : {}}
+              >
+                {initial}
+              </div>
               <div className={styles.userInfo}>
-                <span className={styles.userName} title={ev.name_user}>
-                  {ev.name_user || "Usuario Desconocido"}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                  <span className={styles.userName} title={ev.name_user}>
+                    {ev.name_user || "Usuario Desconocido"}
+                  </span>
+                  {isNeutralizado && (
+                    <span
+                      style={{
+                        background: "#fee2e2",
+                        color: "#dc2626",
+                        border: "1px solid #fecaca",
+                        padding: "1px 5px",
+                        borderRadius: "4px",
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                      }}
+                      title="Cuenta bloqueada preventivamente"
+                    >
+                      BLOQUEADO
+                    </span>
+                  )}
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: 2, flexWrap: "wrap" }}>
                   <RoleBadge role={ev.name_role || ev.rol || ev.role} size="small" />
                   <span className={styles.userId}>
@@ -357,12 +387,52 @@ export default function TablaEventosEnVivo({
         id: "acciones",
         header: "Acción",
         enableSorting: false,
-        meta: { align: "right", width: "9%" },
+        meta: { align: "right", width: "11%" },
         cell: ({ row }) => {
           const ev = row.original;
           const isExpanded = !!expandedRows[row.id];
+          const isNeutralizado =
+            neutralizadosIds.includes(String(ev.id_user)) ||
+            neutralizadosIds.includes(ev.name_user);
+
           return (
             <div className={styles.actionsCell}>
+              {onNeutralizarUsuario && (
+                <button
+                  type="button"
+                  style={{
+                    background: isNeutralizado ? "#fee2e2" : "#ffffff",
+                    color: isNeutralizado ? "#dc2626" : "#ef4444",
+                    border: "1.5px solid",
+                    borderColor: isNeutralizado ? "#fca5a5" : "#fecaca",
+                    borderRadius: "6px",
+                    padding: "0.35rem 0.45rem",
+                    cursor: isNeutralizado ? "default" : "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.75rem",
+                    transition: "all 0.15s ease",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isNeutralizado) {
+                      const confirm = window.confirm(
+                        `¿Confirmas el bloqueo preventivo y neutralización de la cuenta de ${ev.name_user || "usuario"}?`
+                      );
+                      if (confirm) onNeutralizarUsuario(ev);
+                    }
+                  }}
+                  title={
+                    isNeutralizado
+                      ? "Usuario ya neutralizado"
+                      : `Neutralizar cuenta de ${ev.name_user || "usuario"}`
+                  }
+                  disabled={isNeutralizado}
+                >
+                  <FaBan />
+                </button>
+              )}
               <button
                 type="button"
                 className={`${styles.btnExpand} ${
@@ -386,7 +456,7 @@ export default function TablaEventosEnVivo({
         },
       },
     ],
-    [expandedRows, onSeleccionarEvento]
+    [expandedRows, onSeleccionarEvento, onNeutralizarUsuario, neutralizadosIds]
   );
 
   // TanStack Table Instance
