@@ -1,16 +1,22 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
 import styles from "./motorDeteccion.module.css";
 import KPICardsMonitoreo from "./componentes/KPICardsMonitoreo";
-import ControlSimulador from "./componentes/ControlSimulador";
-import BannerUltimoEvento from "./componentes/BannerUltimoEvento";
-import TablaEventosEnVivo from "./componentes/TablaEventosEnVivo";
-import ModalInspeccionEvento from "./componentes/ModalInspeccionEvento";
+import DeteccionAuth from "./deteccion_automatica/DeteccionAuth";
+import {
+  acumularEvento,
+  combinarResumenSOC,
+  correlacionarEnVivo,
+  crearTelemetria,
+  listarIncidentesEnVivo,
+} from "./telemetria";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Componentes Analíticos SOC (compartidos con Entrenamiento)
 import GraficoEvolucionRiesgos from "../../../entrenamiento/componentes/GraficoEvolucionRiesgos";
 import GraficoTipoEvento from "../../../entrenamiento/componentes/GraficoTipoEvento";
 import GraficoEstadoGestion from "../../../entrenamiento/componentes/GraficoEstadoGestion";
 import DashboardSOCAnalytics from "../../../entrenamiento/componentes/DashboardSOCAnalytics";
+import TablaIncidentesMotor from "./componentes/TablaIncidentesMotor";
 
 import { API_MACHINE } from "../../../../api/apiRestMachine";
 import {
@@ -27,6 +33,7 @@ import {
   useResumenSOC,
   useIncidentes,
   useAlertasBloqueados,
+  useEjecutarCorrelacion,
   postNeutralizarUsuario,
 } from "../../../../api/apiCorrelacion";
 import { toast } from "sonner";
@@ -38,9 +45,11 @@ import {
   FaLayerGroup,
   FaShieldHalved,
   FaBan,
+  FaFolderOpen,
 } from "react-icons/fa6";
 
 export default function MotorDeteccion() {
+  const queryClient = useQueryClient();
   // Modos de Vista: "integral" (ambos), "streaming" (solo feed/simulador), "graficos" (solo analítica SOC)
   const [viewMode, setViewMode] = useState("integral");
 
@@ -48,6 +57,8 @@ export default function MotorDeteccion() {
   const [autoNeutralize, setAutoNeutralize] = useState(false);
   const autoNeutralizeRef = useRef(false);
   const [neutralizadosIds, setNeutralizadosIds] = useState([]);
+  const neutralizacionesPendientesRef = useRef(new Set());
+  const neutralizadosRef = useRef(new Set());
 
   useEffect(() => {
     autoNeutralizeRef.current = autoNeutralize;
@@ -57,10 +68,12 @@ export default function MotorDeteccion() {
   const [conexionStatus, setConexionStatus] = useState("conectando"); // "conectado" | "conectando" | "desconectado"
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const montadoRef = useRef(false);
 
   // Estados de eventos y simulación
   const [eventos, setEventos] = useState([]);
   const [ultimoEvento, setUltimoEvento] = useState(null);
+  const [telemetria, setTelemetria] = useState(crearTelemetria);
   const [simuladorEstado, setSimuladorEstado] = useState({
     activo: false,
     pausado: false,
@@ -103,396 +116,136 @@ export default function MotorDeteccion() {
     ...filtrosSOC,
   });
 
-  // Métricas acumuladas en sesión
-  const totalRecibidos = eventos.length;
-  const totalCriticos = eventos.filter((e) => e.nivel_riesgo === "critico").length;
-  const totalAnomalias = eventos.filter((e) => e.es_anomalia).length;
-  const scorePromedio =
-    totalRecibidos > 0
-      ? (
-          eventos.reduce((acc, curr) => acc + (Number(curr.score_final) || 0), 0) /
-          totalRecibidos
-        ).toFixed(3)
-      : "0.000";
+  // Estado para Expediente Forense (TablaIncidentes en Motor de Detección)
+  // Correlación en vivo: un incidente por par (documento, usuario) que se actualiza con cada evento.
+  const [incidentesPares, setIncidentesPares] = React.useState({});
+  const incidentesEnVivo = useMemo(() => listarIncidentesEnVivo(incidentesPares), [incidentesPares]);
+  // IDs de evento ya contados: si el CSV vuelve a empezar (bucle / reinicio) el evento repetido
+  // se muestra en el feed pero no se vuelve a sumar a gráficos, KPIs ni incidentes.
+  const eventosContadosRef = useRef(new Set());
+  const [repetidosOmitidos, setRepetidosOmitidos] = useState(0);
+  const [pageIncidentes, setPageIncidentes] = React.useState(1);
+  const [pageSizeIncidentes, setPageSizeIncidentes] = React.useState(10);
+  const [filtrosIncidentes, setFiltrosIncidentes] = React.useState({
+    nivel_riesgo: "",
+    estado: "",
+    clasificacion: "",
+    busqueda: "",
+    mes: "",
+    tipo_evento: "",
+  });
+  const {
+    data: incidentesForenseData,
+    isLoading: loadingForense,
+    refetch: refetchForense,
+  } = useIncidentes({
+    page: pageIncidentes,
+    page_size: pageSizeIncidentes,
+    ...filtrosIncidentes,
+  });
+  const ejecutarCorrelacionMutation = useEjecutarCorrelacion();
 
-  const totalBloqueados =
-    (Array.isArray(alertasBloqueo)
-      ? alertasBloqueo.length
-      : (alertasBloqueo?.total_cuentas_bloqueadas || 0)) + neutralizadosIds.length;
-
-  // ==============================================================
-  // AGREGACIÓN EN TIEMPO REAL: SINCRONIZACIÓN DE GRÁFICOS SOC
-  // ==============================================================
-  const MESES_MAP = {
-    "01": "Ene", "02": "Feb", "03": "Mar", "04": "Abr",
-    "05": "May", "06": "Jun", "07": "Jul", "08": "Ago",
-    "09": "Set", "10": "Oct", "11": "Nov", "12": "Dic",
-  };
-
-  const DEFAULT_TIPOS = [
-    { id: "VISTA", nombre: "VISTA", sub: "Lectura / visualización auditable", cantidad: 0, color: "#64748b", peso_accion: 1.0, nivel: "bajo" },
-    { id: "DESCARGAR", nombre: "DESCARGAR", sub: "Descarga y tenencia de copia local", cantidad: 0, color: "#eab308", peso_accion: 2.0, nivel: "alto" },
-    { id: "EDITAR", nombre: "EDITAR", sub: "Modificación o alteración de documento", cantidad: 0, color: "#3b82f6", peso_accion: 2.0, nivel: "medio" },
-    { id: "ELIMINAR", nombre: "ELIMINAR", sub: "Destrucción / sabotaje de registro (Riesgo máximo)", cantidad: 0, color: "#ef4444", peso_accion: 3.0, nivel: "critico" },
-    { id: "GUARDAR_COPIA", nombre: "GUARDAR_COPIA", sub: "Duplicación de archivo / riesgo de fuga", cantidad: 0, color: "#f97316", peso_accion: 2.5, nivel: "alto" },
-  ];
-
-  const DEFAULT_MESES_VACIOS = [
-    { key: "2026-01", label: "Ene", mes: "Ene", mes_completo: "Ene 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-02", label: "Feb", mes: "Feb", mes_completo: "Feb 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-03", label: "Mar", mes: "Mar", mes_completo: "Mar 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-04", label: "Abr", mes: "Abr", mes_completo: "Abr 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-05", label: "May", mes: "May", mes_completo: "May 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-06", label: "Jun", mes: "Jun", mes_completo: "Jun 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-07", label: "Jul", mes: "Jul", mes_completo: "Jul 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-08", label: "Ago", mes: "Ago", mes_completo: "Ago 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-09", label: "Set", mes: "Set", mes_completo: "Set 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-10", label: "Oct", mes: "Oct", mes_completo: "Oct 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-11", label: "Nov", mes: "Nov", mes_completo: "Nov 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-    { key: "2026-12", label: "Dic", mes: "Dic", mes_completo: "Dic 2026", critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 },
-  ];
-
-  const parseFechaEvento = (fechaRaw) => {
-    if (!fechaRaw || fechaRaw === "-") {
-      const d = new Date();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const mesNombre = MESES_MAP[m] || "Oct";
-      return {
-        mesKey: m,
-        mesNombre,
-        diaKey: d.toISOString().split("T")[0],
-        diaLabel: `${d.getDate()} ${mesNombre.toLowerCase()}`,
-        year: d.getFullYear(),
-      };
-    }
-
-    const str = String(fechaRaw).trim();
-    if (str.includes("/")) {
-      const [datePart] = str.split(" ");
-      const parts = datePart.split("/");
-      if (parts.length === 3) {
-        let dia, mes, anio;
-        if (parts[0].length === 4) {
-          anio = parts[0];
-          mes = String(parts[1]).padStart(2, "0");
-          dia = String(parts[2]).padStart(2, "0");
-        } else {
-          dia = String(parts[0]).padStart(2, "0");
-          mes = String(parts[1]).padStart(2, "0");
-          anio = parts[2];
-        }
-        const mesNombre = MESES_MAP[mes] || "Ene";
-        return {
-          mesKey: mes,
-          mesNombre,
-          diaKey: `${anio}-${mes}-${dia}`,
-          diaLabel: `${parseInt(dia, 10)} ${mesNombre.toLowerCase()}`,
-          year: parseInt(anio, 10) || 2026,
-        };
-      }
-    }
-
-    if (str.includes("-")) {
-      const [datePart] = str.split("T")[0].split(" ");
-      const parts = datePart.split("-");
-      if (parts.length === 3) {
-        let dia, mes, anio;
-        if (parts[0].length === 4) {
-          anio = parts[0];
-          mes = String(parts[1]).padStart(2, "0");
-          dia = String(parts[2]).padStart(2, "0");
-        } else {
-          dia = String(parts[0]).padStart(2, "0");
-          mes = String(parts[1]).padStart(2, "0");
-          anio = parts[2];
-        }
-        const mesNombre = MESES_MAP[mes] || "Ene";
-        return {
-          mesKey: mes,
-          mesNombre,
-          diaKey: `${anio}-${mes}-${dia}`,
-          diaLabel: `${parseInt(dia, 10)} ${mesNombre.toLowerCase()}`,
-          year: parseInt(anio, 10) || 2026,
-        };
-      }
-    }
-
-    const d = new Date();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const mesNombre = MESES_MAP[m] || "Oct";
-    return {
-      mesKey: m,
-      mesNombre,
-      diaKey: d.toISOString().split("T")[0],
-      diaLabel: `${d.getDate()} ${mesNombre.toLowerCase()}`,
-      year: d.getFullYear(),
-    };
-  };
-
-  const normalizarTipoEvento = (tipoRaw, idTipo) => {
-    if (Number(idTipo) === 1) return "VISTA";
-    if (Number(idTipo) === 2) return "DESCARGAR";
-    if (Number(idTipo) === 3) return "EDITAR";
-    if (Number(idTipo) === 4) return "ELIMINAR";
-    if (Number(idTipo) === 5) return "GUARDAR_COPIA";
-    const raw = String(tipoRaw || "").trim().toUpperCase();
-    if (raw.includes("DESCARG") || raw.includes("DOWN")) return "DESCARGAR";
-    if (raw.includes("COPIA") || raw.includes("COPY")) return "GUARDAR_COPIA";
-    if (raw.includes("EDIT")) return "EDITAR";
-    if (raw.includes("ELIMIN") || raw.includes("DELET") || raw.includes("BORR")) return "ELIMINAR";
-    if (raw.includes("VIST") || raw.includes("READ") || raw.includes("LECT")) return "VISTA";
-    return "VISTA";
-  };
-
-  // Resumen Dinámico en Tiempo Real que integra streaming y telemetría histórica
-  const resumenEnVivo = useMemo(() => {
-    // 1. Clonar estructura base
-    const baseTipos = (resumenSOC?.tipos_eventos && resumenSOC.tipos_eventos.length > 0)
-      ? resumenSOC.tipos_eventos.map((t) => ({ ...t }))
-      : DEFAULT_TIPOS.map((t) => ({ ...t }));
-
-    const baseEvolucionMensual = (resumenSOC?.evolucion_mensual && resumenSOC.evolucion_mensual.length > 0)
-      ? resumenSOC.evolucion_mensual.map((m) => ({ ...m }))
-      : DEFAULT_MESES_VACIOS.map((m) => ({ ...m }));
-
-    const baseEvolucionDiaria = (resumenSOC?.evolucion_diaria && resumenSOC.evolucion_diaria.length > 0)
-      ? resumenSOC.evolucion_diaria.map((d) => ({ ...d }))
-      : [];
-
-    const basePorRiesgo = {
-      critico: Number(resumenSOC?.por_nivel_riesgo?.critico || 0),
-      alto: Number(resumenSOC?.por_nivel_riesgo?.alto || 0),
-      medio: Number(resumenSOC?.por_nivel_riesgo?.medio || 0),
-      bajo: Number(resumenSOC?.por_nivel_riesgo?.bajo || 0),
-    };
-
-    const basePorEstado = {
-      abierto: Number(resumenSOC?.por_estado?.abierto || 0),
-      en_investigacion: Number(resumenSOC?.por_estado?.en_investigacion || 0),
-      contenido: Number(resumenSOC?.por_estado?.contenido || 0),
-      mitigado: Number(resumenSOC?.por_estado?.mitigado || 0),
-      falso_positivo: Number(resumenSOC?.por_estado?.falso_positivo || 0),
-    };
-
-    const basePorClasif = {
-      SECRETO: Number(resumenSOC?.por_clasificacion?.SECRETO || 0),
-      RESERVADO: Number(resumenSOC?.por_clasificacion?.RESERVADO || 0),
-      CONFIDENCIAL: Number(resumenSOC?.por_clasificacion?.CONFIDENCIAL || 0),
-      COMUN: Number(resumenSOC?.por_clasificacion?.COMUN || 0),
-      ...(resumenSOC?.por_clasificacion || {}),
-    };
-
-    const baseTopDocs = Array.isArray(resumenSOC?.top_documentos)
-      ? [...resumenSOC.top_documentos]
-      : [];
-
-    const baseTopUsers = Array.isArray(resumenSOC?.top_usuarios)
-      ? [...resumenSOC.top_usuarios]
-      : [];
-
-    const baseTiposPorMes = resumenSOC?.tipos_eventos_por_mes
-      ? JSON.parse(JSON.stringify(resumenSOC.tipos_eventos_por_mes))
-      : {};
-
-    // 2. Acumular eventos vivos generados por la simulación o ingesta
-    eventos.forEach((ev) => {
-      // --- A. Tipo de Evento ---
-      const tipoNormalizado = normalizarTipoEvento(
-        ev.name_tipo_evento || ev.NAME_TIPO_EVENTO || ev.tipo_evento || ev.tipo,
-        ev.id_tipo_evento || ev.ID_TIPO_EVENTO
-      );
-
-      const tipoObj = baseTipos.find((t) => t.id === tipoNormalizado || t.nombre === tipoNormalizado);
-      if (tipoObj) {
-        tipoObj.cantidad = (tipoObj.cantidad || 0) + 1;
-      }
-
-      // --- B. Fecha, Mes y Día ---
-      const fechaRaw = ev.fecha_evento || ev.FECHA_EVENTO || ev.fecha;
-      const { mesKey, mesNombre, diaKey, diaLabel } = parseFechaEvento(fechaRaw);
-
-      if (!baseTiposPorMes[mesKey]) {
-        baseTiposPorMes[mesKey] = DEFAULT_TIPOS.map((d) => ({ ...d, cantidad: 0 }));
-      }
-      const evTipoMes = baseTiposPorMes[mesKey].find((t) => t.id === tipoNormalizado || t.nombre === tipoNormalizado);
-      if (evTipoMes) {
-        evTipoMes.cantidad = (evTipoMes.cantidad || 0) + 1;
-      }
-
-      // --- C. Nivel de Riesgo ---
-      const nivel = String(ev.nivel_riesgo || ev.NIVEL_RIESGO || "bajo").toLowerCase();
-      if (basePorRiesgo[nivel] !== undefined) {
-        basePorRiesgo[nivel] += 1;
-      }
-
-      // Actualizar Evolución Mensual
-      let mesObj = baseEvolucionMensual.find(
-        (m) => m.label?.toLowerCase() === mesNombre.toLowerCase() || m.mes?.toLowerCase() === mesNombre.toLowerCase()
-      );
-      if (mesObj) {
-        if (mesObj[nivel] !== undefined) {
-          mesObj[nivel] = (mesObj[nivel] || 0) + 1;
-        }
-        mesObj.total = (mesObj.total || 0) + 1;
-      } else {
-        baseEvolucionMensual.push({
-          key: `2026-${mesKey}`,
-          label: mesNombre,
-          mes: mesNombre,
-          mes_completo: `${mesNombre} 2026`,
-          critico: nivel === "critico" ? 1 : 0,
-          alto: nivel === "alto" ? 1 : 0,
-          medio: nivel === "medio" ? 1 : 0,
-          bajo: nivel === "bajo" ? 1 : 0,
-          total: 1,
-        });
-      }
-
-      // Actualizar Evolución Diaria
-      let diaObj = baseEvolucionDiaria.find((d) => d.key === diaKey || d.label === diaLabel);
-      if (diaObj) {
-        if (diaObj[nivel] !== undefined) {
-          diaObj[nivel] = (diaObj[nivel] || 0) + 1;
-        }
-        diaObj.total = (diaObj.total || 0) + 1;
-      } else {
-        baseEvolucionDiaria.push({
-          key: diaKey,
-          label: diaLabel,
-          dia: diaLabel,
-          critico: nivel === "critico" ? 1 : 0,
-          alto: nivel === "alto" ? 1 : 0,
-          medio: nivel === "medio" ? 1 : 0,
-          bajo: nivel === "bajo" ? 1 : 0,
-          total: 1,
-        });
-      }
-
-      // --- D. Estado de Gestión (Contención y Neutralización) ---
-      const userIdStr = String(ev.id_user || ev.name_user);
-      const isNeutralizado = neutralizadosIds.includes(userIdStr);
-      if (ev.nivel_riesgo === "critico" || ev.es_anomalia) {
-        if (isNeutralizado) {
-          basePorEstado.contenido += 1;
-        } else {
-          basePorEstado.abierto += 1;
-        }
-      }
-
-      // --- E. Clasificación de Documentos ---
-      const clasifNorm = String(ev.name_clasificacion || "COMUN").trim().toUpperCase();
-      basePorClasif[clasifNorm] = (basePorClasif[clasifNorm] || 0) + 1;
-
-      // --- F. Top Documentos ---
-      if (ev.id_documento && (ev.nivel_riesgo === "critico" || ev.es_anomalia)) {
-        const docExistente = baseTopDocs.find((d) => d.id_documento === ev.id_documento);
-        if (docExistente) {
-          docExistente.incidentes = (docExistente.incidentes || 0) + 1;
-          docExistente.max_score = Math.max(Number(docExistente.max_score || 0), Number(ev.score_final || 0));
-        } else {
-          baseTopDocs.unshift({
-            id_documento: ev.id_documento,
-            numero_documento: ev.numero_documento || `DOC-${ev.id_documento}`,
-            clasificacion_doc: ev.name_clasificacion || "COMUN",
-            incidentes: 1,
-            max_score: Number(ev.score_final || 0),
-          });
-        }
-      }
-
-      // --- G. Top Usuarios ---
-      if (ev.id_user && (ev.nivel_riesgo === "critico" || ev.es_anomalia)) {
-        const userExistente = baseTopUsers.find((u) => u.id_user === ev.id_user);
-        if (userExistente) {
-          userExistente.incidentes = (userExistente.incidentes || 0) + 1;
-          userExistente.max_score = Math.max(Number(userExistente.max_score || 0), Number(ev.score_final || 0));
-        } else {
-          baseTopUsers.unshift({
-            id_user: ev.id_user,
-            nombre_usuario: ev.name_user || `Usuario ${ev.id_user}`,
-            incidentes: 1,
-            max_score: Number(ev.score_final || 0),
-          });
-        }
-      }
-    });
-
-    const totalAnalizados = Number(resumenSOC?.total_eventos_analizados || 0) + eventos.length;
-    const totalCriticosLive = eventos.filter((e) => e.nivel_riesgo === "critico" || e.es_anomalia).length;
-    const totalIncidentes = Number(resumenSOC?.total_incidentes || 0) + totalCriticosLive;
-    const resueltos = (basePorEstado.mitigado || 0) + (basePorEstado.contenido || 0);
-    const tasaContencion = totalIncidentes > 0 ? Number(((resueltos / totalIncidentes) * 100).toFixed(1)) : 0.0;
-
-    return {
-      ...resumenSOC,
-      total_incidentes: totalIncidentes,
-      total_eventos_analizados: totalAnalizados,
-      por_nivel_riesgo: basePorRiesgo,
-      por_riesgo: basePorRiesgo,
-      por_estado: basePorEstado,
-      tasa_contencion_porcentaje: tasaContencion,
-      tipos_eventos: baseTipos,
-      tipos_eventos_por_mes: baseTiposPorMes,
-      evolucion_mensual: baseEvolucionMensual,
-      evolucion_diaria: baseEvolucionDiaria,
-      por_clasificacion: basePorClasif,
-      top_documentos: baseTopDocs.slice(0, 10),
-      top_usuarios: baseTopUsers.slice(0, 10),
-    };
-  }, [resumenSOC, eventos, neutralizadosIds]);
-
-  // Lista combinada de incidentes para el modal y tabla de analytics
-  const listaIncidentesEnVivo = useMemo(() => {
-    const baseList = incidentesData?.incidentes || [];
-    const liveInc = eventos
-      .filter((e) => e.nivel_riesgo === "critico" || e.es_anomalia)
-      .map((e, idx) => ({
-        id: e.id_evento || `live-${idx}`,
-        codigo_incidente: `INC-LIVE-${e.id_evento || idx}`,
-        id_user: e.id_user,
-        nombre_usuario: e.name_user,
-        name_role: e.name_role || "USER",
-        id_documento: e.id_documento,
-        numero_documento: e.numero_documento,
-        clasificacion_doc: e.name_clasificacion || "COMUN",
-        nivel_riesgo: e.nivel_riesgo || "critico",
-        score_correlacion: e.score_final,
-        estado: neutralizadosIds.includes(String(e.id_user || e.name_user)) ? "contenido" : "abierto",
-        fecha_deteccion: e.fecha_evento || new Date().toISOString(),
-        name_tipo_evento: e.name_tipo_evento || "DESCARGAR",
-        tipo_evento: e.name_tipo_evento || "DESCARGAR",
+  const handleQuickFilterIncidentes = (tipo) => {
+    if (tipo === "critico") {
+      setFiltrosIncidentes((prev) => ({
+        ...prev,
+        nivel_riesgo: prev.nivel_riesgo === "critico" ? "" : "critico",
+        estado: "",
       }));
-    return [...liveInc, ...baseList];
-  }, [incidentesData?.incidentes, eventos, neutralizadosIds]);
+    } else if (tipo === "alto") {
+      setFiltrosIncidentes((prev) => ({
+        ...prev,
+        nivel_riesgo: prev.nivel_riesgo === "alto" ? "" : "alto",
+        estado: "",
+      }));
+    } else if (tipo === "abierto") {
+      setFiltrosIncidentes((prev) => ({
+        ...prev,
+        nivel_riesgo: "",
+        estado: prev.estado === "abierto" ? "" : "abierto",
+      }));
+    } else {
+      setFiltrosIncidentes({ nivel_riesgo: "", estado: "", clasificacion: "", busqueda: "", mes: "", tipo_evento: "" });
+    }
+    setPageIncidentes(1);
+  };
+
+  // El feed es una ventana de 300 filas; la telemetría acumula toda la sesión.
+  const totalRecibidos = telemetria.total_eventos_analizados;
+  const totalCriticos = telemetria.criticos;
+  const totalAnomalias = telemetria.anomalias;
+  const scorePromedio = totalRecibidos
+    ? (telemetria.score_total / totalRecibidos).toFixed(3)
+    : "0.000";
+
+  const cuentasBloqueadas = new Set([
+    ...(Array.isArray(alertasBloqueo) ? alertasBloqueo.map((alerta) => String(alerta.id_user)) : []),
+    ...neutralizadosIds,
+  ]);
+  const totalBloqueados = cuentasBloqueadas.size;
+
+  // Los gráficos leen una versión diferida: React prioriza el feed/KPIs y repinta
+  // las gráficas en cuanto puede, así una ráfaga de eventos no las congela ni las salta.
+  const telemetriaGraficos = useDeferredValue(telemetria);
+  const neutralizadosGraficos = useDeferredValue(neutralizadosIds);
+  const resumenEnVivo = useMemo(
+    () => combinarResumenSOC(resumenSOC, telemetriaGraficos, neutralizadosGraficos),
+    [resumenSOC, telemetriaGraficos, neutralizadosGraficos]
+  );
+  // Lista combinada de incidentes para el modal y tabla de analytics:
+  // los correlacionados en vivo (1 por documento+usuario) primero, luego los persistidos.
+  const listaIncidentesEnVivo = useMemo(
+    () => [...incidentesEnVivo, ...(incidentesData?.incidentes || [])],
+    [incidentesData?.incidentes, incidentesEnVivo]
+  );
 
   // Ejecución de Neutralización Preventiva (Manual o Automática)
-  const handleNeutralizarUsuario = async (evento, motivoCustom = null) => {
-    const userId = evento.id_user || evento.user_id || 1;
+  const handleNeutralizarUsuario = useCallback(async (evento, motivoCustom = null) => {
+    const userId = evento.id_user ?? evento.user_id;
     const userName = evento.name_user || evento.nombre || "Usuario";
+    if (userId == null || !evento.evento_registro_id) {
+      toast.error("El evento no tiene persistencia confirmada; no se puede verificar el bloqueo.");
+      return;
+    }
+    const userKey = String(userId);
+    if (neutralizadosRef.current.has(userKey) || neutralizacionesPendientesRef.current.has(userKey)) return;
+    neutralizacionesPendientesRef.current.add(userKey);
     const motivo =
       motivoCustom ||
       `Neutralización inmediata en vivo: Detección crítica en evento #${evento.id_evento} (${evento.name_clasificacion || "Documento"}) por ${userName}`;
 
     try {
-      await postNeutralizarUsuario({
-        incidente_id: evento.id_evento || 1,
+      const resultado = await postNeutralizarUsuario({
+        id_evento: evento.id_evento,
+        evento_registro_id: evento.evento_registro_id,
         id_user: userId,
         nombre_usuario: userName,
         motivo,
         responsable: "MOTOR_DETECCION_REALTIME",
       });
-      setNeutralizadosIds((prev) => [...new Set([...prev, String(userId), userName])]);
+      if (resultado?.confirmacion_bloqueo !== true) {
+        throw new Error("El servidor no confirmó el bloqueo de la cuenta.");
+      }
+      neutralizadosRef.current.add(userKey);
+      if (!montadoRef.current) return;
+      setNeutralizadosIds((prev) => [...new Set([...prev, userKey])]);
+      queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
       toast.success(`🛡️ Usuario ${userName} neutralizado y cuenta bloqueada en tiempo real.`);
     } catch (err) {
       console.error("Error neutralizando:", err);
-      setNeutralizadosIds((prev) => [...new Set([...prev, String(userId), userName])]);
-      toast.warning(`Acción de contención aplicada para ${userName}.`);
+      if (montadoRef.current) {
+        toast.error(err.response?.data?.detail || err.message || `No se pudo neutralizar a ${userName}.`);
+      }
+    } finally {
+      neutralizacionesPendientesRef.current.delete(userKey);
     }
-  };
+  }, [queryClient]);
 
   // Conectar WebSocket en tiempo real
-  const conectarWebSocket = useCallback(() => {
-    const wsBase = API_MACHINE.replace(/^http/, "ws");
+  const conectarWebSocket = useCallback(function conectar() {
+    if (!montadoRef.current || (wsRef.current && wsRef.current.readyState < WebSocket.CLOSING)) return;
+    clearTimeout(reconnectTimeoutRef.current);
+    const wsBase = API_MACHINE.replace(/^http/, "ws").replace(/\/$/, "");
     const wsUrl = `${wsBase}/eventos/ws/monitoreo`;
 
     try {
@@ -505,6 +258,7 @@ export default function MotorDeteccion() {
       };
 
       ws.onmessage = (event) => {
+        if (!montadoRef.current || wsRef.current !== ws) return;
         try {
           const data = JSON.parse(event.data);
 
@@ -520,16 +274,39 @@ export default function MotorDeteccion() {
             setUltimoEvento(ev);
             setEventos((prev) => [ev, ...prev].slice(0, 300)); // Mantener los últimos 300 en memoria
 
-            if (ev.nivel_riesgo === "critico") {
-              toast.error(
-                `🚨 Evento Crítico #${ev.id_evento}: ${ev.name_user} descargó ${ev.size_archivo_mb} MB (${ev.name_clasificacion})`
-              );
+            const claveEvento = ev.id_evento != null ? String(ev.id_evento) : null;
+            if (claveEvento !== null && eventosContadosRef.current.has(claveEvento)) {
+              // Evento repetido (el CSV volvió a empezar): no se vuelve a contar ni a neutralizar.
+              setRepetidosOmitidos((n) => n + 1);
+            } else {
+              if (claveEvento !== null) eventosContadosRef.current.add(claveEvento);
+              const recibidoEn = new Date();
+              setTelemetria((prev) => acumularEvento(prev, ev, recibidoEn));
 
-              // Neutralización Automática en tiempo real si está activada
-              if (autoNeutralizeRef.current) {
+              // Correlación en tiempo real: actualiza el incidente del par (documento, usuario)
+              // si el evento es una amenaza (anomalía, riesgo alto/crítico o score >= UMBRAL_ALTO).
+              setIncidentesPares((prev) => correlacionarEnVivo(prev, ev, Date.now()));
+
+              // Criterio institucional según constantes.py: UMBRAL_CRITICO = 0.75
+              const esCritico = ev.nivel_riesgo === "critico" || Number(ev.score_final || 0) >= 0.75;
+              if (esCritico) {
+                // Marca visual inmediata (los gráficos pasan el incidente a "Contenido").
+                // OJO: no tocar neutralizadosRef aquí; lo agrega handleNeutralizarUsuario
+                // cuando el servidor confirma el bloqueo. Si se agregara antes, esa función
+                // retornaría al instante y el POST /correlacion/neutralizar nunca saldría.
+                const userKey = String(ev.id_user ?? ev.user_id ?? ev.name_user ?? "");
+                if (userKey) {
+                  setNeutralizadosIds((prev) => (prev.includes(userKey) ? prev : [...prev, userKey]));
+                }
+
+                toast.error(
+                  `🚨 Evento Crítico #${ev.id_evento}: ${ev.name_user} descargó ${ev.size_archivo_mb} MB (${ev.name_clasificacion}) — Auto-Contenido y cuenta bloqueada en tiempo real.`
+                );
+
+                // Neutralización Automática / persistencia en backend
                 handleNeutralizarUsuario(
                   ev,
-                  "Neutralización automática: Amenaza crítica detectada por el motor de inferencia"
+                  "Neutralización automática en tiempo real: Amenaza crítica detectada según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
                 );
               }
             }
@@ -551,10 +328,12 @@ export default function MotorDeteccion() {
       };
 
       ws.onclose = () => {
+        if (!montadoRef.current || wsRef.current !== ws) return;
+        wsRef.current = null;
         setConexionStatus("desconectado");
         console.warn("🔴 WebSocket desconectado. Reintentando en 3s...");
         reconnectTimeoutRef.current = setTimeout(() => {
-          conectarWebSocket();
+          conectar();
         }, 3000);
       };
 
@@ -568,13 +347,20 @@ export default function MotorDeteccion() {
       console.error("No se pudo instanciar WebSocket:", e);
       setConexionStatus("desconectado");
     }
-  }, []);
+  }, [handleNeutralizarUsuario]);
 
   useEffect(() => {
+    montadoRef.current = true;
     conectarWebSocket();
     return () => {
+      montadoRef.current = false;
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (wsRef.current) wsRef.current.close();
+      if (wsRef.current) {
+        const ws = wsRef.current;
+        wsRef.current = null;
+        ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
+        ws.close();
+      }
     };
   }, [conectarWebSocket]);
 
@@ -668,7 +454,27 @@ export default function MotorDeteccion() {
         };
       }
 
-      await ingestarEventoAPI(payload);
+      const fechaPrueba = new Date();
+      fechaPrueba.setHours(payload.hora_evento, 0, 0, 0);
+      const fechaLocal = [fechaPrueba.getFullYear(),
+        String(fechaPrueba.getMonth() + 1).padStart(2, "0"),
+        String(fechaPrueba.getDate()).padStart(2, "0")].join("-");
+      await ingestarEventoAPI({
+        ID_USER: payload.id_user,
+        NAME_USER: payload.name_user,
+        NAME_OFICINA: payload.name_oficina,
+        NUMERO_DOCUMENTO: payload.numero_documento,
+        ID_CLASIFICACION: tipoPrueba === "normal" ? 5 : 1,
+        NAME_CLASIFICACION: tipoPrueba === "normal" ? "COMUN" : "SECRETO",
+        ID_TIPO_EVENTO: tipoPrueba === "normal" ? 1 : 2,
+        NAME_TIPO_EVENTO: tipoPrueba === "normal" ? "VISTA" : "DESCARGAR",
+        DOC_INTERNO_EXTERNO: payload.doc_interno_externo,
+        size_archivo_mb: payload.size_archivo_mb,
+        FECHA_EVENTO: `${fechaLocal} ${String(payload.hora_evento).padStart(2, "0")}:00:00`,
+      });
+
+      // El backend difunde el evento por WebSocket y entra por el mismo flujo de correlación
+      // en vivo; no se agrega un incidente sintético aquí (duplicaría el conteo).
       toast.success(`Evento de prueba '${tipoPrueba}' inyectado al motor de detección.`);
     } catch (err) {
       toast.error(err.response?.data?.detail || "Error al inyectar evento");
@@ -680,9 +486,14 @@ export default function MotorDeteccion() {
   const handleLimpiarFeed = async () => {
     setCargandoAccion(true);
     try {
+      const res = await limpiarSimuladorAPI();
       setEventos([]);
       setUltimoEvento(null);
-      const res = await limpiarSimuladorAPI();
+      setTelemetria(crearTelemetria());
+      setEventoSeleccionado(null);
+      setIncidentesPares({});
+      eventosContadosRef.current = new Set();
+      setRepetidosOmitidos(0);
       setSimuladorEstado((prev) => ({
         ...prev,
         eventos_emitidos: 0,
@@ -694,9 +505,7 @@ export default function MotorDeteccion() {
       toast.info(res?.mensaje || "Feed de simulación limpiado. Dataset de entrenamiento intacto.");
     } catch (err) {
       console.warn("Aviso al limpiar registros temporales en BD:", err);
-      setEventos([]);
-      setUltimoEvento(null);
-      toast.info("Feed en memoria limpiado. Dataset de entrenamiento intacto.");
+      toast.error(err.response?.data?.detail || "No se pudo limpiar la simulación.");
     } finally {
       setCargandoAccion(false);
     }
@@ -711,6 +520,7 @@ export default function MotorDeteccion() {
         intervalo: intervaloConfig,
         autoIniciar: true,
       });
+      eventosContadosRef.current = new Set(); // dataset nuevo: sus ID_EVENTO no son los del anterior
       toast.success(
         res.mensaje || res.message || `Dataset de testing '${file.name}' cargado e iniciado para inferencia online.`
       );
@@ -826,13 +636,8 @@ export default function MotorDeteccion() {
           >
             <FaTv /> Streaming en Vivo
           </button>
-          <button
-            type="button"
-            className={`${styles.viewTabBtn} ${viewMode === "graficos" ? styles.viewTabActive : ""}`}
-            onClick={() => setViewMode("graficos")}
-          >
-            <FaChartLine /> Inteligencia Analítica SOC
-          </button>
+        
+        
         </div>
 
         <div className={styles.autoNeutralizeContainer}>
@@ -887,6 +692,36 @@ export default function MotorDeteccion() {
       />
 
       {/* ============================================================== */}
+      {/* SECCIÓN STREAMING: CONTROLES, RADAR Y TABLA EN VIVO (también en Integral) */}
+      {/* ============================================================== */}
+      {(viewMode === "streaming" || viewMode === "integral") && (
+        <DeteccionAuth
+          simuladorEstado={simuladorEstado}
+          intervaloConfig={intervaloConfig}
+          setIntervaloConfig={setIntervaloConfig}
+          cargandoAccion={cargandoAccion}
+          onIniciar={handleIniciar}
+          onPausar={handlePausar}
+          onReanudar={handleReanudar}
+          onDetener={handleDetener}
+          onInyectarPrueba={() => handleInyectarPrueba("critico")}
+          onLimpiarFeed={handleLimpiarFeed}
+          onUploadCSV={handleUploadCSV}
+          isUploadingCSV={isUploadingCSV}
+          ultimoEvento={ultimoEvento}
+          onNeutralizarUsuario={handleNeutralizarUsuario}
+          neutralizadosIds={neutralizadosIds}
+          eventos={eventos}
+          filtros={filtros}
+          setFiltros={setFiltros}
+          eventoSeleccionado={eventoSeleccionado}
+          setEventoSeleccionado={setEventoSeleccionado}
+          autoScroll={autoScroll}
+          setAutoScroll={setAutoScroll}
+        />
+      )}
+
+      {/* ============================================================== */}
       {/* SECCIÓN ANALÍTICA SOC: LOS 4 GRÁFICOS DE INCIDENTESPAGE       */}
       {/* ============================================================== */}
       {(viewMode === "graficos" || viewMode === "integral") && (
@@ -896,10 +731,11 @@ export default function MotorDeteccion() {
               <FaChartLine style={{ color: "#38bdf8" }} />
               <span>Telemetría y Analítica en Tiempo Real (Inferencia Online)</span>
             </div>
-            {eventos.length > 0 && (
+            {totalRecibidos > 0 && (
               <span className={styles.chartsLiveIndicator}>
                 <span className={styles.livePulseDot} />
-                Sincronizado en vivo: {eventos.length} eventos procesados en streaming
+                Sincronizado en vivo: {totalRecibidos} eventos procesados en streaming
+                {repetidosOmitidos > 0 && ` · ${repetidosOmitidos} repetidos omitidos (el CSV reinició)`}
               </span>
             )}
           </div>
@@ -908,6 +744,7 @@ export default function MotorDeteccion() {
             <div className={styles.chartMain}>
               <GraficoEvolucionRiesgos
                 resumen={resumenEnVivo}
+                tiempoReal
                 filtros={filtrosSOC}
                 setFiltros={setFiltrosSOC}
                 setPage={setPageSOC}
@@ -926,6 +763,7 @@ export default function MotorDeteccion() {
           <div className={styles.chartsGridFull}>
             <GraficoEstadoGestion
               resumen={resumenEnVivo}
+              tiempoReal
               filtros={filtrosSOC}
               setFiltros={setFiltrosSOC}
               setPage={setPageSOC}
@@ -934,6 +772,7 @@ export default function MotorDeteccion() {
 
           <DashboardSOCAnalytics
             resumen={resumenEnVivo}
+            tiempoReal
             filtros={filtrosSOC}
             setFiltros={setFiltrosSOC}
             setPage={setPageSOC}
@@ -943,119 +782,87 @@ export default function MotorDeteccion() {
       )}
 
       {/* ============================================================== */}
-      {/* SECCIÓN STREAMING: CONTROLES, RADAR Y TABLA EN VIVO           */}
+      {/* SECCION EXPEDIENTE FORENSE: TABLA DE INCIDENTES CORRELACIONADOS */}
       {/* ============================================================== */}
-      {(viewMode === "streaming" || viewMode === "integral") && (
-        <>
-          {/* PANEL DE CONTROL DE SIMULACIÓN Y CARGA DE CSV */}
-          <ControlSimulador
-            simuladorEstado={simuladorEstado}
-            intervaloConfig={intervaloConfig}
-            setIntervaloConfig={setIntervaloConfig}
-            cargandoAccion={cargandoAccion}
-            onIniciar={handleIniciar}
-            onPausar={handlePausar}
-            onReanudar={handleReanudar}
-            onDetener={handleDetener}
-            onInyectarPrueba={handleInyectarPrueba}
-            onLimpiarFeed={handleLimpiarFeed}
-            onUploadCSV={handleUploadCSV}
-            isUploadingCSV={isUploadingCSV}
-          />
+      {(viewMode === "incidentes" || viewMode === "integral") && (
+        <div className={styles.forenseSection}>
+          <div className={styles.chartsLiveHeader}>
+            <div className={styles.chartsLiveHeaderTitle}>
+              <FaFolderOpen style={{ color: "#7c3aed" }} />
+              <span>Expediente Forense &mdash; Incidentes Correlacionados del Motor SOC</span>
+            </div>
+            {(incidentesForenseData?.total ?? 0) > 0 && (
+              <span className={styles.forenseBadge}>
+                {incidentesForenseData.total} incidentes en base de datos
+              </span>
+            )}
+          </div>
 
-          {/* RADAR: BANNER ÚLTIMO EVENTO INGESTADO CON BOTÓN DE NEUTRALIZACIÓN */}
-          <BannerUltimoEvento
-            evento={ultimoEvento}
-            onNeutralizarUsuario={handleNeutralizarUsuario}
-            isNeutralizado={
-              ultimoEvento &&
-              neutralizadosIds.includes(
-                String(ultimoEvento.id_user || ultimoEvento.name_user)
-              )
-            }
-          />
-
-          {/* QUICK FILTER PILLS */}
+          {/* Quick Filter Pills estilo Entrenamiento */}
           <div className={styles.filterPills}>
             <button
-              className={`${styles.pill} ${
-                !filtros.nivel_riesgo ? styles.pillActive : ""
-              }`}
-              onClick={() => handleQuickFilter("todos")}
+              className={`${styles.pill} ${!filtrosIncidentes.nivel_riesgo && !filtrosIncidentes.estado ? styles.pillActive : ""}`}
+              onClick={() => handleQuickFilterIncidentes("todos")}
             >
-              Todos los Eventos
+              Todos los Incidentes
             </button>
-
             <button
               className={`${styles.pill} ${styles.pillCritico} ${
-                filtros.nivel_riesgo === "critico" ? styles.pillActive : ""
+                filtrosIncidentes.nivel_riesgo === "critico" ? styles.pillActive : ""
               }`}
-              onClick={() => handleQuickFilter("critico")}
+              onClick={() => handleQuickFilterIncidentes("critico")}
             >
-              🚨 Solo Críticos ({totalCriticos})
+              🚨 Solo Críticos
             </button>
-
             <button
               className={`${styles.pill} ${styles.pillAlto} ${
-                filtros.nivel_riesgo === "anomalia" ? styles.pillActive : ""
+                filtrosIncidentes.nivel_riesgo === "alto" ? styles.pillActive : ""
               }`}
-              onClick={() => handleQuickFilter("anomalia")}
+              onClick={() => handleQuickFilterIncidentes("alto")}
             >
-              ⚠️ Solo Anomalías ({totalAnomalias})
+              ⚠️ Solo Altos
             </button>
-
             <button
-              className={`${styles.pill} ${
-                filtros.nivel_riesgo === "alto" ? styles.pillActive : ""
-              }`}
-              onClick={() => handleQuickFilter("alto")}
+              className={`${styles.pill} ${filtrosIncidentes.estado === "abierto" ? styles.pillActive : ""}`}
+              onClick={() => handleQuickFilterIncidentes("abierto")}
             >
-              🔥 Nivel Alto
-            </button>
-
-            <button
-              className={`${styles.pill} ${
-                filtros.nivel_riesgo === "exterior" ? styles.pillActive : ""
-              }`}
-              onClick={() => handleQuickFilter("exterior")}
-            >
-              🌐 Hacia Exterior
-            </button>
-
-            <button
-              className={`${styles.pill} ${
-                filtros.nivel_riesgo === "fuera_horario" ? styles.pillActive : ""
-              }`}
-              onClick={() => handleQuickFilter("fuera_horario")}
-            >
-              🕒 Fuera de Horario
+              🔴 Estado Abierto
             </button>
           </div>
 
-          {/* TABLA DE EVENTOS EN VIVO CON ACCIÓN DE NEUTRALIZACIÓN */}
-          <TablaEventosEnVivo
-            eventos={eventos}
-            filtros={filtros}
-            setFiltros={setFiltros}
-            onSeleccionarEvento={(ev) => setEventoSeleccionado(ev)}
-            onNeutralizarUsuario={handleNeutralizarUsuario}
+          {/* Tabla de Incidentes Forenses en Tiempo Real para Motor de Detección */}
+          <TablaIncidentesMotor
+            data={incidentesForenseData}
+            incidentesEnVivo={incidentesEnVivo}
             neutralizadosIds={neutralizadosIds}
-            autoScroll={autoScroll}
-            setAutoScroll={setAutoScroll}
+            onNeutralizarUsuario={handleNeutralizarUsuario}
+            detalleBasePath="/eventos/motor-deteccion/incidente"
+            page={pageIncidentes}
+            setPage={setPageIncidentes}
+            pageSize={pageSizeIncidentes}
+            setPageSize={setPageSizeIncidentes}
+            filtros={filtrosIncidentes}
+            setFiltros={setFiltrosIncidentes}
+            resumen={resumenEnVivo}
+            onEjecutarCorrelacion={async () => {
+              try {
+                // Idempotente: el backend actualiza el incidente de cada par (documento, usuario)
+                // en vez de crear otro, y los eventos del simulador siguen contándose solo en vivo,
+                // así que volver a ejecutar no duplica ningún conteo.
+                const res = await ejecutarCorrelacionMutation.mutateAsync({});
+                toast.success(
+                  `Correlación ejecutada: ${res.total_incidentes_generados} incidentes actualizados ` +
+                    `(${res.total_candidatos_analizados} pares documento+usuario analizados, sin duplicar).`
+                );
+                refetchForense();
+              } catch (err) {
+                toast.error(err?.response?.data?.detail || "Error al ejecutar correlación.");
+              }
+            }}
+            isExecuting={ejecutarCorrelacionMutation.isPending}
+            isLoading={loadingForense}
           />
-        </>
-      )}
-
-      {/* MODAL DE INSPECCIÓN DETALLADA */}
-      {eventoSeleccionado && (
-        <ModalInspeccionEvento
-          evento={eventoSeleccionado}
-          onClose={() => setEventoSeleccionado(null)}
-          onNeutralizarUsuario={handleNeutralizarUsuario}
-          isNeutralizado={neutralizadosIds.includes(
-            String(eventoSeleccionado.id_user || eventoSeleccionado.name_user)
-          )}
-        />
+        </div>
       )}
     </div>
   );

@@ -65,6 +65,9 @@ export const router = createBrowserRouter([
           { path: "/eventos/clasificacion", element: <Dashboard4Clasificacion /> },
           { path: "/eventos/motor-deteccion", element: <MotorDeteccion /> },
           { path: "/eventos/monitoreo-vivo", element: <MotorDeteccion /> },
+          // Detalle forense desde Motor de Deteccion (mantiene contexto de navegacion)
+          { path: "/eventos/motor-deteccion/incidente/:id", element: <IncidenteDetallePage /> },
+          { path: "/eventos/monitoreo-vivo/incidente/:id", element: <IncidenteDetallePage /> },
 
           // Módulo de Entrenamiento y Calibración
           { path: "/entrenamiento", element: <EntrenamientoPage /> },

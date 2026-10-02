@@ -12,6 +12,8 @@ import {
 import { FaWaveSquare } from "react-icons/fa6";
 import { toast } from "sonner";
 
+const MESES_ABREV = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"];
+
 // Configuración de niveles de riesgo, colores exactos a la imagen de referencia
 const CONFIG_RIESGO = {
   critico: {
@@ -90,6 +92,7 @@ export default function GraficoEvolucionRiesgos({
   filtros = {},
   setFiltros,
   setPage,
+  tiempoReal = false,
 }) {
   const [granularidad, setGranularidad] = useState("mensual"); // "mensual" | "diario"
 
@@ -98,6 +101,20 @@ export default function GraficoEvolucionRiesgos({
   // Selección de datos según granularidad
   const chartData = useMemo(() => {
     if (granularidad === "mensual") {
+      // En vivo, con un solo mes con datos, un área de 1 punto no dibuja nada:
+      // se completa el año con ceros para que la curva se vea y crezca.
+      if (tiempoReal && evolucion_mensual && evolucion_mensual.length === 1) {
+        const unico = evolucion_mensual[0];
+        const anio = String(unico.key || "").slice(0, 4);
+        return MESES_ABREV.map((label, i) => {
+          const esMes = unico.key
+            ? String(unico.key).endsWith(`-${String(i + 1).padStart(2, "0")}`)
+            : (unico.label || unico.mes) === label;
+          return esMes
+            ? { ...unico, label, mesCompleto: unico.mes_completo || `${label} ${anio}`.trim() }
+            : { label, mesCompleto: `${label} ${anio}`.trim(), critico: 0, alto: 0, medio: 0, bajo: 0, total: 0 };
+        });
+      }
       if (evolucion_mensual && evolucion_mensual.length > 0) {
         return evolucion_mensual.map((item) => ({
           ...item,
@@ -126,7 +143,12 @@ export default function GraficoEvolucionRiesgos({
       }
       return [];
     }
-  }, [granularidad, evolucion_mensual, evolucion_diaria]);
+  }, [granularidad, tiempoReal, evolucion_mensual, evolucion_diaria]);
+
+  // Con 1-2 puntos (p. ej. "Por Día" al arrancar la simulación) se muestran los puntos
+  // para que el primer evento ya se vea en el gráfico.
+  const mostrarPuntos = chartData.length <= 2;
+  const puntoProps = mostrarPuntos ? { r: 4, strokeWidth: 2, fill: "#0b1220" } : false;
 
   const activeRisk = (filtros.nivel_riesgo || "").toLowerCase();
 
@@ -286,11 +308,13 @@ export default function GraficoEvolucionRiesgos({
               <Area
                 type="monotone"
                 dataKey="critico"
+                isAnimationActive={tiempoReal ? false : "auto"}
                 name="Crítico"
                 stackId={activeRisk ? undefined : "1"}
                 stroke="#ef4444"
                 strokeWidth={activeRisk === "critico" ? 3 : 2.5}
                 fill="url(#colorCritico)"
+                dot={puntoProps}
                 activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2 }}
               />
             )}
@@ -300,11 +324,13 @@ export default function GraficoEvolucionRiesgos({
               <Area
                 type="monotone"
                 dataKey="alto"
+                isAnimationActive={tiempoReal ? false : "auto"}
                 name="Alto"
                 stackId={activeRisk ? undefined : "1"}
                 stroke="#f59e0b"
                 strokeWidth={activeRisk === "alto" ? 3 : 2.5}
                 fill="url(#colorAlto)"
+                dot={puntoProps}
                 activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2 }}
               />
             )}
@@ -314,11 +340,13 @@ export default function GraficoEvolucionRiesgos({
               <Area
                 type="monotone"
                 dataKey="medio"
+                isAnimationActive={tiempoReal ? false : "auto"}
                 name="Medio"
                 stackId={activeRisk ? undefined : "1"}
                 stroke="#0ea5e9"
                 strokeWidth={activeRisk === "medio" ? 3 : 2.5}
                 fill="url(#colorMedio)"
+                dot={puntoProps}
                 activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2 }}
               />
             )}
@@ -328,11 +356,13 @@ export default function GraficoEvolucionRiesgos({
               <Area
                 type="monotone"
                 dataKey="bajo"
+                isAnimationActive={tiempoReal ? false : "auto"}
                 name="Bajo"
                 stackId={activeRisk ? undefined : "1"}
                 stroke="#10b981"
                 strokeWidth={activeRisk === "bajo" ? 3 : 2.5}
                 fill="url(#colorBajo)"
+                dot={puntoProps}
                 activeDot={{ r: 6, stroke: "#ffffff", strokeWidth: 2 }}
               />
             )}

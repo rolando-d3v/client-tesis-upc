@@ -74,6 +74,7 @@ export default function GraficoEstadoGestion({
   filtros,
   setFiltros,
   setPage,
+  tiempoReal = false,
 }) {
   const chartData = useMemo(() => {
     if (!resumen || !resumen.por_estado) return [];
@@ -177,6 +178,7 @@ export default function GraficoEstadoGestion({
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f1f5f9" }} />
             <Bar
               dataKey="cantidad"
+              isAnimationActive={!tiempoReal}
               radius={[0, 4, 4, 0]}
               barSize={24}
               onClick={handleBarClick}

@@ -4,7 +4,6 @@ import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getPaginationRowModel,
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
@@ -18,10 +17,6 @@ import {
   FaArrowUp,
   FaArrowDown,
   FaSort,
-  FaAngleLeft,
-  FaAngleRight,
-  FaAnglesLeft,
-  FaAnglesRight,
   FaRotateLeft,
   FaTriangleExclamation,
   FaBan,
@@ -166,14 +161,14 @@ export default function TablaEventosEnVivo({
   // Definición de columnas con TanStack Table
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "id_evento",
-        header: "ID",
-        meta: { align: "center", width: "6%" },
-        cell: (info) => (
-          <span className={styles.idBadge}>#{info.getValue()}</span>
-        ),
-      },
+      // {
+      //   accessorKey: "id_evento",
+      //   header: "ID",
+      //   meta: { align: "center", width: "6%" },
+      //   cell: (info) => (
+      //     <span className={styles.idBadge}>#{info.getValue()}</span>
+      //   ),
+      // },
       {
         accessorKey: "fecha_evento",
         header: "Hora / Fecha",
@@ -197,40 +192,40 @@ export default function TablaEventosEnVivo({
           );
         },
       },
-      {
-        id: "documento",
-        accessorKey: "numero_documento",
-        header: "Documento Afectado",
-        meta: { align: "left", width: "22%" },
-        cell: ({ row }) => {
-          const ev = row.original;
-          return (
-            <div className={styles.docCell}>
-              <span className={styles.docNum} title={ev.numero_documento}>
-                {ev.numero_documento || "DOC-S/N"}
-              </span>
-              <div className={styles.docMetaRow}>
-                <span
-                  className={`${styles.clasifBadge} ${getClasifClass(
-                    ev.name_clasificacion
-                  )}`}
-                >
-                  {ev.name_clasificacion || "COMUN"}
-                </span>
-                <span
-                  className={`${styles.docDestino} ${
-                    ev.doc_interno_externo === "exterior"
-                      ? styles.docDestinoExt
-                      : ""
-                  }`}
-                >
-                  {ev.doc_interno_externo === "exterior" ? "🌐 Ext" : "🏢 Int"}
-                </span>
-              </div>
-            </div>
-          );
-        },
-      },
+      // {
+      //   id: "documento",
+      //   accessorKey: "numero_documento",
+      //   header: "Documento Afectado",
+      //   meta: { align: "left", width: "22%" },
+      //   cell: ({ row }) => {
+      //     const ev = row.original;
+      //     return (
+      //       <div className={styles.docCell}>
+      //         <span className={styles.docNum} title={ev.numero_documento}>
+      //           {ev.numero_documento || "DOC-S/N"}
+      //         </span>
+      //         <div className={styles.docMetaRow}>
+      //           <span
+      //             className={`${styles.clasifBadge} ${getClasifClass(
+      //               ev.name_clasificacion
+      //             )}`}
+      //           >
+      //             {ev.name_clasificacion || "COMUN"}
+      //           </span>
+      //           <span
+      //             className={`${styles.docDestino} ${
+      //               ev.doc_interno_externo === "exterior"
+      //                 ? styles.docDestinoExt
+      //                 : ""
+      //             }`}
+      //           >
+      //             {ev.doc_interno_externo === "exterior" ? "🌐 Ext" : "🏢 Int"}
+      //           </span>
+      //         </div>
+      //       </div>
+      //     );
+      //   },
+      // },
       {
         id: "usuario",
         accessorKey: "name_user",
@@ -342,47 +337,47 @@ export default function TablaEventosEnVivo({
           );
         },
       },
-      {
-        id: "motivos",
-        header: "Alertas XAI",
-        meta: { align: "left", width: "14%" },
-        cell: ({ row }) => {
-          const ev = row.original;
-          if (!ev.motivos || ev.motivos.length === 0) {
-            return (
-              <span style={{ color: "#9ca3af", fontSize: "0.78rem" }}>
-                Normal
-              </span>
-            );
-          }
-          return (
-            <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
-              {ev.motivos.slice(0, 2).map((m, idx) => (
-                <span
-                  key={idx}
-                  title={m.descripcion}
-                  style={{
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    background: "#fee2e2",
-                    color: "#b91c1c",
-                    border: "1px solid #fecaca",
-                    padding: "0.15rem 0.4rem",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {m.codigo.replace("E_", "").replace("E1_", "").replace("E2_", "").replace("E3_", "")}
-                </span>
-              ))}
-              {ev.motivos.length > 2 && (
-                <span style={{ fontSize: "0.72rem", color: "#6b7280", fontWeight: 600 }}>
-                  +{ev.motivos.length - 2}
-                </span>
-              )}
-            </div>
-          );
-        },
-      },
+      // {
+      //   id: "motivos",
+      //   header: "Alertas XAI",
+      //   meta: { align: "left", width: "14%" },
+      //   cell: ({ row }) => {
+      //     const ev = row.original;
+      //     if (!ev.motivos || ev.motivos.length === 0) {
+      //       return (
+      //         <span style={{ color: "#9ca3af", fontSize: "0.78rem" }}>
+      //           Normal
+      //         </span>
+      //       );
+      //     }
+      //     return (
+      //       <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+      //         {ev.motivos.slice(0, 2).map((m, idx) => (
+      //           <span
+      //             key={idx}
+      //             title={m.descripcion}
+      //             style={{
+      //               fontSize: "0.72rem",
+      //               fontWeight: 700,
+      //               background: "#fee2e2",
+      //               color: "#b91c1c",
+      //               border: "1px solid #fecaca",
+      //               padding: "0.15rem 0.4rem",
+      //               borderRadius: "4px",
+      //             }}
+      //           >
+      //             {m.codigo.replace("E_", "").replace("E1_", "").replace("E2_", "").replace("E3_", "")}
+      //           </span>
+      //         ))}
+      //         {ev.motivos.length > 2 && (
+      //           <span style={{ fontSize: "0.72rem", color: "#6b7280", fontWeight: 600 }}>
+      //             +{ev.motivos.length - 2}
+      //           </span>
+      //         )}
+      //       </div>
+      //     );
+      //   },
+      // },
       {
         id: "acciones",
         header: "Acción",
@@ -459,22 +454,16 @@ export default function TablaEventosEnVivo({
     [expandedRows, onSeleccionarEvento, onNeutralizarUsuario, neutralizadosIds]
   );
 
-  // TanStack Table Instance
+  // TanStack Table Instance (sin paginación, muestra todos los eventos en memoria)
   const table = useReactTable({
     data: filteredData,
     columns,
     state: {
       sorting,
     },
-    initialState: {
-      pagination: {
-        pageSize: 15,
-      },
-    },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
 
@@ -487,37 +476,10 @@ export default function TablaEventosEnVivo({
     return null;
   };
 
-  const totalFilas = filteredData.length;
-  const pageIndex = table.getState().pagination.pageIndex;
-  const pageSize = table.getState().pagination.pageSize;
-  const pageCount = table.getPageCount();
-  const fromRecord = totalFilas === 0 ? 0 : pageIndex * pageSize + 1;
-  const toRecord = Math.min((pageIndex + 1) * pageSize, totalFilas);
-
   return (
     <div className={styles.container}>
       {/* BARRA DE CONTROLES Y FILTROS */}
       <div className={styles.controlsBar}>
-        <div className={styles.searchWrapper}>
-          <FaMagnifyingGlass className={styles.searchIcon} />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Buscar por usuario, oficina, documento..."
-            value={filtros.busqueda || ""}
-            onChange={handleSearchChange}
-          />
-          {filtros.busqueda && (
-            <button
-              type="button"
-              className={styles.searchClearBtn}
-              onClick={handleClearSearch}
-              title="Borrar búsqueda"
-            >
-              <FaXmark />
-            </button>
-          )}
-        </div>
 
         <div className={styles.filtersGroup}>
           {/* Nivel de Riesgo */}
@@ -563,20 +525,7 @@ export default function TablaEventosEnVivo({
             <option value="GUARDAR_COPIA">GUARDAR_COPIA</option>
           </select>
 
-          {/* Rol Institucional */}
-          <select
-            className={styles.select}
-            value={filtros.rol || ""}
-            onChange={(e) => handleFilterChange("rol", e.target.value)}
-          >
-            <option value="">Todos los Roles</option>
-            <option value="EJECUTIVO">👑 EJECUTIVO</option>
-            <option value="JEFE_SD_DPT">💼 JEFE SD/DPT</option>
-            <option value="JEFE_UU">🛡️ JEFE UU</option>
-            <option value="CENTRO DE MENSAJES">✉️ CENTRO DE MENSAJES</option>
-            <option value="USER">👤 USER</option>
-            <option value="USER 2">👤 USER 2</option>
-          </select>
+       
 
           {/* Limpiar Filtros */}
           {hasActiveFilters && (
@@ -590,25 +539,7 @@ export default function TablaEventosEnVivo({
             </button>
           )}
 
-          {/* Toggle Auto-Scroll */}
-          <label
-            style={{
-              fontSize: "0.82rem",
-              color: "#6b7280",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              cursor: "pointer",
-              marginLeft: "0.5rem",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={autoScroll}
-              onChange={(e) => setAutoScroll && setAutoScroll(e.target.checked)}
-            />
-            Auto-Scroll
-          </label>
+       
         </div>
       </div>
 
@@ -778,72 +709,6 @@ export default function TablaEventosEnVivo({
         </table>
       </div>
 
-      {/* PAGINACIÓN */}
-      <div className={styles.paginationBar}>
-        <div className={styles.paginationInfo}>
-          Mostrando{" "}
-          <strong>
-            {fromRecord} a {toRecord}
-          </strong>{" "}
-          de <strong>{totalFilas}</strong> eventos en memoria
-          <select
-            className={styles.pageSizeSelect}
-            value={table.getState().pagination.pageSize}
-            onChange={(e) => table.setPageSize(Number(e.target.value))}
-          >
-            {[15, 25, 50, 100].map((size) => (
-              <option key={size} value={size}>
-                Mostrar {size}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.paginationButtons}>
-          <button
-            type="button"
-            className={styles.pageBtn}
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
-            title="Primera página"
-          >
-            <FaAnglesLeft />
-          </button>
-          <button
-            type="button"
-            className={styles.pageBtn}
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            title="Página anterior"
-          >
-            <FaAngleLeft />
-          </button>
-
-          <span style={{ fontSize: "0.82rem", color: "#6b7280", margin: "0 0.5rem" }}>
-            Pág. <strong>{pageIndex + 1}</strong> de{" "}
-            <strong>{Math.max(1, pageCount)}</strong>
-          </span>
-
-          <button
-            type="button"
-            className={styles.pageBtn}
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            title="Página siguiente"
-          >
-            <FaAngleRight />
-          </button>
-          <button
-            type="button"
-            className={styles.pageBtn}
-            onClick={() => table.setPageIndex(pageCount - 1)}
-            disabled={!table.getCanNextPage()}
-            title="Última página"
-          >
-            <FaAnglesRight />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

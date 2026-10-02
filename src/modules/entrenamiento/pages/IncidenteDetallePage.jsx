@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router";
+import { useParams, Link, useLocation } from "react-router";
 import styles from "./IncidenteDetallePage.module.css";
 import dayjs from "dayjs";
 import { useIncidenteDetalle } from "../../../api/apiCorrelacion";
@@ -17,8 +17,16 @@ import {
 
 export default function IncidenteDetallePage() {
   const { id } = useParams();
+  const location = useLocation();
   const { data: incidente, isLoading, error } = useIncidenteDetalle(id);
 
+  // Detectar el contexto de navegacion para el breadcrumb dinamico
+  const esDesdeMotor = location.pathname.includes("/eventos/motor-deteccion") ||
+    location.pathname.includes("/eventos/monitoreo-vivo");
+  const backPath = esDesdeMotor
+    ? (location.pathname.includes("/monitoreo-vivo") ? "/eventos/monitoreo-vivo" : "/eventos/motor-deteccion")
+    : "/incidentes";
+  const backLabel = esDesdeMotor ? "Motor de Deteccion — Expediente Forense" : "Centro de Incidentes";
   if (isLoading) {
     return (
       <div className={styles.page}>
@@ -34,8 +42,8 @@ export default function IncidenteDetallePage() {
     return (
       <div className={styles.page}>
         <div className={styles.breadcrumb}>
-          <Link to="/incidentes" className={styles.backLink}>
-            <FaArrowLeft /> Volver a Incidentes
+          <Link to={backPath} className={styles.backLink}>
+            <FaArrowLeft /> Volver a {backLabel}
           </Link>
         </div>
         <div style={{ textAlign: "center", padding: "3rem 1rem", color: "#dc2626" }}>
@@ -55,15 +63,14 @@ export default function IncidenteDetallePage() {
 
   return (
     <div className={styles.page}>
-      {/* Navegación y Breadcrumbs */}
+      {/* Navegacion y Breadcrumbs */}
       <div className={styles.breadcrumb}>
-        <Link to="/incidentes" className={styles.backLink}>
-          <FaArrowLeft /> Centro de Incidentes
+        <Link to={backPath} className={styles.backLink}>
+          <FaArrowLeft /> {backLabel}
         </Link>
         <span>/</span>
         <span>Expediente de Amenaza #{incidente.id}</span>
       </div>
-
       {/* Cabecera del expediente */}
       <div className={styles.headerCard}>
         <div className={styles.titleArea}>
@@ -105,7 +112,7 @@ export default function IncidenteDetallePage() {
           <div className={styles.entityRow}>
             <span className={styles.entityLabel}>Destino Registrado:</span>
             <span className={styles.entityVal}>
-              {incidente.destino_doc === "exterior" ? "🌐 Exterior" : "🏢 Interior"}
+              {incidente.destino_doc === "exterior" ? "ðŸŒ Exterior" : "ðŸ¢ Interior"}
             </span>
           </div>
         </div>

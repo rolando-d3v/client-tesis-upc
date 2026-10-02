@@ -7,6 +7,7 @@ import {
   FaTriangleExclamation,
   FaChartLine,
   FaClock,
+  FaBolt,
 } from "react-icons/fa6";
 
 export default function BannerUltimoEvento({
@@ -16,9 +17,13 @@ export default function BannerUltimoEvento({
 }) {
   if (!evento) {
     return (
-      <div className={styles.banner} style={{ textAlign: "center", padding: "1.75rem 1rem" }}>
-        <p style={{ color: "#6b7280", margin: 0, fontSize: "0.92rem" }}>
-          ⏳ <strong>Flujo a la espera:</strong> Inicia la simulación arriba o carga un archivo CSV para evaluar peticiones en tiempo real registro a registro.
+      <div className={styles.bannerEmpty}>
+        <div className={styles.emptyIconWrapper}>
+          <FaBolt className={styles.emptyRadarIcon} />
+        </div>
+        <h4 className={styles.emptyTitle}>Radar en Espera de Tráfico</h4>
+        <p className={styles.emptyDesc}>
+          Inicia la simulación arriba o inyecta una prueba para evaluar eventos en tiempo real con Isolation Forest.
         </p>
       </div>
     );
@@ -70,43 +75,23 @@ export default function BannerUltimoEvento({
       <div className={styles.bannerHeader}>
         <div className={styles.bannerTitle}>
           <span className={`${styles.liveDot} ${getDotClass()}`} />
-          Último Registro Evaluado Online — Evento #{evento.id_evento}
-          <span style={{ fontSize: "0.82rem", fontWeight: 500, color: "#6b7280", marginLeft: "0.5rem" }}>
+          <span>Evento #{evento.id_evento}</span>
+          <span className={styles.bannerTime}>
             <FaClock style={{ marginRight: "0.25rem" }} />
             {evento.fecha_evento || "En vivo"}
           </span>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+        <div className={styles.bannerActions}>
           {isNeutralizado ? (
-            <span
-              style={{
-                background: "#fee2e2",
-                color: "#dc2626",
-                border: "1px solid #fca5a5",
-                padding: "0.2rem 0.55rem",
-                borderRadius: "6px",
-                fontSize: "0.75rem",
-                fontWeight: 700,
-              }}
-            >
+            <span className={styles.badgeNeutralizado}>
               🚫 Cuenta Bloqueada
             </span>
           ) : (
             onNeutralizarUsuario && (nivel === "critico" || nivel === "alto") && (
               <button
                 type="button"
-                style={{
-                  background: "#dc2626",
-                  color: "#ffffff",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "0.25rem 0.65rem",
-                  fontSize: "0.75rem",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(220, 38, 38, 0.3)",
-                }}
+                className={styles.btnNeutralizar}
                 onClick={() => {
                   const confirm = window.confirm(
                     `¿Confirmas la neutralización inmediata de ${evento.name_user}?`
@@ -114,77 +99,67 @@ export default function BannerUltimoEvento({
                   if (confirm) onNeutralizarUsuario(evento);
                 }}
               >
-                🚫 Neutralizar Usuario
+                🚫 Neutralizar
               </button>
             )
           )}
           <span className={`${styles.badgeRiesgo} ${getBadgeClass()}`}>
-            Riesgo {evento.nivel_riesgo}
+            {evento.nivel_riesgo}
           </span>
-          <span style={{ fontSize: "0.92rem", fontWeight: 800, color: "#111827" }}>
-            Score: {evento.score_final} (Escala: {evento.score_riesgo || 0}/30)
+          <span className={styles.scoreText}>
+            Score: {evento.score_final}
           </span>
         </div>
       </div>
 
       <div className={styles.gridInfo}>
         <div className={styles.colInfo}>
-          <h5>Usuario & Dependencia</h5>
-          <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+          <h5>Usuario</h5>
+          <p style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
             <FaUser style={{ color: "#7c3aed" }} />
             <span>{evento.name_user}</span>
             <RoleBadge role={evento.name_role || evento.rol || evento.role} size="small" />
-            <span style={{ color: "#6b7280" }}>({evento.name_oficina})</span>
           </p>
         </div>
 
         <div className={styles.colInfo}>
           <h5>Documento</h5>
           <p>
-            <FaFileLines style={{ marginRight: "0.4rem", color: "#2563eb" }} />
-            {evento.numero_documento} [{evento.name_clasificacion || "COMUN"}]
+            <FaFileLines style={{ marginRight: "0.35rem", color: "#2563eb", flexShrink: 0 }} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {evento.numero_documento}
+            </span>
           </p>
         </div>
 
         <div className={styles.colInfo}>
-          <h5>Acción & Volumen</h5>
+          <h5>Acción & Tamaño</h5>
           <p>
-            {evento.name_tipo_evento} — {evento.size_archivo_mb} MB
+            {evento.name_tipo_evento} ({evento.size_archivo_mb} MB)
           </p>
         </div>
 
         <div className={styles.colInfo}>
-          <h5>Desglose Modelo ML</h5>
+          <h5>Score ML</h5>
           <p>
             IF: {evento.score_if ?? "0.00"} | Reglas: {evento.score_reglas ?? "0.00"}
           </p>
         </div>
       </div>
 
-      {/* Motivos XAI y Fuente de Línea Base */}
+      {/* Motivos XAI y Línea Base */}
       <div className={styles.motivosRow}>
-        <span style={{ fontSize: "0.78rem", color: "#6b7280", fontWeight: 700 }}>
-          Línea Base:
-        </span>
         <span className={styles.chipBaseLine}>
           <FaChartLine style={{ marginRight: "0.25rem" }} />
-          Fuente: {evento.perfil_actualizado?.fuente_linea_base || "Entrenamiento (164k registros)"}
-          {evento.perfil_actualizado?.n_eventos
-            ? ` (${evento.perfil_actualizado.n_eventos} eventos acumulados)`
-            : ""}
+          Línea Base: {evento.perfil_actualizado?.fuente_linea_base || "164K"}
         </span>
 
         {evento.motivos && evento.motivos.length > 0 && (
-          <>
-            <span style={{ fontSize: "0.78rem", color: "#6b7280", fontWeight: 700, marginLeft: "0.5rem" }}>
-              Alertas XAI:
+          evento.motivos.slice(0, 2).map((m, idx) => (
+            <span key={idx} className={styles.chipMotivo}>
+              <FaTriangleExclamation /> {m.descripcion}
             </span>
-            {evento.motivos.map((m, idx) => (
-              <span key={idx} className={styles.chipMotivo}>
-                <FaTriangleExclamation /> {m.descripcion}
-              </span>
-            ))}
-          </>
+          ))
         )}
       </div>
     </div>

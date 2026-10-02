@@ -357,3 +357,21 @@
   font-weight: 700;
   color: #b91c1c;
 }
+
+/* Expediente Forense Section */
+.forenseSection {
+  margin-top: 1.5rem;
+}
+
+.forenseBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #5b21b6;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+}

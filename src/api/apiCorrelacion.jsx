@@ -48,6 +48,8 @@ export const getReporteIncidente = async (id) => {
 
 export const postNeutralizarUsuario = async ({
   incidente_id,
+  id_evento,
+  evento_registro_id,
   id_user,
   nombre_usuario,
   motivo,
@@ -55,6 +57,8 @@ export const postNeutralizarUsuario = async ({
 }) => {
   const response = await api.post("/correlacion/neutralizar", {
     incidente_id,
+    id_evento,
+    evento_registro_id,
     id_user,
     nombre_usuario,
     motivo,

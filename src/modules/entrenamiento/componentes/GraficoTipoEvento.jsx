@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import styles from "./GraficoTipoEvento.module.css";
 import { toast } from "sonner";
 
@@ -19,13 +19,13 @@ const MESES = [
   { id: "12", label: "Diciembre" },
 ];
 
-// Datos base oficiales de los 5 tipos de eventos del sistema (calibrados con dataset UEBA)
+// Metadatos de los tipos oficiales; sin datos recibidos, los conteos son cero.
 const DEFAULT_EVENT_TYPES = [
   {
     id: "VISTA",
     nombre: "VISTA",
     sub: "Lectura / visualización de documento",
-    cantidad: 4195,
+    cantidad: 0,
     color: "#64748b",
     peso_accion: 1.0,
     nivel: "bajo",
@@ -34,7 +34,7 @@ const DEFAULT_EVENT_TYPES = [
     id: "DESCARGAR",
     nombre: "DESCARGAR",
     sub: "Descarga y tenencia de copia local",
-    cantidad: 138,
+    cantidad: 0,
     color: "#eab308",
     peso_accion: 2.0,
     nivel: "alto",
@@ -43,7 +43,7 @@ const DEFAULT_EVENT_TYPES = [
     id: "EDITAR",
     nombre: "EDITAR",
     sub: "Modificación o alteración de documento",
-    cantidad: 16,
+    cantidad: 0,
     color: "#3b82f6",
     peso_accion: 2.0,
     nivel: "medio",
@@ -52,7 +52,7 @@ const DEFAULT_EVENT_TYPES = [
     id: "ELIMINAR",
     nombre: "ELIMINAR",
     sub: "Destrucción / sabotaje de registro (Riesgo máximo)",
-    cantidad: 5,
+    cantidad: 0,
     color: "#ef4444",
     peso_accion: 3.0,
     nivel: "critico",
@@ -61,7 +61,7 @@ const DEFAULT_EVENT_TYPES = [
     id: "GUARDAR_COPIA",
     nombre: "GUARDAR_COPIA",
     sub: "Duplicación de archivo / riesgo de fuga",
-    cantidad: 10,
+    cantidad: 0,
     color: "#f97316",
     peso_accion: 2.5,
     nivel: "alto",
@@ -74,21 +74,15 @@ export default function GraficoTipoEvento({
   setFiltros,
   setPage,
 }) {
-  const [mesSeleccionado, setMesSeleccionado] = useState(filtros?.mes || "todos");
-
-  // Sincronizar estado si los filtros se resetean externamente
-  useEffect(() => {
-    if (!filtros?.mes) {
-      setMesSeleccionado("todos");
-    } else if (filtros.mes !== mesSeleccionado) {
-      setMesSeleccionado(filtros.mes);
-    }
-  }, [filtros?.mes]);
+  const [mesLocal, setMesLocal] = useState(filtros?.mes || "todos");
+  const mesActivo = setFiltros ? filtros?.mes || "todos" : mesLocal;
+  // La API agrupa por MM, incluso cuando otro gráfico filtra con YYYY-MM.
+  const mesSeleccionado = mesActivo === "todos" ? "todos" : String(mesActivo).slice(-2);
 
   // Manejo del cambio de mes en el selector
   const handleMesChange = (e) => {
     const nuevoMes = e.target.value;
-    setMesSeleccionado(nuevoMes);
+    setMesLocal(nuevoMes);
 
     if (setFiltros) {
       setFiltros((prev) => ({
@@ -109,15 +103,16 @@ export default function GraficoTipoEvento({
   // Procesar tipos de eventos según el mes seleccionado
   const items = useMemo(() => {
     const mensualData = resumen?.tipos_eventos_por_mes;
-    let rawList = null;
+    let rawList;
 
-    if (mensualData && mensualData[mesSeleccionado]) {
-      rawList = mensualData[mesSeleccionado];
-    } else if (mesSeleccionado === "todos") {
+    if (mesSeleccionado === "todos") {
       rawList =
         resumen?.tipos_eventos ||
+        mensualData?.todos ||
         resumen?.canales_fuga ||
         DEFAULT_EVENT_TYPES;
+    } else if (mensualData && mensualData[mesSeleccionado]) {
+      rawList = mensualData[mesSeleccionado];
     } else {
       // Meses sin registros o datos no cargados
       rawList = DEFAULT_EVENT_TYPES.map((d) => ({
@@ -142,7 +137,7 @@ export default function GraficoTipoEvento({
         id: key,
         nombre: key,
         sub: found?.sub || fallback?.sub || "",
-        cantidad: Number(found?.cantidad ?? fallback?.cantidad ?? 0),
+        cantidad: Number(found?.cantidad ?? 0),
         color: found?.color || fallback?.color || "#3b82f6",
         peso_accion: found?.peso_accion || fallback?.peso_accion || 1.0,
         nivel: found?.nivel || fallback?.nivel || "bajo",

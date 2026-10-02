@@ -49,7 +49,14 @@ const NOMBRES_ESTADO = {
   falso_positivo: "Falso Positivo",
 };
 
-export default function DashboardSOCAnalytics({ resumen, filtros = {}, setFiltros, setPage, incidentesList = [] }) {
+export default function DashboardSOCAnalytics({
+  resumen,
+  filtros = {},
+  setFiltros,
+  setPage,
+  incidentesList = [],
+  tiempoReal = false,
+}) {
   const [colapsado, setColapsado] = useState(false);
 
   const {
@@ -312,6 +319,7 @@ export default function DashboardSOCAnalytics({ resumen, filtros = {}, setFiltro
                     outerRadius={95}
                     paddingAngle={3}
                     dataKey="value"
+                    isAnimationActive={!tiempoReal}
                     onClick={(entry) => handleClasificacionClick(entry.name)}
                     cursor="pointer"
                   >
@@ -386,6 +394,7 @@ export default function DashboardSOCAnalytics({ resumen, filtros = {}, setFiltro
                   />
                   <Bar
                     dataKey="cantidad"
+                    isAnimationActive={!tiempoReal}
                     radius={[6, 6, 0, 0]}
                     onClick={(entry) => handleEstadoClick(entry.key)}
                     cursor="pointer"
