@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from "react";
 import { Link } from "react-router";
-import styles from "../../../../entrenamiento/componentes/TablaIncidentes.module.css";
+import styles from "../../entrenamiento/componentes/TablaIncidentes.module.css";
 import liveStyles from "./TablaIncidentesMotor.module.css";
 import dayjs from "dayjs";
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from "@tanstack/react-table";
@@ -26,7 +26,7 @@ import {
   FaShieldHalved,
   FaBan,
 } from "react-icons/fa6";
-import RoleBadge from "../../../../../components/RoleBadge";
+import RoleBadge from "../../../components/RoleBadge";
 import ModalExpedienteForense from "./ModalExpedienteForense";
 import { evaluarEstadoForense } from "../telemetria";
 
@@ -82,8 +82,6 @@ export default function TablaIncidentesMotor({
   filtros = {},
   setFiltros,
   resumen,
-  onEjecutarCorrelacion,
-  isExecuting = false,
   isLoading = false,
   detalleBasePath = "/eventos/motor-deteccion/incidente",
 }) {
@@ -361,7 +359,7 @@ export default function TablaIncidentesMotor({
       {
         id: "acciones",
         header: "Acción",
-        meta: { align: "center", width: "10%" },
+        meta: { align: "center", width: "8%" },
         cell: ({ row }) => {
           const inc = row.original;
           const isExpanded = !!expandedRows[row.id];
@@ -389,13 +387,13 @@ export default function TablaIncidentesMotor({
                 </button>
 
                 {/* Enlace directo a página dedicada */}
-                <Link
+                {/* <Link
                   to={`${detalleBasePath}/${inc.id}`}
                   className={styles.btnDetalleCompact}
                   title="Ver expediente en página dedicada"
                 >
                   <FaArrowRight />
-                </Link>
+                </Link> */}
               </div>
             </div>
           );
@@ -545,18 +543,6 @@ export default function TablaIncidentesMotor({
               title="Limpiar todos los filtros"
             >
               <FaRotateLeft /> Limpiar
-            </button>
-          )}
-
-          {onEjecutarCorrelacion && (
-            <button
-              className={styles.btnEjecutar}
-              disabled={isExecuting}
-              onClick={onEjecutarCorrelacion}
-              title="Sincronizar y correlacionar eventos del motor"
-            >
-              <FaArrowsRotate className={isExecuting ? "spin" : ""} />
-              {isExecuting ? "Sincronizando..." : "Sincronizar Amenazas"}
             </button>
           )}
         </div>

@@ -11,11 +11,11 @@ import {
 import { useState, useEffect, useRef, useMemo } from "react";
 import styles from "./RadarRiesgo.module.css";
 import RoleBadge from "../../../../components/RoleBadge";
-import { FaMagnifyingGlass, FaXmark, FaCheck, FaChevronDown } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaXmark, FaCheck, FaChevronDown, FaUsers } from "react-icons/fa6";
 import { toast } from "sonner";
 
 const MAX_SELECTION = 3;
-const COLORES = ["#3b82f6", "#ef4444", "#10b981"];
+const COLORES = ["#2563eb", "#7c3aed", "#0891b2"];
 
 export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
   const [selectedUserIds, setSelectedUserIds] = useState(() => {
@@ -129,7 +129,7 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
     horario: "Horario",
     volumen: "Volumen",
     clasificacion: "Clasificación",
-    cambio_comportamiento: "Cambio Comp.",
+    cambio_comportamiento: "Cambio de conducta",
     acciones_criticas: "Acciones Críticas",
     score_if: "Score IF",
   };
@@ -147,12 +147,12 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
       {/* Selector Multi-Select Profesional */}
       <div className={styles.multiSelectSection} ref={dropdownRef}>
         <div className={styles.selectHeaderRow}>
-          <label className={styles.selectLabel}>
-            <span>👥</span> Comparativa de Perfiles
+          <div className={styles.selectLabel}>
+            <FaUsers aria-hidden="true" /> Comparativa de perfiles
             <span className={styles.badgeCounter}>
               {selectedUserIds.length}/{MAX_SELECTION} seleccionados
             </span>
-          </label>
+          </div>
           {selectedUserIds.length >= MAX_SELECTION && (
             <span className={styles.limitReachedNotice}>
               Máximo {MAX_SELECTION} usuarios alcanzado
@@ -184,6 +184,7 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
                     type="button"
                     className={styles.chipRemoveBtn}
                     onClick={(e) => handleRemoveUser(u.user_id ?? u.nombre, e)}
+                    aria-label={`Quitar a ${u.nombre} de la comparativa`}
                     title={`Quitar ${u.nombre}`}
                   >
                     <FaXmark />
@@ -197,6 +198,7 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
               <input
                 type="text"
                 className={styles.searchInput}
+                aria-label="Buscar usuario por nombre, rol, oficina o identificador"
                 placeholder={
                   selectedUserIds.length >= MAX_SELECTION
                     ? `Límite alcanzado (${MAX_SELECTION}/${MAX_SELECTION})...`
@@ -241,10 +243,10 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
               </span>
             </div>
 
-            <div className={styles.dropdownList}>
+            <div className={styles.dropdownList} role="group" aria-label="Resultados de usuarios">
               {filteredUsuarios.length === 0 ? (
                 <div className={styles.dropdownEmpty}>
-                  <span>🔍</span>
+                  <FaMagnifyingGlass aria-hidden="true" />
                   <p>No se encontraron usuarios con &quot;{searchQuery}&quot;</p>
                 </div>
               ) : (
@@ -256,10 +258,13 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
                   const isMaxReached = !isSelected && selectedUserIds.length >= MAX_SELECTION;
 
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={id}
                       className={`${styles.dropdownItem} ${isSelected ? styles.dropdownItemSelected : ""} ${isMaxReached ? styles.dropdownItemDisabled : ""}`}
                       onClick={() => !isMaxReached && handleToggleUser(u)}
+                      disabled={isMaxReached}
+                      aria-pressed={isSelected}
                       style={isSelected ? { borderColor: color, backgroundColor: `${color}10` } : {}}
                     >
                       <div className={styles.itemLeft}>
@@ -299,25 +304,31 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   );
                 })
               )}
             </div>
 
             <div className={styles.dropdownFooter}>
-              <span>💡 Cada perfil seleccionado se proyecta como una serie independiente en el radar</span>
+              <span>Cada perfil seleccionado se muestra como una serie independiente en el radar.</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Gráfico Radar de Riesgo */}
-      <ResponsiveContainer width="100%" height={560}>
-        <RadarChart data={radarData}>
-          <PolarGrid stroke="rgba(0,0,0,0.08)" />
-          <PolarAngleAxis dataKey="dimension" tick={{ fill: "#334155", fontSize: 11, fontWeight: 600 }} />
-          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "#64748b", fontSize: 9 }} />
+      <ResponsiveContainer width="100%" height={420}>
+        <RadarChart data={radarData} outerRadius="72%" margin={{ top: 8, right: 26, bottom: 8, left: 26 }}>
+          <PolarGrid stroke="#e2e8f0" />
+          <PolarAngleAxis dataKey="dimension" tick={{ fill: "#475569", fontSize: 10, fontWeight: 550 }} />
+          <PolarRadiusAxis
+            angle={30}
+            domain={[0, 100]}
+            ticks={[0, 25, 50, 75, 100]}
+            tick={{ fill: "#94a3b8", fontSize: 9 }}
+            axisLine={false}
+          />
           {selectedUserObjects.map((u, i) => {
             const color = COLORES[i % COLORES.length];
             return (
@@ -327,8 +338,9 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
                 dataKey={u.nombre}
                 stroke={color}
                 fill={color}
-                fillOpacity={0.16}
-                strokeWidth={2.5}
+                fillOpacity={0.12}
+                strokeWidth={2}
+                dot={{ r: 2.5, strokeWidth: 0 }}
               />
             );
           })}
@@ -339,10 +351,15 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
               borderRadius: 10,
               color: "#1e293b",
               boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.12)",
-              fontSize: "0.82rem",
+              fontSize: "0.78rem",
             }}
+            formatter={(value) => [`${Number(value).toFixed(0)} / 100`, "Índice"]}
           />
-          <Legend wrapperStyle={{ fontSize: 11, color: "#334155", paddingTop: "0.5rem" }} />
+          <Legend
+            verticalAlign="bottom"
+            height={34}
+            wrapperStyle={{ fontSize: 11, color: "#334155", paddingTop: "0.25rem" }}
+          />
         </RadarChart>
       </ResponsiveContainer>
     </div>

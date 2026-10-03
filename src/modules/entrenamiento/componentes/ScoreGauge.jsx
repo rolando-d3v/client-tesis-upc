@@ -42,6 +42,21 @@ export default function ScoreGauge({ incidente }) {
   const nivel = incidente.nivel_riesgo || "bajo";
   const colors = getColorByLevel(nivel);
 
+  // Misma regla que correlacion_engine.py: con ambas fuentes el puntaje pesa 45% trazabilidad y
+  // 55% actividad; si falta una, se usa completa la que está disponible.
+  const tieneTraza = scoreTraza > 0;
+  const tieneEv = scoreEv > 0;
+  const fusionCompleta = tieneTraza && tieneEv;
+  const pesoTraza = fusionCompleta ? "45%" : tieneTraza ? "100%" : null;
+  const pesoEv = fusionCompleta ? "55%" : tieneEv ? "100%" : null;
+  const descripcionFusion = fusionCompleta
+    ? "El puntaje combina la trazabilidad del documento (45%) y la actividad del usuario (55%), junto con factores del caso."
+    : tieneEv
+    ? "Este documento no tiene trazabilidad registrada: el puntaje usa solo la actividad del usuario, junto con factores del caso."
+    : tieneTraza
+    ? "Este caso no tiene actividad de usuario registrada: el puntaje usa solo la trazabilidad del documento, junto con factores del caso."
+    : "No hay puntajes de trazabilidad ni de actividad registrados.";
+
   const clasif = (incidente.clasificacion_doc || "").toUpperCase();
   const destino = (incidente.destino_doc || "").toLowerCase();
 
@@ -76,11 +91,9 @@ export default function ScoreGauge({ incidente }) {
     <div className={styles.card}>
       <div className={styles.title}>
         <FaBolt style={{ color: "#7c3aed" }} />
-        Evaluación de Amenaza Multi-Dominio y Vector de Riesgo
+        Puntaje y fuentes de riesgo
       </div>
-      <p className={styles.subtitle}>
-        Fusión algorítmica de trazabilidad documental (45%) y comportamiento de usuario (55%) con factores de contexto.
-      </p>
+      <p className={styles.subtitle}>{descripcionFusion}</p>
 
       <div className={styles.mainRow}>
         {/* Gauge central */}
@@ -108,7 +121,7 @@ export default function ScoreGauge({ incidente }) {
         {/* Radar del vector de amenaza multidimensional */}
         <div className={styles.radarWrapper}>
           <div className={styles.radarHeader}>
-            <span>Vector de Ataque (6 Dimensiones)</span>
+            <span>Factores evaluados</span>
           </div>
           <ResponsiveContainer width="100%" height={210}>
             <RadarChart cx="50%" cy="50%" outerRadius={70} data={radarData}>
@@ -135,7 +148,7 @@ export default function ScoreGauge({ incidente }) {
               <span className={styles.sourceName}>
                 <FaFileLines style={{ color: "#3b82f6" }} />
                 Trazabilidad Documental
-                <span className={styles.weightTag}>Peso 45%</span>
+                <span className={styles.weightTag}>{pesoTraza ? `Peso ${pesoTraza}` : "Sin datos"}</span>
               </span>
               <span className={styles.sourceScore}>
                 {(scoreTraza * 100).toFixed(1)}% ({scoreTraza.toFixed(4)})
@@ -158,7 +171,7 @@ export default function ScoreGauge({ incidente }) {
               <span className={styles.sourceName}>
                 <FaUserSecret style={{ color: "#8b5cf6" }} />
                 Comportamiento de Usuario
-                <span className={styles.weightTag}>Peso 55%</span>
+                <span className={styles.weightTag}>{pesoEv ? `Peso ${pesoEv}` : "Sin datos"}</span>
               </span>
               <span className={styles.sourceScore}>
                 {(scoreEv * 100).toFixed(1)}% ({scoreEv.toFixed(4)})
@@ -179,7 +192,7 @@ export default function ScoreGauge({ incidente }) {
 
       {/* Factores Contextuales Multiplicadores */}
       <div className={styles.factorsSection}>
-        <div className={styles.factorsTitle}>Factores Multiplicadores Activos</div>
+        <div className={styles.factorsTitle}>Factores que elevan el riesgo</div>
         <div className={styles.factorsList}>
           {esSecreto && (
             <span className={styles.factorBadge}>

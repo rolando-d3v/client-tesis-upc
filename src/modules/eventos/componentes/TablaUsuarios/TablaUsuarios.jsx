@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useId } from "react";
 import styles from "./TablaUsuarios.module.css";
 import TimelineUsuario from "../TimelineUsuario/TimelineUsuario";
 import RoleBadge from "../../../../components/RoleBadge";
 import { useD2UsuarioDetalle } from "../../../../api/apiEventos";
+import { FaClock, FaXmark } from "react-icons/fa6";
 
-const NIVEL_EMOJI = { critico: "🔴", alto: "🟠", medio: "🟡", bajo: "🟢" };
+const NIVEL_LABEL = { critico: "Crítico", alto: "Alto", medio: "Medio", bajo: "Bajo" };
 const PAGE_SIZE = 10;
 
 export default function TablaUsuarios({ usuarios = [] }) {
+  const modalTitleId = useId();
   const [selectedUser, setSelectedUser] = useState(null);
   const [page, setPage] = useState(1);
   const [filtroRol, setFiltroRol] = useState("");
@@ -67,8 +69,8 @@ export default function TablaUsuarios({ usuarios = [] }) {
     <div className={styles.container}>
       <div className={styles.tableHeader}>
         <div className={styles.filterGroup}>
-          <label htmlFor="filtro-rol-usuarios" style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>
-            Filtrar por Rol:
+          <label htmlFor="filtro-rol-usuarios">
+            Filtrar por rol
           </label>
           <select
             id="filtro-rol-usuarios"
@@ -88,23 +90,24 @@ export default function TablaUsuarios({ usuarios = [] }) {
           Mostrando {filteredUsuarios.length} de {usuarios.length} usuarios
         </span>
       </div>
-      <div className={styles.tableWrap}>
+      <div className={styles.tableWrap} role="region" aria-label="Listado de usuarios" tabIndex={0}>
         <table className={styles.table}>
+          <caption className={styles.srOnly}>Indicadores de riesgo y actividad por usuario</caption>
           <thead>
             <tr>
-              <th className={styles.thNum}>#</th>
-              <th>Riesgo</th>
-              <th>Usuario</th>
-              <th>Rol</th>
-              <th>Oficina</th>
-              <th>Eventos</th>
-              <th>Secretos</th>
-              <th>Descargas</th>
-              <th>MB</th>
-              <th>Fuera Hr</th>
-              <th>Score</th>
-              <th>Anómalos</th>
-              <th>Detalle</th>
+              <th scope="col" className={styles.thNum}>#</th>
+              <th scope="col">Riesgo</th>
+              <th scope="col">Usuario</th>
+              <th scope="col">Rol</th>
+              <th scope="col">Oficina</th>
+              <th scope="col">Eventos</th>
+              <th scope="col">Docs. secretos</th>
+              <th scope="col">Descargas</th>
+              <th scope="col">Volumen (MB)</th>
+              <th scope="col">Fuera de horario</th>
+              <th scope="col">Score</th>
+              <th scope="col">Anómalos</th>
+              <th scope="col">Detalle</th>
             </tr>
           </thead>
           <tbody>
@@ -112,9 +115,10 @@ export default function TablaUsuarios({ usuarios = [] }) {
               <tr key={u.user_id} className={selectedUser === u.user_id ? styles.rowSelected : ""}>
                 <td className={styles.tdNum}>{(page - 1) * PAGE_SIZE + i + 1}</td>
                 <td className={styles.td_item_riesgo}>
-                  <div>
-                    {NIVEL_EMOJI[u.nivel_riesgo]} {u.nivel_riesgo}
-                  </div>
+                  <span className={styles.riskStatus} data-risk={u.nivel_riesgo || "bajo"}>
+                    <span aria-hidden="true" />
+                    {NIVEL_LABEL[u.nivel_riesgo] || u.nivel_riesgo || "Sin nivel"}
+                  </span>
                 </td>
                 <td className={styles.nombre}>{u.nombre}</td>
                 <td>
@@ -132,8 +136,10 @@ export default function TablaUsuarios({ usuarios = [] }) {
                   <button
                     className={styles.btnDetalle}
                     onClick={() => setSelectedUser(u.user_id)}
+                    aria-label={`Ver cronología de ${u.nombre}`}
                   >
-                    🔍 Ver
+                    <FaClock aria-hidden="true" />
+                    <span>Ver</span>
                   </button>
                 </td>
               </tr>
@@ -156,6 +162,8 @@ export default function TablaUsuarios({ usuarios = [] }) {
                 key={p}
                 className={`${styles.pageNum} ${p === page ? styles.pageNumActive : ""}`}
                 onClick={() => setPage(p)}
+                aria-current={p === page ? "page" : undefined}
+                aria-label={`Página ${p}`}
               >
                 {p}
               </button>
@@ -172,22 +180,36 @@ export default function TablaUsuarios({ usuarios = [] }) {
       )}
       {selectedUser && (
         <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={styles.modalContent}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={modalTitleId}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className={styles.modalHeader}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-                <span className={styles.modalTitle}>
-                  📋 Timeline de usuario:{" "}
+              <div className={styles.modalIdentity}>
+                <p className={styles.modalEyebrow}>Expediente de actividad</p>
+                <h2 id={modalTitleId} className={styles.modalTitle}>
+                  Cronología de actividad
+                </h2>
+                <div className={styles.modalUserLine}>
                   <span className={styles.modalTitleAccent}>{selectedNombre}</span>
-                </span>
-                <RoleBadge role={selectedUserObj?.rol || selectedUserObj?.role || selectedUserObj?.name_role} size="small" />
+                  <RoleBadge
+                    role={selectedUserObj?.rol || selectedUserObj?.role || selectedUserObj?.name_role}
+                    size="small"
+                  />
+                </div>
               </div>
-              <button className={styles.modalCloseBtn} onClick={closeModal}>
-                ✕
+              <button className={styles.modalCloseBtn} onClick={closeModal} aria-label="Cerrar cronología">
+                <FaXmark aria-hidden="true" />
               </button>
             </div>
             <div className={styles.modalBody}>
               {detalleQuery.isLoading ? (
-                <p className={styles.loading}>Cargando timeline...</p>
+                <p className={styles.loading} role="status">Cargando cronología…</p>
+              ) : detalleQuery.isError ? (
+                <p className={styles.error} role="alert">No se pudo cargar la cronología de este usuario.</p>
               ) : (
                 <TimelineUsuario data={detalleQuery.data || []} />
               )}

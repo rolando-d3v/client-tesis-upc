@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useState } from "react";
+import React, { Fragment, useMemo, useState, useRef, useEffect } from "react";
 import styles from "./TablaEventosEnVivo.module.css";
 import {
   useReactTable,
@@ -8,8 +8,6 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import {
-  FaMagnifyingGlass,
-  FaXmark,
   FaClock,
   FaChevronDown,
   FaChevronUp,
@@ -17,24 +15,14 @@ import {
   FaArrowUp,
   FaArrowDown,
   FaSort,
-  FaRotateLeft,
   FaTriangleExclamation,
   FaBan,
+  FaCopy,
 } from "react-icons/fa6";
-import RoleBadge from "../../../../../components/RoleBadge";
+import RoleBadge from "../../../components/RoleBadge";
+import { toast } from "sonner";
 
-const getClasifClass = (clasif) => {
-  switch (clasif?.toUpperCase()) {
-    case "SECRETO":
-      return styles.clasifSecreto;
-    case "RESERVADO":
-      return styles.clasifReservado;
-    case "CONFIDENCIAL":
-      return styles.clasifConfidencial;
-    default:
-      return styles.clasifComun;
-  }
-};
+const MAX_EVENTOS_VISIBLES = 100;
 
 const getRiesgoClass = (nivel) => {
   switch (nivel?.toLowerCase()) {
@@ -52,52 +40,19 @@ const getRiesgoClass = (nivel) => {
 export default function TablaEventosEnVivo({
   eventos = [],
   filtros = {},
-  setFiltros,
   onSeleccionarEvento,
-  onNeutralizarUsuario,
   neutralizadosIds = [],
   autoScroll = true,
-  setAutoScroll,
 }) {
   const [sorting, setSorting] = useState([]);
-  const [expandedRows, setExpandedRows] = useState({});
+  const [expandedRows] = useState({});
+  const tableWrapperRef = useRef(null);
 
-  const toggleRowExpand = (rowId) => {
-    setExpandedRows((prev) => ({
-      ...prev,
-      [rowId]: !prev[rowId],
-    }));
-  };
-
-  const handleSearchChange = (e) => {
-    setFiltros((prev) => ({ ...prev, busqueda: e.target.value }));
-  };
-
-  const handleClearSearch = () => {
-    setFiltros((prev) => ({ ...prev, busqueda: "" }));
-  };
-
-  const handleFilterChange = (key, value) => {
-    setFiltros((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleResetFilters = () => {
-    setFiltros({
-      busqueda: "",
-      nivel_riesgo: "",
-      clasificacion: "",
-      tipo_evento: "",
-      rol: "",
-    });
-  };
-
-  const hasActiveFilters = Boolean(
-    filtros.busqueda ||
-      filtros.nivel_riesgo ||
-      filtros.clasificacion ||
-      filtros.tipo_evento ||
-      filtros.rol
-  );
+  useEffect(() => {
+    if (autoScroll && tableWrapperRef.current) {
+      tableWrapperRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [eventos.length, autoScroll]);
 
   // Filtrado de eventos en memoria para el TanStack Table
   const filteredData = useMemo(() => {
@@ -158,40 +113,39 @@ export default function TablaEventosEnVivo({
     });
   }, [eventos, filtros]);
 
+  // Mantiene el feed compacto y predecible: el scroll permite recorrer hasta 20 eventos.
+  const visibleData = useMemo(
+    () => filteredData.slice(0, MAX_EVENTOS_VISIBLES),
+    [filteredData]
+  );
+
   // Definición de columnas con TanStack Table
   const columns = useMemo(
     () => [
+   
       // {
-      //   accessorKey: "id_evento",
-      //   header: "ID",
-      //   meta: { align: "center", width: "6%" },
-      //   cell: (info) => (
-      //     <span className={styles.idBadge}>#{info.getValue()}</span>
-      //   ),
+      //   accessorKey: "fecha_evento",
+      //   header: "Fecha",
+      //   meta: { align: "left", width: "12%" },
+      //   cell: (info) => {
+      //     const val = info.getValue();
+      //     if (!val) return <span style={{ color: "#9ca3af" }}>-</span>;
+      //     const partes = String(val).split(" ");
+      //     const fecha = partes[0] || "";
+      //     const hora = partes[1] || "";
+      //     return (
+      //       <div className={styles.fechaCell}>
+      //         <span className={styles.fechaMain}>{hora || fecha}</span>
+      //         {hora && (
+      //           <span className={styles.fechaTime}>
+      //             <FaClock style={{ fontSize: "0.68rem" }} />
+      //             {fecha}
+      //           </span>
+      //         )}
+      //       </div>
+      //     );
+      //   },
       // },
-      {
-        accessorKey: "fecha_evento",
-        header: "Hora / Fecha",
-        meta: { align: "left", width: "12%" },
-        cell: (info) => {
-          const val = info.getValue();
-          if (!val) return <span style={{ color: "#9ca3af" }}>-</span>;
-          const partes = String(val).split(" ");
-          const fecha = partes[0] || "";
-          const hora = partes[1] || "";
-          return (
-            <div className={styles.fechaCell}>
-              <span className={styles.fechaMain}>{hora || fecha}</span>
-              {hora && (
-                <span className={styles.fechaTime}>
-                  <FaClock style={{ fontSize: "0.68rem" }} />
-                  {fecha}
-                </span>
-              )}
-            </div>
-          );
-        },
-      },
       // {
       //   id: "documento",
       //   accessorKey: "numero_documento",
@@ -230,13 +184,13 @@ export default function TablaEventosEnVivo({
         id: "usuario",
         accessorKey: "name_user",
         header: "Usuario & Oficina",
-        meta: { align: "left", width: "20%" },
+        meta: { align: "left", width: "40%" },
         cell: ({ row }) => {
           const ev = row.original;
-          const initial = ev.name_user
-            ? ev.name_user.charAt(0).toUpperCase()
-            : "U";
+          const numeroRegistro = row.index + 1;
+          const userDni = ev.dni || ev.dni_user || ev.id_user;
           const isNeutralizado =
+            neutralizadosIds.includes(String(userDni)) ||
             neutralizadosIds.includes(String(ev.id_user)) ||
             neutralizadosIds.includes(ev.name_user);
 
@@ -244,38 +198,121 @@ export default function TablaEventosEnVivo({
             <div className={styles.userCell}>
               <div
                 className={styles.userAvatar}
-                style={isNeutralizado ? { borderColor: "#dc2626", background: "#fef2f2", color: "#dc2626" } : {}}
-              >
-                {initial}
-              </div>
-              <div className={styles.userInfo}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-                  <span className={styles.userName} title={ev.name_user}>
-                    {ev.name_user || "Usuario Desconocido"}
-                  </span>
-                  {isNeutralizado && (
-                    <span
-                      style={{
-                        background: "#fee2e2",
+                style={
+                  isNeutralizado
+                    ? {
+                        background: "#fef2f2",
                         color: "#dc2626",
                         border: "1px solid #fecaca",
-                        padding: "1px 5px",
-                        borderRadius: "4px",
-                        fontSize: "0.68rem",
+                        borderRadius: "8px",
+                        fontSize: "0.7rem",
                         fontWeight: 700,
-                      }}
-                      title="Cuenta bloqueada preventivamente"
-                    >
-                      BLOQUEADO
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginTop: 2, flexWrap: "wrap" }}>
-                  <RoleBadge role={ev.name_role || ev.rol || ev.role} size="small" />
-                  <span className={styles.userId}>
-                    {ev.name_oficina || `ID: ${ev.id_user}`}
+                        minWidth: "26px",
+                        height: "26px",
+                        width: "auto",
+                        padding: "0 6px",
+                      }
+                    : {
+                        background: "#f1f5f9",
+                        color: "#475569",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        minWidth: "26px",
+                        height: "26px",
+                        width: "auto",
+                        padding: "0 6px",
+                      }
+                }
+                title={`Registro #${numeroRegistro}`}
+              >
+                {numeroRegistro}
+              </div>
+              <div 
+                className={styles.userInfo}
+                style={{ 
+                  display: "flex", 
+                  flexDirection: "row", 
+                  alignItems: "center", 
+                  gap: "0.5rem", 
+                  flexWrap: "nowrap", 
+                  minWidth: 0 
+                }}
+              >
+                <span 
+                  className={styles.userName} 
+                  title={ev.name_user}
+                  style={{ maxWidth: "110px", display: "block", flexShrink: 1 }}
+                >
+                  {ev.name_user || "Usuario Desconocido"}
+                </span>
+
+                {userDni && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(String(userDni));
+                      toast.success(`DNI ${userDni} copiado al portapapeles`);
+                    }}
+                    title={`Copiar DNI: ${userDni}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.25rem",
+                      background: "#f1f5f9",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "4px",
+                      padding: "1px 5px",
+                      fontSize: "0.62rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      color: "#334155",
+                      flexShrink: 0
+                    }}
+                  >
+                    <FaCopy style={{ fontSize: "0.58rem", color: "#64748b" }} /> DNI: {userDni}
+                  </button>
+                )}
+
+                {isNeutralizado && (
+                  <span
+                    style={{
+                      background: "#fee2e2",
+                      color: "#dc2626",
+                      border: "1px solid #fecaca",
+                      padding: "0px 5px",
+                      borderRadius: "4px",
+                      fontSize: "0.6rem",
+                      fontWeight: 700,
+                      flexShrink: 0
+                    }}
+                    title="Cuenta bloqueada preventivamente"
+                  >
+                    BLOQUEADO
                   </span>
+                )}
+
+                <div style={{ flexShrink: 0 }}>
+                  <RoleBadge role={ev.name_role || ev.rol || ev.role} size="small" />
                 </div>
+
+                <span 
+                  className={styles.userId}
+                  title={ev.name_oficina || (userDni ? `DNI: ${userDni}` : "")}
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    minWidth: 0,
+                    maxWidth: "100px",
+                    display: "block",
+                    flexShrink: 1
+                  }}
+                >
+                  {ev.name_oficina || (userDni ? `DNI: ${userDni}` : "")}
+                </span>
               </div>
             </div>
           );
@@ -284,13 +321,13 @@ export default function TablaEventosEnVivo({
       {
         id: "accion",
         accessorKey: "name_tipo_evento",
-        header: "Acción & Tamaño",
+        header: "Acción",
         meta: { align: "left", width: "13%" },
         cell: ({ row }) => {
           const ev = row.original;
           return (
             <div>
-              <span style={{ fontWeight: 600, color: "#1e293b" }}>
+              <span style={{fontSize: "0.74rem", fontWeight: 600, color: "#1e293b" }}>
                 {ev.name_tipo_evento || "EVENTO"}
               </span>
               <div style={{ fontSize: "0.74rem", color: "#64748b" }}>
@@ -382,62 +419,14 @@ export default function TablaEventosEnVivo({
         id: "acciones",
         header: "Acción",
         enableSorting: false,
-        meta: { align: "right", width: "11%" },
+        meta: { align: "right", width: "8%" },
         cell: ({ row }) => {
           const ev = row.original;
-          const isExpanded = !!expandedRows[row.id];
-          const isNeutralizado =
-            neutralizadosIds.includes(String(ev.id_user)) ||
-            neutralizadosIds.includes(ev.name_user);
 
           return (
             <div className={styles.actionsCell}>
-              {onNeutralizarUsuario && (
-                <button
-                  type="button"
-                  style={{
-                    background: isNeutralizado ? "#fee2e2" : "#ffffff",
-                    color: isNeutralizado ? "#dc2626" : "#ef4444",
-                    border: "1.5px solid",
-                    borderColor: isNeutralizado ? "#fca5a5" : "#fecaca",
-                    borderRadius: "6px",
-                    padding: "0.35rem 0.45rem",
-                    cursor: isNeutralizado ? "default" : "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "0.75rem",
-                    transition: "all 0.15s ease",
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isNeutralizado) {
-                      const confirm = window.confirm(
-                        `¿Confirmas el bloqueo preventivo y neutralización de la cuenta de ${ev.name_user || "usuario"}?`
-                      );
-                      if (confirm) onNeutralizarUsuario(ev);
-                    }
-                  }}
-                  title={
-                    isNeutralizado
-                      ? "Usuario ya neutralizado"
-                      : `Neutralizar cuenta de ${ev.name_user || "usuario"}`
-                  }
-                  disabled={isNeutralizado}
-                >
-                  <FaBan />
-                </button>
-              )}
-              <button
-                type="button"
-                className={`${styles.btnExpand} ${
-                  isExpanded ? styles.btnExpandActive : ""
-                }`}
-                onClick={() => toggleRowExpand(row.id)}
-                title={isExpanded ? "Ocultar detalles" : "Ver telemetría rápida"}
-              >
-                {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-              </button>
+         
+         
               <button
                 type="button"
                 className={styles.btnDetalle}
@@ -451,12 +440,12 @@ export default function TablaEventosEnVivo({
         },
       },
     ],
-    [expandedRows, onSeleccionarEvento, onNeutralizarUsuario, neutralizadosIds]
+    [onSeleccionarEvento, neutralizadosIds]
   );
 
-  // TanStack Table Instance (sin paginación, muestra todos los eventos en memoria)
+  // La tabla conserva como máximo los 20 eventos más recientes que pasaron los filtros.
   const table = useReactTable({
-    data: filteredData,
+    data: visibleData,
     columns,
     state: {
       sorting,
@@ -478,74 +467,15 @@ export default function TablaEventosEnVivo({
 
   return (
     <div className={styles.container}>
-      {/* BARRA DE CONTROLES Y FILTROS */}
-      <div className={styles.controlsBar}>
-
-        <div className={styles.filtersGroup}>
-          {/* Nivel de Riesgo */}
-          <select
-            className={styles.select}
-            value={filtros.nivel_riesgo || ""}
-            onChange={(e) => handleFilterChange("nivel_riesgo", e.target.value)}
-          >
-            <option value="">Todos los Riesgos</option>
-            <option value="critico">Crítico</option>
-            <option value="alto">Alto</option>
-            <option value="medio">Medio</option>
-            <option value="bajo">Bajo</option>
-            <option value="anomalia">Solo Anomalías</option>
-            <option value="fuera_horario">Fuera de Horario</option>
-            <option value="exterior">Hacia Exterior</option>
-          </select>
-
-          {/* Clasificación */}
-          <select
-            className={styles.select}
-            value={filtros.clasificacion || ""}
-            onChange={(e) => handleFilterChange("clasificacion", e.target.value)}
-          >
-            <option value="">Todas las Clasificaciones</option>
-            <option value="SECRETO">SECRETO</option>
-            <option value="RESERVADO">RESERVADO</option>
-            <option value="CONFIDENCIAL">CONFIDENCIAL</option>
-            <option value="COMUN">COMUN</option>
-          </select>
-
-          {/* Tipo de Evento */}
-          <select
-            className={styles.select}
-            value={filtros.tipo_evento || ""}
-            onChange={(e) => handleFilterChange("tipo_evento", e.target.value)}
-          >
-            <option value="">Todas las Acciones</option>
-            <option value="DESCARGAR">DESCARGAR</option>
-            <option value="VISTA">VISTA</option>
-            <option value="EDITAR">EDITAR</option>
-            <option value="ELIMINAR">ELIMINAR</option>
-            <option value="GUARDAR_COPIA">GUARDAR_COPIA</option>
-          </select>
-
-       
-
-          {/* Limpiar Filtros */}
-          {hasActiveFilters && (
-            <button
-              type="button"
-              className={styles.btnResetFilters}
-              onClick={handleResetFilters}
-              title="Limpiar todos los filtros"
-            >
-              <FaRotateLeft /> Limpiar
-            </button>
-          )}
-
-       
-        </div>
-      </div>
-
       {/* TABLA TANSTACK */}
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
+      <div
+        ref={tableWrapperRef}
+        className={styles.tableWrapper}
+        tabIndex={0}
+        role="region"
+        aria-label="Lista desplazable de eventos"
+      >
+        <table className={styles.table} aria-label="Eventos recientes en tiempo real">
           <thead className={styles.thead}>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -564,6 +494,7 @@ export default function TablaEventosEnVivo({
                       style={{
                         width: width,
                         textAlign: align,
+                        fontSize: 10,
                       }}
                       onClick={
                         canSort
@@ -573,7 +504,7 @@ export default function TablaEventosEnVivo({
                     >
                       <div
                         className={styles.thContent}
-                        style={{
+                        style={{ fontSize: 13, height: 8,
                           justifyContent:
                             align === "right"
                               ? "flex-end"
@@ -616,7 +547,7 @@ export default function TablaEventosEnVivo({
                 const ev = row.original;
                 return (
                   <Fragment key={row.id}>
-                    <tr className={index === 0 ? styles.rowNuevo : ""}>
+                    <tr className={`${styles.dataRow} ${index === 0 ? styles.rowNuevo : ""}`}>
                       {row.getVisibleCells().map((cell) => {
                         const align =
                           cell.column.columnDef.meta?.align || "left";
@@ -708,7 +639,16 @@ export default function TablaEventosEnVivo({
           </tbody>
         </table>
       </div>
-
+      <div className={styles.tableFooter}>
+        <span>
+          Mostrando {visibleData.length} de {filteredData.length} registros
+        </span>
+        {filteredData.length > MAX_EVENTOS_VISIBLES && (
+          <span className={styles.limitHint}>
+            Límite de {MAX_EVENTOS_VISIBLES} eventos
+          </span>
+        )}
+      </div>
     </div>
   );
 }

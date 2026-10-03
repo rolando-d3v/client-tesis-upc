@@ -93,8 +93,8 @@ export default function AccionesContencion({ incidente }) {
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.title}>
-            <FaShieldHalved style={{ color: "#7c3aed" }} />
-            Gestión de Respuesta a Incidentes (SOC / CISO)
+            <FaShieldHalved style={{ color: "#2563eb" }} />
+            Acciones del analista
           </div>
           <div className={styles.statusWrapper}>
             <span>Estado actual:</span>
@@ -102,14 +102,14 @@ export default function AccionesContencion({ incidente }) {
           </div>
         </div>
 
-        <div className={styles.form}>
+        <div className={styles.form} data-pdf-ignore="true">
           <label className={styles.label} htmlFor="nota-analista">
-            Nota u orden de acción del analista SOC:
+            Nota de intervención <span>(opcional)</span>
           </label>
           <textarea
             id="nota-analista"
             className={styles.textarea}
-            placeholder="Ej: Se coordinó con Mesa de Ayuda el bloqueo preventivo de credenciales del usuario y aislamiento del documento..."
+            placeholder="Registra el motivo o los pasos acordados antes de actualizar el estado."
             value={nota}
             onChange={(e) => setNota(e.target.value)}
           />
@@ -120,7 +120,7 @@ export default function AccionesContencion({ incidente }) {
               disabled={updateMutation.isPending || incidente.estado === "en_investigacion"}
               onClick={() => handleCambiarEstado("en_investigacion")}
             >
-              <FaMagnifyingGlass /> Iniciar Investigación
+              <FaMagnifyingGlass /> Iniciar investigación
             </button>
 
             <button
@@ -128,7 +128,7 @@ export default function AccionesContencion({ incidente }) {
               disabled={updateMutation.isPending || incidente.estado === "contenido"}
               onClick={() => handleCambiarEstado("contenido")}
             >
-              <FaHandcuffs /> Contener Amenaza
+              <FaHandcuffs /> Contener amenaza
             </button>
 
             <button
@@ -136,7 +136,7 @@ export default function AccionesContencion({ incidente }) {
               disabled={updateMutation.isPending || incidente.estado === "mitigado"}
               onClick={() => handleCambiarEstado("mitigado")}
             >
-              <FaCheckDouble /> Marcar Mitigado
+              <FaCheckDouble /> Marcar mitigado
             </button>
 
             <button
@@ -144,7 +144,7 @@ export default function AccionesContencion({ incidente }) {
               disabled={updateMutation.isPending || incidente.estado === "falso_positivo"}
               onClick={() => handleCambiarEstado("falso_positivo")}
             >
-              <FaBan /> Descartar (Falso Positivo)
+              <FaBan /> Marcar falso positivo
             </button>
 
             {/* Acción Crítica: Neutralización / Bloqueo Inmediato */}
@@ -154,7 +154,7 @@ export default function AccionesContencion({ incidente }) {
               onClick={handleNeutralizar}
               title="Ejecuta la neutralización preventiva de la cuenta del usuario en el sistema"
             >
-              <FaBan /> Bloquear Cuenta (Neutralizar)
+              <FaBan /> Bloquear cuenta
             </button>
 
             {/* Acción Forense: Dictamen Pericial */}
@@ -163,7 +163,7 @@ export default function AccionesContencion({ incidente }) {
               onClick={() => setShowModalReporte(true)}
               title="Ver el informe pericial forense completo del incidente"
             >
-              <FaFileContract /> Ver Dictamen Pericial
+              <FaFileContract /> Abrir informe pericial
             </button>
           </div>
         </div>

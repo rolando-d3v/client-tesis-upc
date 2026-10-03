@@ -10,6 +10,14 @@ import {
 } from "recharts";
 import styles from "./ClasificacionDocumental.module.css";
 
+const formatoNumero = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
+const formatoVolumen = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 });
+
+const formatoMbEje = (valor) => {
+  const numero = Number(valor) || 0;
+  return numero >= 1000 ? `${(numero / 1000).toLocaleString("es-PE", { maximumFractionDigits: 1 })} mil` : formatoNumero.format(numero);
+};
+
 export function TablaClasificacion({ porClasificacion = [] }) {
   if (!porClasificacion || porClasificacion.length === 0) {
     return <p className={styles.empty}>Sin datos de clasificación</p>;
@@ -20,11 +28,11 @@ export function TablaClasificacion({ porClasificacion = [] }) {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Clasificación</th>
-            <th className={styles.textRight}>Eventos</th>
-            <th className={styles.textRight}>Descargas</th>
-            <th className={styles.textRight}>Total MB</th>
-            <th className={styles.textRight}>Fuera Horario</th>
+            <th scope="col">Clasificación</th>
+            <th scope="col" className={styles.textRight}>Eventos</th>
+            <th scope="col" className={styles.textRight}>Descargas</th>
+            <th scope="col" className={styles.textRight}>Volumen (MB)</th>
+            <th scope="col" className={styles.textRight}>Fuera de horario</th>
           </tr>
         </thead>
         <tbody>
@@ -35,10 +43,10 @@ export function TablaClasificacion({ porClasificacion = [] }) {
                   {c.clasificacion}
                 </span>
               </td>
-              <td className={styles.textRight}>{c.total_eventos?.toLocaleString()}</td>
-              <td className={styles.textRight}>{c.n_descargas?.toLocaleString()}</td>
-              <td className={styles.textRight}>{c.total_mb?.toFixed(1)} MB</td>
-              <td className={styles.textRight}>{c.n_fuera_horario?.toLocaleString()}</td>
+              <td className={styles.textRight}>{formatoNumero.format(Number(c.total_eventos) || 0)}</td>
+              <td className={styles.textRight}>{formatoNumero.format(Number(c.n_descargas) || 0)}</td>
+              <td className={styles.textRight}>{formatoVolumen.format(Number(c.total_mb) || 0)}</td>
+              <td className={styles.textRight}>{formatoNumero.format(Number(c.n_fuera_horario) || 0)}</td>
             </tr>
           ))}
         </tbody>
@@ -54,12 +62,25 @@ export function CruceClasificacionHorario({ cruce = [] }) {
 
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <BarChart data={cruce} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-        <XAxis dataKey="clasificacion" tick={{ fill: "#475569", fontSize: 11 }} />
-        <YAxis tick={{ fill: "#475569", fontSize: 11 }} unit=" MB" />
+      <BarChart data={cruce} margin={{ top: 8, right: 12, left: 4, bottom: 4 }} barGap={8}>
+        <CartesianGrid vertical={false} stroke="#e9eef5" />
+        <XAxis
+          dataKey="clasificacion"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#64748b", fontSize: 11 }}
+          tickMargin={8}
+        />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#64748b", fontSize: 10 }}
+          tickFormatter={formatoMbEje}
+          width={54}
+        />
         <Tooltip
-          formatter={(value) => [`${Number(value).toFixed(1)} MB`]}
+          formatter={(value) => [`${formatoVolumen.format(Number(value) || 0)} MB`]}
+          labelFormatter={(label) => `Clasificación: ${label}`}
           contentStyle={{
             background: "rgba(255, 255, 255, 0.95)",
             border: "1px solid #e2e8f0",
@@ -68,9 +89,25 @@ export function CruceClasificacionHorario({ cruce = [] }) {
             boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
           }}
         />
-        <Legend wrapperStyle={{ fontSize: 11, color: "#475569", paddingTop: 8 }} />
-        <Bar dataKey="mb_fuera_horario" name="MB Fuera Horario" fill="#f97316" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="mb_en_horario" name="MB En Horario" fill="#818cf8" radius={[4, 4, 0, 0]} />
+        <Legend
+          verticalAlign="bottom"
+          height={34}
+          wrapperStyle={{ fontSize: 11, color: "#475569", paddingTop: 8 }}
+        />
+        <Bar
+          dataKey="mb_en_horario"
+          name="En horario"
+          fill="#2563eb"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={34}
+        />
+        <Bar
+          dataKey="mb_fuera_horario"
+          name="Fuera de horario"
+          fill="#d97706"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={34}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -83,19 +120,27 @@ export function TopTiposDocumento({ porTipoDocumento = [] }) {
 
   return (
     <div className={styles.scrollWrapper}>
-      <ResponsiveContainer width="100%" height={Math.max(porTipoDocumento.length * 36, 280)}>
-        <BarChart data={porTipoDocumento} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
-          <XAxis type="number" tick={{ fill: "#475569", fontSize: 11 }} />
+      <ResponsiveContainer width="100%" height={Math.max(porTipoDocumento.length * 34, 270)}>
+        <BarChart data={porTipoDocumento} layout="vertical" margin={{ top: 6, right: 20, left: 4, bottom: 4 }}>
+          <CartesianGrid horizontal={false} stroke="#e9eef5" />
+          <XAxis
+            type="number"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#64748b", fontSize: 10 }}
+            tickFormatter={formatoNumero.format}
+          />
           <YAxis
             dataKey="NAME_TIPO_DOCUMENTO"
             type="category"
-            width={140}
-            tick={{ fill: "#1e293b", fontSize: 10, fontWeight: 500 }}
-            tickFormatter={(val) => (val && val.length > 20 ? `${val.substring(0, 18)}...` : val)}
+            width={132}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#475569", fontSize: 10 }}
+            tickFormatter={(val) => (val && val.length > 22 ? `${val.substring(0, 20)}…` : val)}
           />
           <Tooltip
-            formatter={(value) => [Number(value).toLocaleString(), "Eventos"]}
+            formatter={(value) => [formatoNumero.format(Number(value) || 0), "Eventos"]}
             contentStyle={{
               background: "rgba(255, 255, 255, 0.95)",
               border: "1px solid #e2e8f0",
@@ -104,7 +149,7 @@ export function TopTiposDocumento({ porTipoDocumento = [] }) {
               boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
             }}
           />
-          <Bar dataKey="total_eventos" fill="#c084fc" radius={[0, 6, 6, 0]} name="Eventos" />
+          <Bar dataKey="total_eventos" fill="#4f46e5" radius={[0, 5, 5, 0]} name="Eventos" maxBarSize={20} />
         </BarChart>
       </ResponsiveContainer>
     </div>

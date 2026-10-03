@@ -9,12 +9,13 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   BarChart,
   Bar,
+  LabelList,
 } from "recharts";
 import {
   FaChartPie,
+  FaChartLine,
   FaFileArrowDown,
   FaUserSecret,
   FaFileLines,
@@ -48,6 +49,9 @@ const NOMBRES_ESTADO = {
   mitigado: "Mitigado",
   falso_positivo: "Falso Positivo",
 };
+const ORDEN_ESTADOS = Object.keys(NOMBRES_ESTADO);
+
+const MESES_ABREV = ["en", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"];
 
 export default function DashboardSOCAnalytics({
   resumen,
@@ -73,25 +77,56 @@ export default function DashboardSOCAnalytics({
   // 1. Datos para gráfico Donut de Clasificación
   const clasifData = useMemo(() => {
     if (!por_clasificacion) return [];
-    return Object.entries(por_clasificacion).map(([key, val]) => ({
-      name: key,
-      value: val,
-      color: COLOR_CLASIFICACION[key] || "#64748b",
-    }));
+    return Object.entries(por_clasificacion)
+      .map(([key, val]) => ({
+        key,
+        name: key.replaceAll("_", " "),
+        value: Number(val) || 0,
+        color: COLOR_CLASIFICACION[key] || "#64748b",
+      }))
+      .filter((item) => item.value > 0);
   }, [por_clasificacion]);
+
+  const totalClasificaciones = clasifData.reduce((total, item) => total + item.value, 0);
 
   // 2. Datos para gráfico de Estado de Gestión
   const estadoData = useMemo(() => {
     if (!por_estado) return [];
     return Object.entries(por_estado)
-      .filter(([_, val]) => val > 0)
+      .filter(([, val]) => val > 0)
       .map(([key, val]) => ({
         key,
         name: NOMBRES_ESTADO[key] || key,
-        cantidad: val,
+        cantidad: Number(val) || 0,
         color: COLOR_ESTADO[key] || "#64748b",
-      }));
+      }))
+      .sort((a, b) => {
+        const indexA = ORDEN_ESTADOS.indexOf(a.key);
+        const indexB = ORDEN_ESTADOS.indexOf(b.key);
+        return (indexA < 0 ? ORDEN_ESTADOS.length : indexA) - (indexB < 0 ? ORDEN_ESTADOS.length : indexB);
+      });
   }, [por_estado]);
+
+  const evolucionData = useMemo(
+    () =>
+      (evolucion_mensual || []).map((item) => {
+        const key = String(item.key || item.mes || item.label || item.mes_completo || "");
+        const monthMatch = key.match(/^\d{4}-(\d{1,2})$/);
+        const monthIndex = monthMatch ? Number(monthMatch[1]) - 1 : -1;
+        const sourceLabel = String(item.label || item.mes || item.mes_completo || key);
+        const label = monthIndex >= 0 && monthIndex < MESES_ABREV.length
+          ? MESES_ABREV[monthIndex]
+          : sourceLabel.split(" ")[0];
+
+        return {
+          key,
+          label,
+          mesCompleto: item.mes_completo || item.label || item.mes || key,
+          total: Number(item.total) || 0,
+        };
+      }),
+    [evolucion_mensual]
+  );
 
   // 3. Usuarios ordenados por mayor score primero (y luego por cantidad de incidentes)
   const usuariosOrdenados = useMemo(() => {
@@ -117,6 +152,7 @@ export default function DashboardSOCAnalytics({
   const handleClasificacionClick = (clasif) => {
     if (filtros.clasificacion === clasif) {
       setFiltros((prev) => ({ ...prev, clasificacion: "" }));
+      setPage(1);
       toast.info("Filtro de clasificación removido");
     } else {
       setFiltros((prev) => ({ ...prev, clasificacion: clasif }));
@@ -129,11 +165,26 @@ export default function DashboardSOCAnalytics({
   const handleEstadoClick = (estadoKey) => {
     if (filtros.estado === estadoKey) {
       setFiltros((prev) => ({ ...prev, estado: "" }));
+      setPage(1);
       toast.info("Filtro de estado removido");
     } else {
       setFiltros((prev) => ({ ...prev, estado: estadoKey }));
       setPage(1);
       toast.success(`Filtrando por estado: ${NOMBRES_ESTADO[estadoKey] || estadoKey}`);
+    }
+  };
+
+  const handleMesClick = (month) => {
+    if (!month?.key) return;
+
+    if (filtros.mes === month.key) {
+      setFiltros((prev) => ({ ...prev, mes: "" }));
+      setPage(1);
+      toast.info("Filtro mensual removido");
+    } else {
+      setFiltros((prev) => ({ ...prev, mes: month.key }));
+      setPage(1);
+      toast.success(`Filtrando incidentes de ${month.mesCompleto || month.key}`);
     }
   };
 
@@ -277,369 +328,493 @@ export default function DashboardSOCAnalytics({
         </div>
       </div>
 
-      {/* Contenido colapsable de gráficos (Grid 2x2 claro y balanceado) */}
+      {/* Contenido colapsable de gráficos */}
       {!colapsado && (
-        <div className={styles.analyticsGrid}>
-          {/* ============================================================ */}
-          {/* 1. DONUT: CLASIFICACIÓN DE DOCUMENTOS EN RIESGO */}
-          {/* ============================================================ */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div>
-                <h3 className={styles.cardTitle}>
-                  <FaChartPie style={{ color: "#b91c1c" }} />
-                  Distribución de Incidentes por Clasificación
-                </h3>
-                <p className={styles.cardSubtitle}>
-                  Volumen de amenazas detectadas según el nivel de secreto o confidencialidad. Haz clic en un sector para filtrar.
-                </p>
-              </div>
-              {filtros.clasificacion && (
-                <span className={styles.activeFilterBadge}>
-                  Filtro: {filtros.clasificacion}
-                  <button
-                    type="button"
-                    onClick={() => handleClasificacionClick(filtros.clasificacion)}
-                    title="Quitar filtro"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-            </div>
-
-            <div className={styles.donutWrapper}>
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={clasifData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={95}
-                    paddingAngle={3}
-                    dataKey="value"
-                    isAnimationActive={!tiempoReal}
-                    onClick={(entry) => handleClasificacionClick(entry.name)}
-                    cursor="pointer"
-                  >
-                    {clasifData.map((entry, index) => (
-                      <Cell
-                        key={`clasif-${index}`}
-                        fill={entry.color}
-                        stroke={filtros.clasificacion === entry.name ? "#111827" : "#ffffff"}
-                        strokeWidth={filtros.clasificacion === entry.name ? 3 : 1}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(val, name) => [
-                      `${val.toLocaleString()} incidentes (${((val / Math.max(total_incidentes, 1)) * 100).toFixed(
-                        1,
-                      )}%)`,
-                      `Clasificación: ${name}`,
-                    ]}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    formatter={(val) => (
-                      <span
-                        style={{
-                          fontSize: "0.8rem",
-                          fontWeight: filtros.clasificacion === val ? 700 : 500,
-                          color: filtros.clasificacion === val ? "#111827" : "#475569",
-                        }}
-                      >
-                        {val} ({por_clasificacion[val] || 0})
-                      </span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* ============================================================ */}
-          {/* 2. BARRAS: ESTADO DE GESTIÓN Y CONTENCIÓN SOC */}
-          {/* ============================================================ */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div>
-                <h3 className={styles.cardTitle}>
-                  <FaShieldHalved style={{ color: "#2563eb" }} />
-                  Estado de Contención del SOC (Lifecycle)
-                </h3>
-                <p className={styles.cardSubtitle}>
-                  Triage de incidentes. Haz clic en una barra para filtrar según el estado operativo.
-                </p>
-              </div>
-              {filtros.estado && (
-                <span className={styles.activeFilterBadge}>
-                  Filtro: {NOMBRES_ESTADO[filtros.estado] || filtros.estado}
-                  <button type="button" onClick={() => handleEstadoClick(filtros.estado)}>
-                    ×
-                  </button>
-                </span>
-              )}
-            </div>
-
-            <div className={styles.chartBarWrapper}>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={estadoData} margin={{ top: 15, right: 15, bottom: 20, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569", fontWeight: 500 }} interval={0} />
-                  <YAxis tick={{ fontSize: 11, fill: "#475569" }} allowDecimals={false} />
-                  <Tooltip
-                    formatter={(val, name, item) => [`${val.toLocaleString()} expedientes`, item.payload.name]}
-                  />
-                  <Bar
-                    dataKey="cantidad"
-                    isAnimationActive={!tiempoReal}
-                    radius={[6, 6, 0, 0]}
-                    onClick={(entry) => handleEstadoClick(entry.key)}
-                    cursor="pointer"
-                  >
-                    {estadoData.map((entry, index) => (
-                      <Cell
-                        key={`bar-${index}`}
-                        fill={entry.color}
-                        stroke={filtros.estado === entry.key ? "#111827" : "none"}
-                        strokeWidth={filtros.estado === entry.key ? 2 : 0}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* ============================================================ */}
-          {/* 3. TOP 10 USUARIOS CON MAYOR VOLUMEN DE INCIDENTES */}
-          {/* ============================================================ */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div>
-                <h3 className={styles.cardTitle}>
-                  <FaUserSecret style={{ color: "#7c3aed" }} />
-                  Top 10 Usuarios con Mayor Compromiso
-                </h3>
-                <p className={styles.cardSubtitle}>
-                  Actores recurrentes en saltos o eventos anómalos.
-                </p>
-              </div>
-              
-              <div className={styles.controlsGroup}>
-                <select
-                  className={styles.monthSelect}
-                  value={filtros.mes || ""}
-                  onChange={(e) => {
-                    setFiltros((prev) => ({ ...prev, mes: e.target.value }));
-                    setPage(1);
-                  }}
-                  title="Filtrar incidentes por mes"
-                >
-                  <option value="">Todos los meses</option>
-                  {evolucion_mensual
-                    ?.filter((m) => m.total > 0)
-                    .map((m) => (
-                      <option key={`usr-${m.key}`} value={m.key}>
-                        {m.mes_completo}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.rankingList}>
-              {usuariosOrdenados && usuariosOrdenados.length > 0 ? (
-                usuariosOrdenados.map((u, i) => {
-                  const isFiltered = filtros.busqueda === u.nombre_usuario;
-                  const maxScorePct = Math.round(Number(u.max_score || 0) * 100);
-                  const colorBadge =
-                    maxScorePct >= 75 ? "#dc2626" : maxScorePct >= 50 ? "#ea580c" : "#eab308";
-                  const rankClass =
-                    i === 0
-                      ? styles.rankBadgeTop1
-                      : i === 1
-                      ? styles.rankBadgeTop2
-                      : i === 2
-                      ? styles.rankBadgeTop3
-                      : "";
-
-                  return (
-                    <div
-                      key={u.id_user || i}
-                      className={`${styles.rankingItem} ${styles.rankingItemUser} ${
-                        isFiltered ? styles.rankingItemActive : ""
-                      }`}
-                      onClick={() => handleUsuarioClick(u.nombre_usuario)}
-                      title={`Clic para filtrar incidentes de ${u.nombre_usuario}`}
+        <div className={styles.chartsContainer}>
+          <div className={styles.topChartsRow}>
+            <div className={`${styles.card} ${styles.topChartCard}`}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3 className={styles.cardTitle}>
+                    <FaChartPie style={{ color: "#b91c1c" }} />
+                    Incidentes por clasificación
+                  </h3>
+                  <p className={styles.cardSubtitle}>Distribución por nivel de confidencialidad. Selecciona una categoría para filtrar.</p>
+                </div>
+                {filtros.clasificacion && (
+                  <span className={styles.activeFilterBadge}>
+                    {filtros.clasificacion.replaceAll("_", " ")}
+                    <button
+                      type="button"
+                      onClick={() => handleClasificacionClick(filtros.clasificacion)}
+                      title="Quitar filtro de clasificación"
+                      aria-label="Quitar filtro de clasificación"
                     >
-                      {/* 1. Medalla / Posición */}
-                      <div className={`${styles.rankBadge} ${rankClass}`}>#{i + 1}</div>
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
 
-                      {/* 2. Nombre del Usuario */}
-                      <div className={styles.rankPrimaryCol}>
-                        <span className={styles.rankName} title={u.nombre_usuario}>
-                          {u.nombre_usuario}
-                        </span>
-                      </div>
-
-                      {/* 3. DNI / ID del Usuario */}
-                      <span className={styles.rankIdPill}>ID_USER: {u.id_user}</span>
-
-                      {/* 4. Conteo de incidentes */}
-                      <div className={styles.rankMetaPill}>
-                        <strong>{u.incidentes}</strong> incidentes
-                      </div>
-
-                      {/* 5. Score de Severidad y Mini Barra Visual */}
-                      <div className={styles.scoreContainer}>
-                        <span
-                          className={styles.scorePill}
-                          style={{
-                            backgroundColor: `${colorBadge}12`,
-                            color: colorBadge,
-                            borderColor: `${colorBadge}35`,
-                          }}
+              {totalClasificaciones > 0 ? (
+                <div className={styles.donutContent}>
+                  <div className={styles.donutWrapper}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={clasifData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius="58%"
+                          outerRadius="84%"
+                          paddingAngle={3}
+                          dataKey="value"
+                          nameKey="name"
+                          isAnimationActive={!tiempoReal}
+                          onClick={(entry) => handleClasificacionClick(entry.key)}
+                          cursor="pointer"
                         >
-                          Score: {maxScorePct}%
-                        </span>
-                        <div className={styles.scoreBarTrack}>
-                          <div
-                            className={styles.scoreBarFill}
-                            style={{ width: `${maxScorePct}%`, backgroundColor: colorBadge }}
+                          {clasifData.map((entry) => (
+                            <Cell
+                              key={`clasif-${entry.key}`}
+                              fill={entry.color}
+                              stroke={filtros.clasificacion === entry.key ? "#111827" : "#ffffff"}
+                              strokeWidth={filtros.clasificacion === entry.key ? 3 : 1}
+                              opacity={filtros.clasificacion && filtros.clasificacion !== entry.key ? 0.4 : 1}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value) => [
+                            `${Number(value).toLocaleString()} (${((Number(value) / totalClasificaciones) * 100).toFixed(1)}%)`,
+                            "Incidentes",
+                          ]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className={styles.donutCenter} aria-hidden="true">
+                      <strong>{totalClasificaciones.toLocaleString()}</strong>
+                      <span>incidentes</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.classificationLegend} role="group" aria-label="Filtrar por clasificación">
+                    {clasifData.map((entry) => {
+                      const isActive = filtros.clasificacion === entry.key;
+                      const percentage = ((entry.value / totalClasificaciones) * 100).toFixed(1);
+                      return (
+                        <button
+                          key={entry.key}
+                          type="button"
+                          className={`${styles.classificationLegendItem} ${isActive ? styles.classificationLegendItemActive : ""}`}
+                          onClick={() => handleClasificacionClick(entry.key)}
+                          aria-pressed={isActive}
+                          title={`Filtrar ${entry.name}: ${entry.value.toLocaleString()} incidentes (${percentage}%)`}
+                        >
+                          <span className={styles.classificationLegendLabel}>
+                            <span className={styles.classificationDot} style={{ backgroundColor: entry.color }} />
+                            <span>{entry.name}</span>
+                          </span>
+                          <span className={styles.classificationLegendValue}>
+                            <strong>{entry.value.toLocaleString()}</strong>
+                            <small>{percentage}%</small>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.emptyChartState}>No hay incidentes clasificados en este período.</div>
+              )}
+            </div>
+
+            <div className={`${styles.card} ${styles.topChartCard}`}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3 className={styles.cardTitle}>
+                    <FaShieldHalved style={{ color: "#2563eb" }} />
+                    Incidentes por estado
+                  </h3>
+                  <p className={styles.cardSubtitle}>Casos según su etapa de atención. Selecciona una barra para filtrar.</p>
+                </div>
+                {filtros.estado && (
+                  <span className={styles.activeFilterBadge}>
+                    {NOMBRES_ESTADO[filtros.estado] || filtros.estado}
+                    <button
+                      type="button"
+                      onClick={() => handleEstadoClick(filtros.estado)}
+                      title="Quitar filtro de estado"
+                      aria-label="Quitar filtro de estado"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+
+              {estadoData.length > 0 ? (
+                <div className={styles.chartBarWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={estadoData}
+                      layout="vertical"
+                      margin={{ top: 6, right: 28, bottom: 6, left: 0 }}
+                    >
+                      <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="#e8edf3" />
+                      <XAxis
+                        type="number"
+                        allowDecimals={false}
+                        tick={{ fontSize: 10, fill: "#64748b" }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="name"
+                        width={116}
+                        interval={0}
+                        tick={{ fontSize: 10, fill: "#475569", fontWeight: 500 }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip
+                        cursor={{ fill: "#f8fafc" }}
+                        formatter={(value) => [`${Number(value).toLocaleString()} incidentes`, "Casos"]}
+                      />
+                      <Bar
+                        dataKey="cantidad"
+                        barSize={20}
+                        isAnimationActive={!tiempoReal}
+                        radius={[0, 5, 5, 0]}
+                        onClick={(entry) => handleEstadoClick(entry.key)}
+                        cursor="pointer"
+                      >
+                        {estadoData.map((entry) => (
+                          <Cell
+                            key={`estado-${entry.key}`}
+                            fill={entry.color}
+                            stroke={filtros.estado === entry.key ? "#0f172a" : "none"}
+                            strokeWidth={filtros.estado === entry.key ? 2 : 0}
+                            opacity={filtros.estado && filtros.estado !== entry.key ? 0.35 : 1}
                           />
+                        ))}
+                        <LabelList
+                          dataKey="cantidad"
+                          position="right"
+                          formatter={(value) => Number(value).toLocaleString()}
+                          fill="#475569"
+                          fontSize={10}
+                          fontWeight={600}
+                        />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className={styles.emptyChartState}>No hay incidentes con estado de gestión registrado.</div>
+              )}
+            </div>
+
+            <div className={`${styles.card} ${styles.topChartCard} ${styles.topChartWide}`}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3 className={styles.cardTitle}>
+                    <FaChartLine style={{ color: "#0f766e" }} />
+                    Evolución mensual de incidentes
+                  </h3>
+                  <p className={styles.cardSubtitle}>Volumen de incidentes a través del tiempo. Selecciona un mes para filtrar.</p>
+                </div>
+                {filtros.mes && (
+                  <span className={styles.activeFilterBadge}>
+                    Mes: {evolucionData.find((month) => month.key === filtros.mes)?.mesCompleto || filtros.mes}
+                    <button
+                      type="button"
+                      onClick={() => handleMesClick({ key: filtros.mes, mesCompleto: filtros.mes })}
+                      title="Quitar filtro mensual"
+                      aria-label="Quitar filtro mensual"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+
+              {evolucionData.length > 0 ? (
+                <div className={styles.monthChartWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={evolucionData} margin={{ top: 16, right: 12, bottom: 2, left: 2 }}>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e8edf3" />
+                      <XAxis
+                        dataKey="label"
+                        interval="preserveStartEnd"
+                        tick={{ fontSize: 10, fill: "#64748b" }}
+                        tickLine={false}
+                        axisLine={{ stroke: "#cbd5e1" }}
+                        tickMargin={8}
+                      />
+                      <YAxis
+                        allowDecimals={false}
+                        tick={{ fontSize: 10, fill: "#64748b" }}
+                        tickLine={false}
+                        axisLine={false}
+                        width={34}
+                      />
+                      <Tooltip
+                        labelFormatter={(label, payload) => payload?.[0]?.payload?.mesCompleto || label}
+                        formatter={(value) => [`${Number(value).toLocaleString()} incidentes`, "Total del mes"]}
+                      />
+                      <Bar
+                        dataKey="total"
+                        name="Incidentes"
+                        barSize={24}
+                        isAnimationActive={!tiempoReal}
+                        radius={[5, 5, 0, 0]}
+                        onClick={(entry) => handleMesClick(entry?.payload || entry)}
+                        cursor="pointer"
+                      >
+                        {evolucionData.map((month) => (
+                          <Cell
+                            key={`month-${month.key}`}
+                            fill={filtros.mes === month.key ? "#0f766e" : "#14b8a6"}
+                            opacity={filtros.mes && filtros.mes !== month.key ? 0.35 : 1}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className={styles.emptyChartState}>No hay datos mensuales disponibles para mostrar.</div>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.analyticsGrid}>
+            {/* ============================================================ */}
+            {/* 4. TOP 10 USUARIOS CON MAYOR VOLUMEN DE INCIDENTES */}
+            {/* ============================================================ */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3 className={styles.cardTitle}>
+                    <FaUserSecret style={{ color: "#7c3aed" }} />
+                    Top 10 Usuarios con Mayor Compromiso
+                  </h3>
+                  <p className={styles.cardSubtitle}>Actores recurrentes en saltos o eventos anómalos.</p>
+                </div>
+
+                <div className={styles.controlsGroup}>
+                  <select
+                    className={styles.monthSelect}
+                    value={filtros.mes || ""}
+                    onChange={(e) => {
+                      setFiltros((prev) => ({ ...prev, mes: e.target.value }));
+                      setPage(1);
+                    }}
+                    title="Filtrar incidentes por mes"
+                  >
+                    <option value="">Todos los meses</option>
+                    {evolucion_mensual
+                      ?.filter((m) => m.total > 0)
+                      .map((m) => (
+                        <option key={`usr-${m.key}`} value={m.key}>
+                          {m.mes_completo}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className={styles.rankingList}>
+                {usuariosOrdenados && usuariosOrdenados.length > 0 ? (
+                  usuariosOrdenados.map((u, i) => {
+                    const isFiltered = filtros.busqueda === u.nombre_usuario;
+                    const maxScorePct = Math.round(Number(u.max_score || 0) * 100);
+                    const colorBadge = maxScorePct >= 75 ? "#dc2626" : maxScorePct >= 50 ? "#ea580c" : "#eab308";
+                    const rankClass =
+                      i === 0
+                        ? styles.rankBadgeTop1
+                        : i === 1
+                          ? styles.rankBadgeTop2
+                          : i === 2
+                            ? styles.rankBadgeTop3
+                            : "";
+
+                    return (
+                      <div
+                        key={u.id_user || i}
+                        className={`${styles.rankingItem} ${styles.rankingItemUser} ${
+                          isFiltered ? styles.rankingItemActive : ""
+                        }`}
+                        onClick={() => handleUsuarioClick(u.nombre_usuario)}
+                        title={`Clic para filtrar incidentes de ${u.nombre_usuario}`}
+                      >
+                        {/* 1. Medalla / Posición */}
+                        <div className={`${styles.rankBadge} ${rankClass}`}>#{i + 1}</div>
+
+                        {/* 2. Nombre del Usuario */}
+                        <div className={styles.rankPrimaryCol}>
+                          <span className={styles.rankName} title={u.nombre_usuario}>
+                            {u.nombre_usuario}
+                          </span>
+                        </div>
+
+                        {/* 3. DNI / ID del Usuario */}
+                        <span className={styles.rankIdPill}>ID_USER: {u.id_user}</span>
+
+                        {/* 4. Conteo de incidentes */}
+                        <div className={styles.rankMetaPill}>
+                          <strong>{u.incidentes}</strong> incidentes
+                        </div>
+
+                        {/* 5. Score de Severidad y Mini Barra Visual */}
+                        <div className={styles.scoreContainer}>
+                          <span
+                            className={styles.scorePill}
+                            style={{
+                              backgroundColor: `${colorBadge}12`,
+                              color: colorBadge,
+                              borderColor: `${colorBadge}35`,
+                            }}
+                          >
+                            Score: {maxScorePct}%
+                          </span>
+                          <div className={styles.scoreBarTrack}>
+                            <div
+                              className={styles.scoreBarFill}
+                              style={{ width: `${maxScorePct}%`, backgroundColor: colorBadge }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <p className={styles.emptyText}>No hay datos suficientes de usuarios.</p>
-              )}
-            </div>
-          </div>
-
-          {/* ============================================================ */}
-          {/* 4. TOP 10 DOCUMENTOS MÁS VULNERADOS */}
-          {/* ============================================================ */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <div>
-                <h3 className={styles.cardTitle}>
-                  <FaFileLines style={{ color: "#0284c7" }} />
-                  Top 10 Documentos Críticos Comprometidos
-                </h3>
-                <p className={styles.cardSubtitle}>
-                  Activos de información más atacados ordenados por severidad de riesgo.
-                </p>
-              </div>
-
-              <div className={styles.controlsGroup}>
-                <select
-                  className={styles.monthSelect}
-                  value={filtros.mes || ""}
-                  onChange={(e) => {
-                    setFiltros((prev) => ({ ...prev, mes: e.target.value }));
-                    setPage(1);
-                  }}
-                  title="Filtrar incidentes por mes"
-                >
-                  <option value="">Todos los meses</option>
-                  {evolucion_mensual
-                    ?.filter((m) => m.total > 0)
-                    .map((m) => (
-                      <option key={`doc-${m.key}`} value={m.key}>
-                        {m.mes_completo}
-                      </option>
-                    ))}
-                </select>
+                    );
+                  })
+                ) : (
+                  <p className={styles.emptyText}>No hay datos suficientes de usuarios.</p>
+                )}
               </div>
             </div>
 
-            <div className={styles.rankingList}>
-              {documentosOrdenados && documentosOrdenados.length > 0 ? (
-                documentosOrdenados.map((d, i) => {
-                  const isFiltered =
-                    filtros.busqueda === d.numero_documento || filtros.busqueda === String(d.id_documento);
-                  const clasifColor = COLOR_CLASIFICACION[d.clasificacion_doc] || COLOR_CLASIFICACION.COMUN;
-                  const maxScorePct = Math.round(Number(d.max_score || 0) * 100);
-                  const colorBadge =
-                    maxScorePct >= 75 ? "#dc2626" : maxScorePct >= 50 ? "#ea580c" : "#eab308";
-                  const rankClass =
-                    i === 0
-                      ? styles.rankBadgeTop1
-                      : i === 1
-                      ? styles.rankBadgeTop2
-                      : i === 2
-                      ? styles.rankBadgeTop3
-                      : "";
+            {/* ============================================================ */}
+            {/* 4. TOP 10 DOCUMENTOS MÁS VULNERADOS */}
+            {/* ============================================================ */}
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <h3 className={styles.cardTitle}>
+                    <FaFileLines style={{ color: "#0284c7" }} />
+                    Top 10 Documentos Críticos Comprometidos
+                  </h3>
+                  <p className={styles.cardSubtitle}>
+                    Activos de información más atacados ordenados por severidad de riesgo.
+                  </p>
+                </div>
 
-                  return (
-                    <div
-                      key={d.id_documento || i}
-                      className={`${styles.rankingItem} ${styles.rankingItemDoc} ${
-                        isFiltered ? styles.rankingItemActive : ""
-                      }`}
-                      onClick={() => handleDocumentoClick(d)}
-                      title={`Clic para filtrar incidentes del documento ${d.numero_documento || d.id_documento}`}
-                    >
-                      {/* 1. Medalla / Posición */}
-                      <div className={`${styles.rankBadge} ${rankClass}`}>#{i + 1}</div>
+                <div className={styles.controlsGroup}>
+                  <select
+                    className={styles.monthSelect}
+                    value={filtros.mes || ""}
+                    onChange={(e) => {
+                      setFiltros((prev) => ({ ...prev, mes: e.target.value }));
+                      setPage(1);
+                    }}
+                    title="Filtrar incidentes por mes"
+                  >
+                    <option value="">Todos los meses</option>
+                    {evolucion_mensual
+                      ?.filter((m) => m.total > 0)
+                      .map((m) => (
+                        <option key={`doc-${m.key}`} value={m.key}>
+                          {m.mes_completo}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
 
-                      {/* 2. Identidad del Documento */}
-                      <div className={styles.rankPrimaryCol}>
-                        <span className={styles.rankName} title={`Doc. Nº ${d.numero_documento || d.id_documento}`}>
-                          Doc. {d.numero_documento ? `Nº ${d.numero_documento}` : `#${d.id_documento}`}
-                        </span>
-                      </div>
+              <div className={styles.rankingList}>
+                {documentosOrdenados && documentosOrdenados.length > 0 ? (
+                  documentosOrdenados.map((d, i) => {
+                    const isFiltered =
+                      filtros.busqueda === d.numero_documento || filtros.busqueda === String(d.id_documento);
+                    const clasifColor = COLOR_CLASIFICACION[d.clasificacion_doc] || COLOR_CLASIFICACION.COMUN;
+                    const maxScorePct = Math.round(Number(d.max_score || 0) * 100);
+                    const colorBadge = maxScorePct >= 75 ? "#dc2626" : maxScorePct >= 50 ? "#ea580c" : "#eab308";
+                    const rankClass =
+                      i === 0
+                        ? styles.rankBadgeTop1
+                        : i === 1
+                          ? styles.rankBadgeTop2
+                          : i === 2
+                            ? styles.rankBadgeTop3
+                            : "";
 
-                      {/* 3. ID Activo */}
-                      <span className={styles.rankIdPill}>ID_DOC: {d.id_documento}</span>
-
-                      {/* 4. Clasificación de Seguridad */}
-                      <span
-                        className={styles.clasifBadgeSmall}
-                        style={{
-                          backgroundColor: `${clasifColor}14`,
-                          color: clasifColor,
-                          borderColor: `${clasifColor}40`,
-                        }}
+                    return (
+                      <div
+                        key={d.id_documento || i}
+                        className={`${styles.rankingItem} ${styles.rankingItemDoc} ${
+                          isFiltered ? styles.rankingItemActive : ""
+                        }`}
+                        onClick={() => handleDocumentoClick(d)}
+                        title={`Clic para filtrar incidentes del documento ${d.numero_documento || d.id_documento}`}
                       >
-                        {d.clasificacion_doc || "COMUN"}
-                      </span>
+                        {/* 1. Medalla / Posición */}
+                        <div className={`${styles.rankBadge} ${rankClass}`}>#{i + 1}</div>
 
-                      {/* 5. Conteo de Eventos */}
-                      <div className={styles.rankMetaPill}>
-                        <strong>{d.incidentes}</strong> {d.incidentes === 1 ? "evento" : "eventos"}
-                      </div>
+                        {/* 2. Identidad del Documento */}
+                        <div className={styles.rankPrimaryCol}>
+                          <span className={styles.rankName} title={`Doc. Nº ${d.numero_documento || d.id_documento}`}>
+                            Doc. {d.numero_documento ? `Nº ${d.numero_documento}` : `#${d.id_documento}`}
+                          </span>
+                        </div>
 
-                      {/* 6. Score de Severidad y Mini Barra Visual */}
-                      <div className={styles.scoreContainer}>
+                        {/* 3. ID Activo */}
+                        <span className={styles.rankIdPill}>ID_DOC: {d.id_documento}</span>
+
+                        {/* 4. Clasificación de Seguridad */}
                         <span
-                          className={styles.scorePill}
+                          className={styles.clasifBadgeSmall}
                           style={{
-                            backgroundColor: `${colorBadge}12`,
-                            color: colorBadge,
-                            borderColor: `${colorBadge}35`,
+                            backgroundColor: `${clasifColor}14`,
+                            color: clasifColor,
+                            borderColor: `${clasifColor}40`,
                           }}
                         >
-                          Score: {maxScorePct}%
+                          {d.clasificacion_doc || "COMUN"}
                         </span>
-                        <div className={styles.scoreBarTrack}>
-                          <div
-                            className={styles.scoreBarFill}
-                            style={{ width: `${maxScorePct}%`, backgroundColor: colorBadge }}
-                          />
+
+                        {/* 5. Conteo de Eventos */}
+                        <div className={styles.rankMetaPill}>
+                          <strong>{d.incidentes}</strong> {d.incidentes === 1 ? "evento" : "eventos"}
+                        </div>
+
+                        {/* 6. Score de Severidad y Mini Barra Visual */}
+                        <div className={styles.scoreContainer}>
+                          <span
+                            className={styles.scorePill}
+                            style={{
+                              backgroundColor: `${colorBadge}12`,
+                              color: colorBadge,
+                              borderColor: `${colorBadge}35`,
+                            }}
+                          >
+                            Score: {maxScorePct}%
+                          </span>
+                          <div className={styles.scoreBarTrack}>
+                            <div
+                              className={styles.scoreBarFill}
+                              style={{ width: `${maxScorePct}%`, backgroundColor: colorBadge }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <p className={styles.emptyText}>No hay datos suficientes de documentos.</p>
-              )}
+                    );
+                  })
+                ) : (
+                  <p className={styles.emptyText}>No hay datos suficientes de documentos.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

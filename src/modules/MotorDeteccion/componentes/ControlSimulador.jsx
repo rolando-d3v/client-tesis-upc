@@ -94,10 +94,10 @@ export default function ControlSimulador({
               disabled={simuladorEstado.activo}
               title="Intervalo de tiempo entre cada evento emitido"
             >
-              <option value={1}>1 seg (Alta velocidad)</option>
+              <option value={1}>1 seg </option>
               <option value={2}>2 seg</option>
               <option value={3}>3 seg</option>
-              <option value={5}>5 seg (Recomendado)</option>
+              <option value={5}>5 seg</option>
               <option value={10}>10 seg</option>
             </select>
           </div>
@@ -149,29 +149,11 @@ export default function ControlSimulador({
             title="Inyecta 1 evento crítico instantáneo para probar la alerta en vivo durante la sustentación"
             disabled={cargandoAccion}
           >
-            <FaBolt style={{ color: "#eab308" }} /> Inyectar Evento Crítico
+            <FaBolt className={styles.iconBolt} /> Inyectar Evento Crítico
           </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <span style={{ fontSize: "0.85rem", color: "#6b7280" }}>
-            Emitidos:{" "}
-            <strong style={{ color: "#111827" }}>
-              {simuladorEstado.eventos_emitidos || 0}
-            </strong>{" "}
-            eventos
-          </span>
-          <button
-            onClick={onLimpiarFeed}
-            className={styles.btnSecondary}
-            title="Limpiar eventos recibidos en memoria del navegador"
-          >
-            <FaTrash /> Limpiar Feed
-          </button>
-        </div>
-      </div>
-
-      {/* FILA INFERIOR: INPUT DE CARGA CSV PARA DATASET DE TESTING / INFERENCIA ONLINE */}
+         {/* FILA INFERIOR: INPUT DE CARGA CSV PARA DATASET DE TESTING / INFERENCIA ONLINE */}
       <div className={styles.uploadSection}>
         <div className={styles.uploadWrapper}>
           <input
@@ -184,7 +166,7 @@ export default function ControlSimulador({
             disabled={isUploadingCSV}
           />
           <label htmlFor="csv-simulador-input" className={styles.fileInputLabel}>
-            <FaFileCsv style={{ fontSize: "1.1rem" }} />
+            <FaFileCsv className={styles.iconCsv} />
             {isUploadingCSV
               ? "Cargando Dataset..."
               : esTesting
@@ -194,24 +176,20 @@ export default function ControlSimulador({
 
           {isUploadingCSV && (
             <span className={styles.uploadingNotice}>
-              <FaArrowsRotate style={{ animation: "spin 1s linear infinite" }} /> Cargando e iniciando inferencia online...
+              <FaArrowsRotate className={styles.spin} /> Cargando e iniciando inferencia online...
             </span>
           )}
 
           {selectedFile && !isUploadingCSV && (
             <>
               <span className={styles.fileBadge}>
-                {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                <span className={styles.fileName} title={selectedFile.name}>
+                  {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                </span>
                 <button
                   type="button"
                   onClick={handleClearSelectedFile}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    marginLeft: "0.25rem",
-                    color: "#6b7280",
-                  }}
+                  className={styles.btnClearFile}
                   title="Descartar archivo"
                 >
                   <FaXmark />
@@ -231,26 +209,29 @@ export default function ControlSimulador({
           )}
         </div>
 
-        <div className={styles.metaInfo}>
-          {esTesting ? (
-            <div className={styles.testingContainer}>
-              <span className={styles.testingBadge}>
-                <span className={styles.testingDot} /> Dataset de Testing Activo:
-              </span>
-              <span className={styles.activeTestingTag} title="Dataset en inferencia online con modelo previamente entrenado">
-                {nombreArchivoRaw}
-              </span>
-            </div>
-          ) : (
-            <div className={styles.defaultContainer}>
-              <span className={styles.defaultLabel}>Dataset activo:</span>
-              <span className={styles.activeFileTag} title="Dataset de eventos base">
-                {nombreArchivoRaw}
-              </span>
-            </div>
-          )}
-        </div>
+     
       </div>
+
+        <div className={styles.controlsRight}>
+          <span className={styles.emitidos}>
+            
+            <strong className={styles.emitidosValor}>
+              {simuladorEstado.eventos_emitidos || 0}
+            </strong>
+            eventos
+          </span>
+          <button
+            onClick={onLimpiarFeed}
+            className={styles.btnSecondary}
+            title="Limpiar eventos recibidos en memoria del navegador"
+          >
+            <FaTrash /> Limpiar
+          </button>
+        </div>
+        
+      </div>
+
+     
     </div>
   );
 }

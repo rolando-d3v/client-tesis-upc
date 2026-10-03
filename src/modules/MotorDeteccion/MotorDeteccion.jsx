@@ -12,13 +12,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 // Componentes Analíticos SOC (compartidos con Entrenamiento)
-import GraficoEvolucionRiesgos from "../../../entrenamiento/componentes/GraficoEvolucionRiesgos";
-import GraficoTipoEvento from "../../../entrenamiento/componentes/GraficoTipoEvento";
-import GraficoEstadoGestion from "../../../entrenamiento/componentes/GraficoEstadoGestion";
-import DashboardSOCAnalytics from "../../../entrenamiento/componentes/DashboardSOCAnalytics";
+import GraficoEvolucionRiesgos from "../entrenamiento/componentes/GraficoEvolucionRiesgos";
+import GraficoTipoEvento from "../entrenamiento/componentes/GraficoTipoEvento";
+import DashboardSOCAnalytics from "../entrenamiento/componentes/DashboardSOCAnalytics";
 import TablaIncidentesMotor from "./componentes/TablaIncidentesMotor";
 
-import { API_MACHINE } from "../../../../api/apiRestMachine";
+import { API_MACHINE } from "../../api/apiRestMachine";
 import {
   iniciarSimuladorAPI,
   pausarSimuladorAPI,
@@ -28,14 +27,13 @@ import {
   ingestarEventoAPI,
   cargarCSVSimuladorAPI,
   limpiarSimuladorAPI,
-} from "../../../../api/apiEventos";
+} from "../../api/apiEventos";
 import {
   useResumenSOC,
   useIncidentes,
   useAlertasBloqueados,
-  useEjecutarCorrelacion,
   postNeutralizarUsuario,
-} from "../../../../api/apiCorrelacion";
+} from "../../api/apiCorrelacion";
 import { toast } from "sonner";
 import {
   FaBolt,
@@ -137,13 +135,11 @@ export default function MotorDeteccion() {
   const {
     data: incidentesForenseData,
     isLoading: loadingForense,
-    refetch: refetchForense,
   } = useIncidentes({
     page: pageIncidentes,
     page_size: pageSizeIncidentes,
     ...filtrosIncidentes,
   });
-  const ejecutarCorrelacionMutation = useEjecutarCorrelacion();
 
   const handleQuickFilterIncidentes = (tipo) => {
     if (tipo === "critico") {
@@ -281,11 +277,15 @@ export default function MotorDeteccion() {
             } else {
               if (claveEvento !== null) eventosContadosRef.current.add(claveEvento);
               const recibidoEn = new Date();
-              setTelemetria((prev) => acumularEvento(prev, ev, recibidoEn));
+              // La correlación del par (documento, usuario) la calcula el backend en tiempo real
+              // (0.45·trazabilidad + 0.55·eventos, o el dominio disponible si falta uno) y llega
+              // junto al evento; aquí solo se registra.
+              const correlacion = data.correlacion ?? null;
+              setTelemetria((prev) => acumularEvento(prev, ev, recibidoEn, correlacion));
 
-              // Correlación en tiempo real: actualiza el incidente del par (documento, usuario)
-              // si el evento es una amenaza (anomalía, riesgo alto/crítico o score >= UMBRAL_ALTO).
-              setIncidentesPares((prev) => correlacionarEnVivo(prev, ev, Date.now()));
+              // Mantiene el incidente del par si el evento o su correlación califican como amenaza
+              // (anomalía, riesgo alto/crítico o score >= UMBRAL_ALTO).
+              setIncidentesPares((prev) => correlacionarEnVivo(prev, ev, correlacion, Date.now()));
 
               // Criterio institucional según constantes.py: UMBRAL_CRITICO = 0.75
               const esCritico = ev.nivel_riesgo === "critico" || Number(ev.score_final || 0) >= 0.75;
@@ -418,7 +418,7 @@ export default function MotorDeteccion() {
     try {
       let payload = {
         name_user: "Juan Pérez",
-        id_user: 104,
+        id_user: 74185296,
         name_oficina: "Dirección de Inteligencia",
         numero_documento: "PL-SEG-2026-004",
         name_clasificacion: "SECRETO",
@@ -431,7 +431,7 @@ export default function MotorDeteccion() {
       if (tipoPrueba === "critico") {
         payload = {
           name_user: "Carlos Méndez",
-          id_user: 108,
+          id_user: 45821937,
           name_oficina: "Subdirección Operativa",
           numero_documento: "DOC-ULTRA-CONF-09",
           name_clasificacion: "SECRETO",
@@ -443,7 +443,7 @@ export default function MotorDeteccion() {
       } else if (tipoPrueba === "normal") {
         payload = {
           name_user: "Ana Gómez",
-          id_user: 102,
+          id_user: 31547826,
           name_oficina: "Recursos Humanos",
           numero_documento: "CIRC-2026-012",
           name_clasificacion: "PUBLICO",
@@ -622,7 +622,21 @@ export default function MotorDeteccion() {
       {/* BARRA DE MODOS DE VISTA & TOGGLE DE NEUTRALIZACIÓN AUTOMÁTICA */}
       <div className={styles.viewModeContainer}>
         <div className={styles.viewModeTabs}>
-          <button
+
+          
+      {/* Banner de Cuentas Neutralizadas */}
+      {totalBloqueados > 0 && (
+        <div className={styles.alertBanner}>
+          <FaShieldHalved className={styles.alertIcon} />
+          <div>
+            <strong>Centro de Contención Activo:</strong> Se registran{" "}
+            <span className={styles.alertCount}>{totalBloqueados}</span> cuentas neutralizadas
+            para asegurar la información clasificada.
+          </div>
+        </div>
+      )}
+          {/* ************************************************************************************************************************************** */}
+          {/* <button
             type="button"
             className={`${styles.viewTabBtn} ${viewMode === "integral" ? styles.viewTabActive : ""}`}
             onClick={() => setViewMode("integral")}
@@ -636,7 +650,7 @@ export default function MotorDeteccion() {
           >
             <FaTv /> Streaming en Vivo
           </button>
-        
+         */}
         
         </div>
 
@@ -670,17 +684,6 @@ export default function MotorDeteccion() {
         </div>
       </div>
 
-      {/* Banner de Cuentas Neutralizadas */}
-      {totalBloqueados > 0 && (
-        <div className={styles.alertBanner}>
-          <FaShieldHalved className={styles.alertIcon} />
-          <div>
-            <strong>Centro de Contención Activo:</strong> Se registran{" "}
-            <span className={styles.alertCount}>{totalBloqueados}</span> cuentas neutralizadas
-            preventivamente para salvaguardar la información clasificada.
-          </div>
-        </div>
-      )}
 
       {/* KPI CARDS (En tiempo real) */}
       <KPICardsMonitoreo
@@ -760,16 +763,6 @@ export default function MotorDeteccion() {
             </div>
           </div>
 
-          <div className={styles.chartsGridFull}>
-            <GraficoEstadoGestion
-              resumen={resumenEnVivo}
-              tiempoReal
-              filtros={filtrosSOC}
-              setFiltros={setFiltrosSOC}
-              setPage={setPageSOC}
-            />
-          </div>
-
           <DashboardSOCAnalytics
             resumen={resumenEnVivo}
             tiempoReal
@@ -844,22 +837,6 @@ export default function MotorDeteccion() {
             filtros={filtrosIncidentes}
             setFiltros={setFiltrosIncidentes}
             resumen={resumenEnVivo}
-            onEjecutarCorrelacion={async () => {
-              try {
-                // Idempotente: el backend actualiza el incidente de cada par (documento, usuario)
-                // en vez de crear otro, y los eventos del simulador siguen contándose solo en vivo,
-                // así que volver a ejecutar no duplica ningún conteo.
-                const res = await ejecutarCorrelacionMutation.mutateAsync({});
-                toast.success(
-                  `Correlación ejecutada: ${res.total_incidentes_generados} incidentes actualizados ` +
-                    `(${res.total_candidatos_analizados} pares documento+usuario analizados, sin duplicar).`
-                );
-                refetchForense();
-              } catch (err) {
-                toast.error(err?.response?.data?.detail || "Error al ejecutar correlación.");
-              }
-            }}
-            isExecuting={ejecutarCorrelacionMutation.isPending}
             isLoading={loadingForense}
           />
         </div>

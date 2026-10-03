@@ -46,12 +46,14 @@ export function normalizarTipoEvento(tipo, idTipo) {
   return TIPOS[Number(idTipo) - 1]?.id || "VISTA";
 }
 
-// Una amenaza es un evento anómalo, crítico/alto o con score >= UMBRAL_ALTO.
+// Una amenaza es un evento anómalo, crítico/alto o con score >= UMBRAL_ALTO, o un evento cuyo par
+// (documento, usuario) alcanza UMBRAL_ALTO al correlacionarlo en tiempo real con la trazabilidad.
 // Es el mismo criterio para los contadores de los gráficos y para la tabla de incidentes.
-export function esAmenazaEvento(evento) {
+export function esAmenazaEvento(evento, correlacion = null) {
   const nivel = String(evento.nivel_riesgo ?? evento.NIVEL_RIESGO ?? "").trim().toLowerCase();
   const anomalia = evento.es_anomalia === true || evento.es_anomalia === 1 || evento.es_anomalia === "true";
-  return anomalia || nivel === "critico" || nivel === "alto" || numero(evento.score_final) >= UMBRAL_ALTO;
+  return anomalia || nivel === "critico" || nivel === "alto" || numero(evento.score_final) >= UMBRAL_ALTO ||
+    numero(correlacion?.score_correlacion) >= UMBRAL_ALTO;
 }
 
 // Correlación en vivo: un incidente por par (documento, usuario), igual que el motor del backend.
@@ -95,13 +97,13 @@ function acumularTop(items, key, nuevo) {
 }
 
 // Los acumulados no dependen de las 300 filas que se conservan para la tabla.
-export function acumularEvento(anterior, evento, ahora = new Date()) {
+export function acumularEvento(anterior, evento, ahora = new Date(), correlacion = null) {
   const tipo = normalizarTipoEvento(evento.name_tipo_evento ?? evento.NAME_TIPO_EVENTO ?? evento.tipo_evento,
     evento.id_tipo_evento ?? evento.ID_TIPO_EVENTO);
   const riesgo = String(evento.nivel_riesgo ?? evento.NIVEL_RIESGO ?? "bajo").trim().toLowerCase();
   const nivel = NIVELES.includes(riesgo) ? riesgo : "bajo";
   const anomalia = evento.es_anomalia === true || evento.es_anomalia === 1 || evento.es_anomalia === "true";
-  const amenaza = esAmenazaEvento(evento);
+  const amenaza = esAmenazaEvento(evento, correlacion);
   // Un incidente = un par (documento, usuario). Solo el primer evento amenazante del par suma;
   // los siguientes del mismo par solo actualizan el score máximo.
   const par = claveParIncidente(evento);
@@ -263,164 +265,26 @@ export function evaluarEstadoForense(inc, neutralizadosIds = []) {
   };
 }
 
-export function convertirEventoAIncidente(ev) {
-  const score = Number(ev.score_final ?? 0.85);
-  const riesgo = String(
-    ev.nivel_riesgo || (score >= UMBRAL_CRITICO ? "critico" : score >= UMBRAL_ALTO ? "alto" : score >= UMBRAL_MEDIO ? "medio" : "bajo")
-  ).trim().toLowerCase();
-  const fecha = ev.fecha_evento || ev.FECHA_EVENTO || new Date().toISOString();
-  const id = ev.id_incidente || `LIVE-${ev.id_evento || Date.now()}`;
-  const clasif = String(ev.name_clasificacion || ev.NAME_CLASIFICACION || "SECRETO").trim().toUpperCase();
-  const destino = String(ev.doc_interno_externo || ev.DOC_INTERNO_EXTERNO || "exterior").trim().toLowerCase();
-  const tipoDoc = ev.tipo_documento || "OFICIO";
-  const numDoc = ev.numero_documento || ev.NUMERO_DOCUMENTO || `DOC-${ev.id_documento || "STREAM"}`;
-  const idUser = ev.id_user ?? ev.ID_USER ?? 101;
-  const userName = ev.name_user || ev.NAME_USER || `Usuario #${idUser}`;
-  const roleName = ev.name_role || ev.NAME_ROLE || ev.rol || ev.role || "ANALISTA";
-  const tipoEv = normalizarTipoEvento(
-    ev.name_tipo_evento ?? ev.NAME_TIPO_EVENTO ?? ev.tipo_evento,
-    ev.id_tipo_evento ?? ev.ID_TIPO_EVENTO
-  );
-  const sizeMb = Number(ev.size_archivo_mb || 0);
-
-  const storyline = [
-    {
-      paso: 1,
-      fase: "Reconocimiento y Autenticación",
-      descripcion: `El usuario ${userName} inició sesión y accedió al repositorio documental`,
-      timestamp: fecha,
-      icono: "eye",
-      nivel_riesgo: "bajo",
-    },
-    {
-      paso: 2,
-      fase: "Consulta de Activo Clasificado",
-      descripcion: `Acceso y lectura del documento ${numDoc} (${clasif}) con destino ${destino === "exterior" ? "Exterior" : "Interior"}`,
-      timestamp: fecha,
-      icono: "file",
-      nivel_riesgo: riesgo === "critico" ? "alto" : "medio",
-    },
-    {
-      paso: 3,
-      fase: "Exfiltración / Actividad Crítica",
-      descripcion: `Acción ejecutada: ${tipoEv} ${sizeMb > 0 ? `(${sizeMb} MB)` : ""}. Inferencia Isolation Forest detectó desviación de patrón con score ${Math.round(score * 100)}%`,
-      timestamp: fecha,
-      icono: tipoEv === "DESCARGAR" || tipoEv === "GUARDAR_COPIA" ? "download" : tipoEv === "ELIMINAR" ? "trash" : "edit",
-      nivel_riesgo: riesgo,
-    },
-  ];
-
-  const esCritico = riesgo === "critico" || score >= 0.75;
-  const estado = esCritico ? "contenido" : "abierto";
-  const accionTomada = esCritico
-    ? "Contención automática ejecutada: cuenta bloqueada preventivamente según protocolo institucional (Score >= 0.75 / UMBRAL_CRITICO)"
-    : null;
-
-  if (esCritico) {
-    storyline.push({
-      paso: 4,
-      fase: "Contención Inmediata SOC",
-      descripcion: `Neutralización automática ejecutada según constantes.py (Score ${(score * 100).toFixed(0)}% >= 75%). Cuenta del usuario bloqueada y accesos revocados preventivamente.`,
-      timestamp: fecha,
-      icono: "shield",
-      nivel_riesgo: "critico",
-    });
-  }
-
-  const motivosEventos = [
-    {
-      codigo: `INFERENCIA_IF_${riesgo.toUpperCase()}`,
-      descripcion: `El modelo predictivo Isolation Forest clasificó el evento #${ev.id_evento || "LIVE"} como ${riesgo.toUpperCase()} (Score: ${(score * 100).toFixed(1)}%).`,
-      puntos: Math.round(score * 50),
-    },
-    sizeMb > 20 && {
-      codigo: "VOLUMEN_ANOMALO",
-      descripcion: `Transferencia inusual de ${sizeMb} MB sobrepasando el umbral base permitido.`,
-      puntos: 30,
-    },
-    (destino === "exterior" || clasif === "SECRETO" || clasif === "RESERVADO") && {
-      codigo: "ACTIVO_CRITICO_EXTERIOR",
-      descripcion: `Manipulación de documento clasificado como ${clasif} con transferencia hacia entorno exterior.`,
-      puntos: 40,
-    },
-  ].filter(Boolean);
-
-  const motivosTraza = [
-    {
-      codigo: "RUTA_DOCUMENTAL_AUDITADA",
-      descripcion: `Reconstrucción de ciclo de vida del documento ${numDoc}. Trazabilidad cruzada con registro de auditoría.`,
-      puntos: 35,
-    },
-  ];
-
-  return {
-    id,
-    es_en_vivo: true,
-    fecha_deteccion: fecha,
-    id_documento: ev.id_documento || 1,
-    numero_documento: numDoc,
-    clasificacion_doc: clasif,
-    destino_doc: destino,
-    tipo_documento: tipoDoc,
-    id_user: idUser,
-    nombre_usuario: userName,
-    name_role: roleName,
-    rol: roleName,
-    name_oficina: ev.name_oficina || "División de Seguridad de la Información",
-    score_correlacion: score,
-    score_trazabilidad: Number((score * 0.9).toFixed(2)),
-    score_eventos: Number((score * 0.95).toFixed(2)),
-    nivel_riesgo: riesgo,
-    estado,
-    cuenta_bloqueada: esCritico,
-    es_critico_auto: esCritico,
-    accion_tomada: accionTomada,
-    total_pasos_storyline: storyline.length,
-    storyline,
-    motivos_eventos: motivosEventos,
-    motivos_trazabilidad: motivosTraza,
-    sesion_traza_id: ev.id_evento ? `STRM-${ev.id_evento}` : "STREAM-LIVE",
-    sesion_eventos_id: ev.id_evento ? `EV-${ev.id_evento}` : "EV-STREAM",
-    raw_evento: ev,
-  };
-}
-
-const ORDEN_NIVEL = { bajo: 0, medio: 1, alto: 2, critico: 3 };
 const MAX_INCIDENTES_EN_VIVO = 100;
 
 /**
- * Correlación en tiempo real (puramente en pantalla): mantiene UN incidente por par
- * (documento, usuario). Un nuevo evento del mismo par actualiza ese incidente (score y nivel
- * máximos, contador de eventos asociados, evidencia del evento más grave) y nunca crea otro.
- * `mapa` es { [clave]: incidente }; devuelve un mapa nuevo (inmutable) o el mismo si el evento
- * no es amenaza.
+ * Correlación en tiempo real. El cálculo lo hace el backend con cada evento
+ * (0.45·score_trazabilidad + 0.55·score_eventos; si falta uno de los dos se usa el del
+ * dominio disponible) y llega en `correlacion` junto al evento: aquí no se estima ni se
+ * recalcula ningún score. Se mantiene UN incidente por par (documento, usuario) y, como el
+ * backend ya acumula todos los eventos del par, cada mensaje reemplaza al anterior.
+ * `mapa` es { [clave]: incidente }; devuelve un mapa nuevo (inmutable) o el mismo si el
+ * evento no califica como incidente o el backend no pudo correlacionarlo.
  */
-export function correlacionarEnVivo(mapa, evento, secuencia = Date.now()) {
-  if (!esAmenazaEvento(evento)) return mapa;
+export function correlacionarEnVivo(mapa, evento, correlacion, secuencia = Date.now()) {
+  if (!correlacion || !esAmenazaEvento(evento, correlacion)) return mapa;
   const clave = claveParIncidente(evento);
-  const nuevo = convertirEventoAIncidente(evento);
-  const previo = mapa[clave];
-  let incidente;
-  if (!previo) {
-    incidente = { ...nuevo, total_eventos_asociados: 1 };
-  } else {
-    const masGrave = numero(nuevo.score_correlacion) >= numero(previo.score_correlacion) ? nuevo : previo;
-    const nivel = (ORDEN_NIVEL[nuevo.nivel_riesgo] ?? 0) >= (ORDEN_NIVEL[previo.nivel_riesgo] ?? 0)
-      ? nuevo.nivel_riesgo : previo.nivel_riesgo;
-    const critico = nivel === "critico";
-    incidente = {
-      ...masGrave,
-      nivel_riesgo: nivel,
-      score_correlacion: Math.max(numero(nuevo.score_correlacion), numero(previo.score_correlacion)),
-      fecha_deteccion: nuevo.fecha_deteccion,
-      total_eventos_asociados: numero(previo.total_eventos_asociados) + 1,
-      estado: critico || previo.cuenta_bloqueada ? "contenido" : "abierto",
-      cuenta_bloqueada: critico || Boolean(previo.cuenta_bloqueada),
-      es_critico_auto: critico || Boolean(previo.es_critico_auto),
-    };
-  }
-  incidente.id = `LIVE-${clave}`;
-  incidente.actualizado_en = secuencia;
+  const incidente = { ...correlacion, id: `LIVE-${clave}`, es_en_vivo: true, actualizado_en: secuencia };
+  // La contención se deriva con la misma política que aplica la tabla de incidentes.
+  const forense = evaluarEstadoForense(incidente);
+  incidente.estado = forense.estadoEfectivo;
+  incidente.cuenta_bloqueada = forense.esBloqueado;
+  incidente.es_critico_auto = forense.esCritico;
   const siguiente = { ...mapa, [clave]: incidente };
   const claves = Object.keys(siguiente);
   if (claves.length > MAX_INCIDENTES_EN_VIVO) {

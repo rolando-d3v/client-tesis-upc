@@ -12,7 +12,7 @@ import CargaAnomalias from "../modules/anomalias/pages/carga_csv_anomalias/Carga
 import CargaCSVEventos from "../modules/eventos/pages/CargaCSVEventos/CargaCSVEventos";
 import Dashboard2Usuarios from "../modules/eventos/pages/Dashboard2Usuarios/Dashboard2Usuarios";
 import Dashboard4Clasificacion from "../modules/eventos/pages/Dashboard4Clasificacion/Dashboard4Clasificacion";
-import MotorDeteccion from "../modules/eventos/pages/MotorDeteccion/MotorDeteccion";
+import MotorDeteccion from "../modules/MotorDeteccion/MotorDeteccion";
 
 // Módulo de Entrenamiento & Calibración
 import EntrenamientoPage from "../modules/entrenamiento/pages/EntrenamientoPage";

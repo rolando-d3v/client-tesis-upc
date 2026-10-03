@@ -256,9 +256,8 @@
 
 .riskSummary {
   display: flex;
-  gap: 12px;
+  gap: 20px;
   align-items: center;
-  margin: 23px 0 19px;
 }
 .riskSummary > strong {
   color: #0f172a;
@@ -396,18 +395,38 @@
 }
 
 .streamingRow {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr);
+  gap: 20px;
 }
-.radarColumn,
+.radarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 6px #0f172a03;
+}
 .tableColumn {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
-  width: 100%;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 2px 6px #0f172a03;
+}
+.tableColumn .sectionHeader {
+  align-items: flex-start;
+}
+.tableColumn .windowBadge {
+  flex: 0 0 auto;
+  font-weight: 600;
 }
 .sectionHeading > svg {
   color: #64748b;
@@ -432,6 +451,9 @@
   border-radius: 50%;
   background: #94a3b8;
 }
+.streamIdle .radarDot {
+  background: #94a3b8;
+}
 .streamActive {
   color: #047857;
   border-color: #a7f3d0;
@@ -441,9 +463,17 @@
   background: #059669;
   box-shadow: 0 0 0 3px #05966914;
 }
+.streamPaused {
+  color: #92400e;
+  border-color: #fde68a;
+  background: #fffbeb;
+}
 
 @media (max-width: 1100px) {
   .chartsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .streamingRow {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -493,6 +523,16 @@
   }
   .sectionHeader {
     gap: 10px;
+  }
+  .radarColumn {
+    gap: 14px;
+    padding: 15px;
+    border-radius: 12px;
+  }
+  .tableColumn {
+    gap: 14px;
+    padding: 15px;
+    border-radius: 12px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

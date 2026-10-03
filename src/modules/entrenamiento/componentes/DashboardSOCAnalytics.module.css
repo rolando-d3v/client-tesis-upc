@@ -119,12 +119,30 @@
   color: #0f172a;
 }
 
+.chartsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.topChartsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
 /* Grilla de gráficos */
 .analyticsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.25rem;
-  animation: fadeIn 0.3s ease;
+}
+
+.chartsGridFull {
+  grid-column: 1 / -1;
+  width: 100%;
 }
 
 @keyframes fadeIn {
@@ -146,6 +164,19 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.topChartCard {
+  min-height: 365px;
+}
+
+.topChartCard .cardHeader {
+  margin-bottom: 0.75rem;
+}
+
+.topChartWide {
+  grid-column: auto;
 }
 
 .cardHeader {
@@ -198,14 +229,147 @@
   padding: 0;
 }
 
-/* Wrapper Donut & Barras */
+/* Gráficos analíticos */
 .donutWrapper,
 .chartBarWrapper {
   width: 100%;
-  height: 250px;
+  height: 230px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.donutContent {
+  display: grid;
+  grid-template-columns: minmax(135px, 1.1fr) minmax(105px, 0.9fr);
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.donutWrapper {
+  position: relative;
+  min-width: 0;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #0f172a;
+}
+
+.donutCenter strong {
+  font-size: 1.1rem;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.donutCenter span {
+  margin-top: 0.15rem;
+  color: #64748b;
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.classificationLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.classificationLegendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.35rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #475569;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.classificationLegendItem:hover,
+.classificationLegendItemActive {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.classificationLegendItemActive {
+  color: #0f172a;
+}
+
+.classificationLegendLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  font-size: 0.69rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.classificationLegendLabel > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.classificationDot {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.classificationLegendValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.classificationLegendValue strong {
+  font-size: 0.69rem;
+  color: #334155;
+}
+
+.classificationLegendValue small {
+  color: #94a3b8;
+  font-size: 0.61rem;
+}
+
+.monthChartWrapper {
+  width: 100%;
+  height: 230px;
+  min-width: 0;
+}
+
+.emptyChartState {
+  display: grid;
+  flex: 1;
+  min-height: 230px;
+  place-items: center;
+  padding: 1rem;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 /* Rankings Top 10 */
@@ -397,9 +561,40 @@
   padding: 1.5rem 0;
 }
 
+@media (max-width: 1200px) {
+  .topChartsRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topChartWide {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 900px) {
+  .topChartsRow,
   .analyticsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .topChartWide {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .donutContent {
+    grid-template-columns: minmax(120px, 1fr) minmax(100px, 1fr);
+    gap: 0.2rem;
+  }
+
+  .classificationLegendItem {
+    padding: 0.3rem 0.2rem;
+  }
+
+  .classificationLegendLabel {
+    gap: 0.28rem;
+    font-size: 0.65rem;
   }
 }
 

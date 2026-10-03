@@ -9,6 +9,7 @@ import {
   FaPenToSquare,
   FaTriangleExclamation,
   FaFileLines,
+  FaChevronRight,
 } from "react-icons/fa6";
 
 const getIcon = (icono, nivel) => {
@@ -60,10 +61,10 @@ export default function StorylineTimeline({ storyline = [] }) {
       <div className={styles.container}>
         <div className={styles.title}>
           <FaClockRotateLeft style={{ color: "#7c3aed" }} />
-          Reconstrucción Cronológica del Incidente (Storyline)
+          Cronología del incidente
         </div>
-        <p className={styles.subtitle} style={{ marginTop: "1rem" }}>
-          No se registraron pasos o evidencias cronológicas para esta correlación.
+        <p className={styles.subtitle}>
+          No hay eventos cronológicos asociados a este incidente.
         </p>
       </div>
     );
@@ -99,17 +100,17 @@ export default function StorylineTimeline({ storyline = [] }) {
       <div className={styles.titleRow}>
         <div className={styles.title}>
           <FaClockRotateLeft style={{ color: "#7c3aed" }} />
-          Reconstrucción Cronológica del Incidente (Storyline Auditado)
+          Cronología del incidente
         </div>
-        <span style={{ fontSize: "0.82rem", color: "#6b7280", fontWeight: 600 }}>
-          {storyline.length} acciones correlacionadas
+        <span className={styles.stepCount}>
+          {storyline.length} {storyline.length === 1 ? "evento" : "eventos"}
         </span>
       </div>
       <p className={styles.subtitle}>
-        Línea de tiempo unificada que evidencia el desvío del documento y las acciones realizadas por el usuario en cada fase de la amenaza.
+        Eventos y evidencias ordenados por hora de detección.
       </p>
 
-      {/* Fases del Ciclo de Amenaza Interna (Insider Threat Kill Chain) */}
+      {/* Etapas de actividad identificadas en el incidente */}
       <div className={styles.killChainBar}>
         <div className={`${styles.kcStep} ${hasTransito ? styles.kcStepActive : ""}`}>
           <span className={styles.kcNum}>1</span>
@@ -119,7 +120,7 @@ export default function StorylineTimeline({ storyline = [] }) {
           </div>
         </div>
 
-        <span className={styles.kcArrow}>➔</span>
+        <span className={styles.kcArrow} aria-hidden="true"><FaChevronRight /></span>
 
         <div className={`${styles.kcStep} ${hasDesvio ? styles.kcStepAlert : ""}`}>
           <span className={styles.kcNum}>2</span>
@@ -129,7 +130,7 @@ export default function StorylineTimeline({ storyline = [] }) {
           </div>
         </div>
 
-        <span className={styles.kcArrow}>➔</span>
+        <span className={styles.kcArrow} aria-hidden="true"><FaChevronRight /></span>
 
         <div className={`${styles.kcStep} ${hasExfiltracion ? styles.kcStepCritico : ""}`}>
           <span className={styles.kcNum}>3</span>
@@ -139,7 +140,7 @@ export default function StorylineTimeline({ storyline = [] }) {
           </div>
         </div>
 
-        <span className={styles.kcArrow}>➔</span>
+        <span className={styles.kcArrow} aria-hidden="true"><FaChevronRight /></span>
 
         <div className={`${styles.kcStep} ${hasEvasion ? styles.kcStepEvasion : ""}`}>
           <span className={styles.kcNum}>4</span>
@@ -179,8 +180,8 @@ export default function StorylineTimeline({ storyline = [] }) {
                   <span className={styles.timestamp}>{dtFormatted}</span>
                 </div>
 
-                <div className={styles.stepTitle}>{paso.titulo}</div>
-                <div className={styles.stepDesc}>{paso.descripcion}</div>
+                <div className={styles.stepTitle}>{paso.titulo || paso.fase || "Evento registrado"}</div>
+                <div className={styles.stepDesc}>{paso.descripcion || "Sin descripción disponible."}</div>
 
                 {/* Metadatos adicionales */}
                 <div className={styles.metaRow}>
@@ -206,7 +207,7 @@ export default function StorylineTimeline({ storyline = [] }) {
                   )}
                   {meta.fuera_horario && (
                     <span className={`${styles.metaPill} ${styles.metaAlert}`}>
-                      ⚠️ Fuera de horario laboral
+                      <FaTriangleExclamation aria-hidden="true" /> Fuera de horario laboral
                     </span>
                   )}
                   {meta.peso_mb > 0 && (

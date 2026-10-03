@@ -9,7 +9,6 @@ import {
   normalizarTipoEvento,
   parseFechaEvento,
   evaluarEstadoForense,
-  convertirEventoAIncidente,
 } from "./telemetria.js";
 
 const evento = (cambios = {}) => ({
@@ -257,28 +256,6 @@ test("evaluarEstadoForense contiene automáticamente eventos críticos (Score >=
   assert.equal(eval3.estadoEfectivo, "contenido");
 });
 
-test("convertirEventoAIncidente auto-contiene en tiempo real y asigna cuenta_bloqueada si es crítico", () => {
-  const evCritico = {
-    id_evento: 999,
-    id_user: 12,
-    name_user: "Capitan Rivas",
-    name_tipo_evento: "DOWNLOAD",
-    name_clasificacion: "SECRETO",
-    doc_interno_externo: "exterior",
-    score_final: 0.88,
-    nivel_riesgo: "critico",
-  };
-
-  const inc = convertirEventoAIncidente(evCritico);
-  assert.equal(inc.estado, "contenido");
-  assert.equal(inc.cuenta_bloqueada, true);
-  assert.equal(inc.es_critico_auto, true);
-  assert.ok(inc.accion_tomada.includes("Contención automática"));
-  // Verifica que storyline incluya el paso de Contención Inmediata SOC
-  assert.equal(inc.storyline.length, 4);
-  assert.equal(inc.storyline[3].fase, "Contención Inmediata SOC");
-});
-
 test("la correlación cuenta un incidente por par documento+usuario, no uno por evento", () => {
   const mismoPar = (cambios = {}) => evento({
     id_documento: 42, id_user: 7, nivel_riesgo: "alto", es_anomalia: true, score_final: 0.6,
@@ -302,13 +279,27 @@ test("la correlación cuenta un incidente por par documento+usuario, no uno por 
   assert.equal(combinarResumenSOC({}, telemetria, [7]).por_estado.contenido, 2);
 });
 
-test("correlacionarEnVivo mantiene un único incidente por par y conserva el más grave", () => {
+// Incidente tal como lo entrega el backend tras fusionar la trazabilidad y los eventos del par.
+const correlacion = (cambios = {}) => ({
+  id_documento: 9, id_user: 7, nombre_usuario: "Usuario de prueba",
+  score_trazabilidad: 0.6, score_eventos: 0.4, score_correlacion: 0.49,
+  nivel_riesgo: "medio", modo_fusion: "fusion", total_eventos_asociados: 1, storyline: [],
+  ...cambios,
+});
+
+test("correlacionarEnVivo conserva un único incidente por par con el último cálculo del backend", () => {
   const congelado = congelar({});
+  const alto = { nivel_riesgo: "alto", score_final: 0.6, es_anomalia: true };
+  const critico = { score_eventos: 0.9, score_correlacion: 0.9, nivel_riesgo: "critico" };
   let mapa = congelado;
-  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 1, id_documento: 9, nivel_riesgo: "alto", score_final: 0.6, es_anomalia: true }), 1);
-  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 2, id_documento: 9, nivel_riesgo: "critico", score_final: 0.9 }), 2);
-  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 3, id_documento: 9, nivel_riesgo: "alto", score_final: 0.55, es_anomalia: true }), 3);
-  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 4, id_documento: 10, nivel_riesgo: "alto", score_final: 0.6, es_anomalia: true }), 4);
+  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 1, id_documento: 9, ...alto }),
+    correlacion({ score_correlacion: 0.55, nivel_riesgo: "alto" }), 1);
+  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 2, id_documento: 9, nivel_riesgo: "critico", score_final: 0.9 }),
+    correlacion({ ...critico, total_eventos_asociados: 2 }), 2);
+  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 3, id_documento: 9, ...alto }),
+    correlacion({ ...critico, total_eventos_asociados: 3 }), 3);
+  mapa = correlacionarEnVivo(mapa, evento({ id_evento: 4, id_documento: 10, ...alto }),
+    correlacion({ id_documento: 10, score_correlacion: 0.55, nivel_riesgo: "alto" }), 4);
   assert.deepEqual(congelado, {});                         // no muta el mapa anterior
   const lista = listarIncidentesEnVivo(mapa);
   assert.equal(lista.length, 2);
@@ -319,14 +310,56 @@ test("correlacionarEnVivo mantiene un único incidente por par y conserva el má
   assert.equal(par9.score_correlacion, 0.9);
   assert.equal(par9.estado, "contenido");
   assert.equal(par9.cuenta_bloqueada, true);
-  // un evento que no es amenaza no crea ni modifica incidentes
-  assert.equal(correlacionarEnVivo(mapa, evento({ id_documento: 11 }), 5), mapa);
+  assert.equal(par9.es_en_vivo, true);
+});
+
+test("correlacionarEnVivo usa los scores del backend sin estimarlos ni modificarlos", () => {
+  const mapa = correlacionarEnVivo({}, evento({ id_documento: 9, nivel_riesgo: "alto", score_final: 0.6 }),
+    correlacion({ score_trazabilidad: 0.6, score_eventos: 0.4, score_correlacion: 0.49 }), 1);
+  const inc = listarIncidentesEnVivo(mapa)[0];
+  assert.equal(inc.score_trazabilidad, 0.6);
+  assert.equal(inc.score_eventos, 0.4);
+  assert.equal(inc.score_correlacion, 0.49);   // 0.45·0.6 + 0.55·0.4, aunque el evento solo sea "alto"
+  assert.equal(inc.nivel_riesgo, "medio");
+  assert.equal(inc.modo_fusion, "fusion");
+  assert.equal(inc.estado, "abierto");
+});
+
+test("sin correlación del backend no se inventa un incidente", () => {
+  const mapa = {};
+  const critico = evento({ id_documento: 9, nivel_riesgo: "critico", score_final: 0.9 });
+  assert.equal(correlacionarEnVivo(mapa, critico, null, 1), mapa);
+  assert.equal(correlacionarEnVivo(mapa, critico, undefined, 1), mapa);
+});
+
+test("un evento leve solo es incidente si su correlación con la trazabilidad llega a UMBRAL_ALTO", () => {
+  const leve = evento({ id_documento: 11 });
+  const mapa = {};
+  assert.equal(correlacionarEnVivo(mapa, leve, correlacion({ id_documento: 11, score_correlacion: 0.3 }), 5), mapa);
+  const conTraza = correlacionarEnVivo(mapa, leve, correlacion({
+    id_documento: 11, score_trazabilidad: 0.9, score_eventos: 0.2, score_correlacion: 0.52, nivel_riesgo: "alto",
+  }), 6);
+  assert.equal(listarIncidentesEnVivo(conTraza).length, 1);
+});
+
+test("un par cuya correlación llega a UMBRAL_ALTO cuenta una sola vez como incidente en la telemetría", () => {
+  const ahora = new Date("2026-10-02T10:00:00");
+  const leve = (id_evento) => evento({ id_evento, id_documento: 11 });
+  const baja = correlacion({ id_documento: 11, score_correlacion: 0.3 });
+  const alta = correlacion({ id_documento: 11, score_correlacion: 0.52 });
+  let telemetria = acumularEvento(crearTelemetria(), leve(1), ahora, baja);
+  assert.equal(telemetria.total_incidentes, 0);
+  telemetria = acumularEvento(telemetria, leve(2), ahora, alta);
+  telemetria = acumularEvento(telemetria, leve(3), ahora, alta);
+  assert.equal(telemetria.total_incidentes, 1);
+  assert.equal(telemetria.total_eventos_analizados, 3);
 });
 
 test("correlacionarEnVivo limita a 100 incidentes descartando el menos reciente", () => {
   let mapa = {};
   for (let i = 1; i <= 105; i += 1) {
-    mapa = correlacionarEnVivo(mapa, evento({ id_documento: i, nivel_riesgo: "alto", score_final: 0.6 }), i);
+    mapa = correlacionarEnVivo(mapa, evento({ id_documento: i, nivel_riesgo: "alto", score_final: 0.6 }),
+      correlacion({ id_documento: i, nivel_riesgo: "alto", score_correlacion: 0.6 }), i);
   }
   const lista = listarIncidentesEnVivo(mapa);
   assert.equal(lista.length, 100);

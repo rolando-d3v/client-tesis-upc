@@ -87,6 +87,11 @@ export default function DeteccionAuth({
   const isUltimoEventoNeutralizado = Boolean(
     ultimoEvento && neutralizadosIds?.includes(String(ultimoEvento.id_user || ultimoEvento.name_user)),
   );
+  const estadoFlujo = simuladorEstado.pausado
+    ? "pausado"
+    : simuladorEstado.activo
+      ? "activo"
+      : "espera";
 
   return (
     <div className={styles.container}>
@@ -110,35 +115,12 @@ export default function DeteccionAuth({
 
       {/* ÚLTIMA DETECCIÓN Y REGISTRO DE EVENTOS */}
       <div className={styles.streamingRow}>
-        <div className={styles.radarColumn}>
-          <div className={styles.sectionHeader}>
-            <div className={styles.sectionHeading}>
-              <FaTowerBroadcast aria-hidden="true" />
-              <div>
-                <h3>Última detección</h3>
-                <p>Inspecciona el evento más reciente y su respuesta de contención.</p>
-              </div>
-            </div>
-            <span
-              className={`${styles.streamStatus} ${simuladorEstado.activo && !simuladorEstado.pausado ? styles.streamActive : ""}`}
-            >
-              {simuladorEstado.pausado ? <FaCirclePause aria-hidden="true" /> : <span className={styles.radarDot} />}
-              {simuladorEstado.pausado ? "En pausa" : simuladorEstado.activo ? "Simulación activa" : "En espera"}
-            </span>
-          </div>
-          <BannerUltimoEvento
-            evento={ultimoEvento}
-            onNeutralizarUsuario={onNeutralizarUsuario}
-            isNeutralizado={isUltimoEventoNeutralizado}
-          />
-        </div>
-
         <div className={styles.tableColumn}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionHeading}>
               <FaListUl aria-hidden="true" />
               <div>
-                <h3>Registro de eventos</h3>
+                <h3>Registro de eventos en tiempo real</h3>
                 <p>Busca, filtra e inspecciona la actividad detectada.</p>
               </div>
             </div>
@@ -155,6 +137,47 @@ export default function DeteccionAuth({
             setAutoScroll={handleSetAutoScroll}
           />
         </div>
+
+
+
+        <section className={styles.radarColumn} aria-labelledby="deteccion-ultima-title">
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionHeading}>
+              <FaTowerBroadcast aria-hidden="true" />
+              <div>
+                <h3 id="deteccion-ultima-title">Última detección</h3>
+                <p>Inspecciona el evento más reciente y su respuesta de contención.</p>
+              </div>
+            </div>
+            <span
+              className={`${styles.streamStatus} ${
+                estadoFlujo === "activo"
+                  ? styles.streamActive
+                  : estadoFlujo === "pausado"
+                    ? styles.streamPaused
+                    : styles.streamIdle
+              }`}
+              role="status"
+              aria-live="polite"
+            >
+              {estadoFlujo === "pausado" ? (
+                <FaCirclePause aria-hidden="true" />
+              ) : (
+                <span className={styles.radarDot} aria-hidden="true" />
+              )}
+              {estadoFlujo === "pausado"
+                ? "En pausa"
+                : estadoFlujo === "activo"
+                  ? "Simulación activa"
+                  : "En espera"}
+            </span>
+          </div>
+          <BannerUltimoEvento
+            evento={ultimoEvento}
+            onNeutralizarUsuario={onNeutralizarUsuario}
+            isNeutralizado={isUltimoEventoNeutralizado}
+          />
+        </section>
       </div>
 
       {/* MODAL DE INSPECCIÓN DETALLADA */}

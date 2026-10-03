@@ -8,10 +8,10 @@ export default function MotivosDesglose({ motivosTraza = [], motivosEventos = []
       <div className={styles.panel}>
         <div className={styles.header}>
           <FaFileLines style={{ color: "#3b82f6" }} />
-          <span>Explicabilidad XAI: Trazabilidad</span>
+          <span>Trazabilidad documental</span>
         </div>
         <p className={styles.sub}>
-          Reglas de negocio y patrones topológicos documentales vulnerados
+          Reglas de circulación y acceso que no se cumplieron.
         </p>
 
         {motivosTraza && motivosTraza.length > 0 ? (
@@ -23,7 +23,9 @@ export default function MotivosDesglose({ motivosTraza = [], motivosEventos = []
                 style={{ borderLeftColor: "#3b82f6" }}
               >
                 <div className={styles.motiveTop}>
-                  <span className={styles.codeBadge}>{m.codigo || "REGLA_TRAZA"}</span>
+                  <span className={styles.codeBadge} title={m.codigo || "REGLA_TRAZA"}>
+                    {m.codigo || "REGLA_TRAZA"}
+                  </span>
                   {m.puntos !== undefined && (
                     <span className={styles.pointsBadge}>+{m.puntos} pts</span>
                   )}
@@ -34,7 +36,7 @@ export default function MotivosDesglose({ motivosTraza = [], motivosEventos = []
           </div>
         ) : (
           <div className={styles.empty}>
-            No se identificaron infracciones determinísticas en la ruta documental.
+            No se detectaron alertas de trazabilidad documental.
           </div>
         )}
       </div>
@@ -43,10 +45,10 @@ export default function MotivosDesglose({ motivosTraza = [], motivosEventos = []
       <div className={styles.panel}>
         <div className={styles.header}>
           <FaUserSecret style={{ color: "#8b5cf6" }} />
-          <span>Explicabilidad XAI: Comportamiento</span>
+          <span>Actividad del usuario</span>
         </div>
         <p className={styles.sub}>
-          Desviaciones conductuales y anomalías en accesos y acciones del usuario
+          Accesos y acciones que se apartan del comportamiento habitual.
         </p>
 
         {motivosEventos && motivosEventos.length > 0 ? (
@@ -58,7 +60,9 @@ export default function MotivosDesglose({ motivosTraza = [], motivosEventos = []
                 style={{ borderLeftColor: "#8b5cf6" }}
               >
                 <div className={styles.motiveTop}>
-                  <span className={styles.codeBadge}>{m.codigo || "REGLA_EVENTO"}</span>
+                  <span className={styles.codeBadge} title={m.codigo || "REGLA_EVENTO"}>
+                    {m.codigo || "REGLA_EVENTO"}
+                  </span>
                   {m.puntos !== undefined && (
                     <span className={styles.pointsBadge}>+{m.puntos} pts</span>
                   )}
@@ -69,7 +73,7 @@ export default function MotivosDesglose({ motivosTraza = [], motivosEventos = []
           </div>
         ) : (
           <div className={styles.empty}>
-            No se registraron alertas de comportamiento irregular aisladas para este usuario.
+            No se detectaron anomalías en la actividad registrada.
           </div>
         )}
       </div>

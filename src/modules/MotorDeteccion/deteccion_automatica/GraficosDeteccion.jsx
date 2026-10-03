@@ -130,10 +130,10 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
               <p>Sobre {clasificados} eventos clasificados del feed</p>
             </div>
           </div>
-        </div>
         <div className={styles.riskSummary}>
           <strong>{distribucion[0].cantidad + distribucion[1].cantidad}</strong>
           <div><span>con riesgo alto o crítico</span><small>Prioridad de revisión</small></div>
+        </div>
         </div>
         <div className={styles.riskList} aria-label="Filtrar el registro por nivel de riesgo">
           {distribucion.map((riesgo) => {

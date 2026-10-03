@@ -14,18 +14,21 @@ export default function TimelineUsuario({ data = [] }) {
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
+        <caption className={styles.srOnly}>
+          Registro cronológico de eventos del usuario
+        </caption>
         <thead>
           <tr>
-            <th>N°</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Evento</th>
-            <th>Documento</th>
-            <th>Clasificación</th>
-            <th>Tipo Doc</th>
-            <th>Tamaño</th>
-            <th>Score</th>
-            <th>Fuera Hr</th>
+            <th scope="col">N.º</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Hora</th>
+            <th scope="col">Evento</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Clasificación</th>
+            <th scope="col">Tipo de documento</th>
+            <th scope="col">Tamaño</th>
+            <th scope="col">Score de riesgo</th>
+            <th scope="col">Fuera de horario</th>
           </tr>
         </thead>
         <tbody>
@@ -40,9 +43,15 @@ export default function TimelineUsuario({ data = [] }) {
               <td>{ev.id_documento}</td>
               <td>{ev.clasificacion}</td>
               <td className={styles.tipoDoc}>{ev.tipo_documento}</td>
-              <td>{ev.size_mb} MB</td>
-              <td className={styles.score}>{ev.score_riesgo?.toFixed(1)}</td>
-              <td>{ev.fuera_horario ? "🌙" : ""}</td>
+              <td className={styles.numericCell}>
+                {ev.size_mb != null ? `${ev.size_mb} MB` : "—"}
+              </td>
+              <td className={styles.score}>{ev.score_riesgo?.toFixed(1) ?? "—"}</td>
+              <td>
+                <span className={ev.fuera_horario ? styles.outsideHours : styles.withinHours}>
+                  {ev.fuera_horario ? "Sí" : "No"}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>

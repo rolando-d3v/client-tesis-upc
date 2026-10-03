@@ -1,63 +1,71 @@
 .card {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border-radius: 9px;
+  padding: 1.15rem;
+  box-shadow: none;
 }
 
 .title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.02rem;
+  line-height: 1.35;
+  font-weight: 650;
   color: #111827;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.3rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .subtitle {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: #6b7280;
-  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  margin: 0 0 1.1rem;
 }
 
 .mainRow {
   display: grid;
-  grid-template-columns: 190px 280px 1fr;
-  gap: 1.5rem;
-  align-items: center;
+  grid-template-columns: minmax(145px, 0.7fr) minmax(250px, 1.2fr) minmax(280px, 1.4fr);
+  gap: 1rem;
+  align-items: stretch;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
   .mainRow {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(135px, 0.7fr) minmax(0, 1.3fr);
+  }
+
+  .sourcesCol {
+    grid-column: 1 / -1;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .mainRow {
     grid-template-columns: 1fr;
+  }
+
+  .sourcesCol {
+    grid-column: auto;
   }
 }
 
 .radarWrapper {
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 0.5rem;
+  border: 1px solid #e5eaf0;
+  border-radius: 8px;
+  padding: 0.65rem 0.4rem 0.3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .radarHeader {
-  font-size: 0.76rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
 }
 
 .gaugeWrapper {
@@ -65,29 +73,29 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 12px;
-  border: 1px dashed var(--border);
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5eaf0;
 }
 
 .gaugeCircle {
-  width: 130px;
-  height: 130px;
+  width: 116px;
+  height: 116px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   border-width: 6px;
   border-style: solid;
 }
 
 .gaugeVal {
-  font-size: 1.85rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -98,19 +106,19 @@
 }
 
 .badgeRiesgo {
-  margin-top: 0.8rem;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  margin-top: 0.65rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
 }
 
 .sourcesCol {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  justify-content: center;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .sourceItem {
@@ -123,35 +131,40 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.88rem;
+  gap: 0.75rem;
+  font-size: 0.82rem;
 }
 
 .sourceName {
-  font-weight: 600;
+  font-weight: 550;
   color: #374151;
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .weightTag {
-  font-size: 0.72rem;
-  background: #e5e7eb;
-  color: #4b5563;
-  padding: 0.15rem 0.4rem;
+  font-size: 0.68rem;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.12rem 0.38rem;
   border-radius: 4px;
   font-weight: 600;
 }
 
 .sourceScore {
-  font-weight: 700;
+  flex: 0 0 auto;
+  font-weight: 600;
   color: #111827;
+  font-variant-numeric: tabular-nums;
 }
 
 .progressBarBg {
   width: 100%;
-  height: 8px;
-  background: #f3f4f6;
+  height: 6px;
+  background: #e9eef4;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -163,41 +176,39 @@
 }
 
 .factorsSection {
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
   border-top: 1px solid var(--border);
 }
 
 .factorsTitle {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #4b5563;
   margin-bottom: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .factorsList {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .factorBadge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  padding: 0.26rem 0.55rem;
+  border-radius: 5px;
+  font-size: 0.73rem;
+  font-weight: 500;
+  background: #fff7f5;
+  color: #b42318;
+  border: 1px solid #fecdca;
 }
 
 .factorNeutral {
-  background: #f3f4f6;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
 }

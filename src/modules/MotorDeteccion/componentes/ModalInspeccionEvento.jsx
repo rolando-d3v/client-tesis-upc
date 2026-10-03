@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "./ModalInspeccionEvento.module.css";
 import { FaCopy, FaCheck, FaShieldHalved, FaBan } from "react-icons/fa6";
-import RoleBadge from "../../../../../components/RoleBadge";
+import RoleBadge from "../../../components/RoleBadge";
 
 export default function ModalInspeccionEvento({
   evento,

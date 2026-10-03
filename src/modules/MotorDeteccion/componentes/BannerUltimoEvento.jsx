@@ -1,6 +1,5 @@
-import React from "react";
 import styles from "./BannerUltimoEvento.module.css";
-import RoleBadge from "../../../../../components/RoleBadge";
+import RoleBadge from "../../../components/RoleBadge";
 import {
   FaUser,
   FaFileLines,
@@ -8,7 +7,16 @@ import {
   FaChartLine,
   FaClock,
   FaBolt,
+  FaBan,
+  FaCircleCheck,
 } from "react-icons/fa6";
+
+const NIVEL_LABEL = {
+  critico: "Crítico",
+  alto: "Alto",
+  medio: "Medio",
+  bajo: "Bajo",
+};
 
 export default function BannerUltimoEvento({
   evento,
@@ -21,9 +29,9 @@ export default function BannerUltimoEvento({
         <div className={styles.emptyIconWrapper}>
           <FaBolt className={styles.emptyRadarIcon} />
         </div>
-        <h4 className={styles.emptyTitle}>Radar en Espera de Tráfico</h4>
+        <h4 className={styles.emptyTitle}>En espera de actividad</h4>
         <p className={styles.emptyDesc}>
-          Inicia la simulación arriba o inyecta una prueba para evaluar eventos en tiempo real con Isolation Forest.
+          Inicia la simulación o inyecta un evento de prueba para ver aquí la detección más reciente.
         </p>
       </div>
     );
@@ -74,18 +82,18 @@ export default function BannerUltimoEvento({
     <div className={`${styles.banner} ${getBannerClass()}`}>
       <div className={styles.bannerHeader}>
         <div className={styles.bannerTitle}>
-          <span className={`${styles.liveDot} ${getDotClass()}`} />
-          <span>Evento #{evento.id_evento}</span>
+          <span className={`${styles.liveDot} ${getDotClass()}`} aria-hidden="true" />
+          <span className={styles.eventNumber}>Evento #{evento.id_evento ?? "—"}</span>
           <span className={styles.bannerTime}>
-            <FaClock style={{ marginRight: "0.25rem" }} />
+            <FaClock aria-hidden="true" />
             {evento.fecha_evento || "En vivo"}
           </span>
         </div>
 
         <div className={styles.bannerActions}>
           {isNeutralizado ? (
-            <span className={styles.badgeNeutralizado}>
-              🚫 Cuenta Bloqueada
+            <span className={styles.badgeNeutralizado} role="status">
+              <FaCircleCheck aria-hidden="true" /> Usuario neutralizado
             </span>
           ) : (
             onNeutralizarUsuario && (nivel === "critico" || nivel === "alto") && (
@@ -98,16 +106,19 @@ export default function BannerUltimoEvento({
                   );
                   if (confirm) onNeutralizarUsuario(evento);
                 }}
+                aria-label={`Neutralizar usuario ${evento.name_user}`}
               >
-                🚫 Neutralizar
+                <FaBan aria-hidden="true" />
+                Neutralizar usuario
               </button>
             )
           )}
-          <span className={`${styles.badgeRiesgo} ${getBadgeClass()}`}>
-            {evento.nivel_riesgo}
+          <span className={`${styles.badgeRiesgo} ${getBadgeClass()}`} aria-label={`Riesgo ${NIVEL_LABEL[nivel] || nivel}`}>
+            {NIVEL_LABEL[nivel] || nivel}
           </span>
-          <span className={styles.scoreText}>
-            Score: {evento.score_final}
+          <span className={styles.scoreText} aria-label={`Score final ${evento.score_final ?? "no disponible"}`}>
+            <span>Score final</span>
+            <strong>{evento.score_final ?? "—"}</strong>
           </span>
         </div>
       </div>
@@ -115,34 +126,36 @@ export default function BannerUltimoEvento({
       <div className={styles.gridInfo}>
         <div className={styles.colInfo}>
           <h5>Usuario</h5>
-          <p style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
-            <FaUser style={{ color: "#7c3aed" }} />
-            <span>{evento.name_user}</span>
+          <p className={styles.infoValue}>
+            <FaUser className={styles.infoIcon} aria-hidden="true" />
+            <span className={styles.infoText}>{evento.name_user || "Usuario no identificado"}</span>
             <RoleBadge role={evento.name_role || evento.rol || evento.role} size="small" />
           </p>
         </div>
 
         <div className={styles.colInfo}>
           <h5>Documento</h5>
-          <p>
-            <FaFileLines style={{ marginRight: "0.35rem", color: "#2563eb", flexShrink: 0 }} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {evento.numero_documento}
+          <p className={styles.infoValue}>
+            <FaFileLines className={styles.infoIcon} aria-hidden="true" />
+            <span className={styles.infoText}>{evento.numero_documento || "Sin documento asociado"}</span>
+          </p>
+        </div>
+
+        <div className={styles.colInfo}>
+          <h5>Acción y tamaño</h5>
+          <p className={styles.infoValue}>
+            <span className={styles.infoText}>{evento.name_tipo_evento || "Acción no especificada"}</span>
+            <span className={styles.fileSize}>
+              {evento.size_archivo_mb != null ? `${evento.size_archivo_mb} MB` : "Tamaño no disponible"}
             </span>
           </p>
         </div>
 
         <div className={styles.colInfo}>
-          <h5>Acción & Tamaño</h5>
-          <p>
-            {evento.name_tipo_evento} ({evento.size_archivo_mb} MB)
-          </p>
-        </div>
-
-        <div className={styles.colInfo}>
-          <h5>Score ML</h5>
-          <p>
-            IF: {evento.score_if ?? "0.00"} | Reglas: {evento.score_reglas ?? "0.00"}
+          <h5>Componentes de evaluación</h5>
+          <p className={styles.modelScores}>
+            <span><small>Isolation Forest</small><strong>{evento.score_if ?? "0.00"}</strong></span>
+            <span><small>Reglas</small><strong>{evento.score_reglas ?? "0.00"}</strong></span>
           </p>
         </div>
       </div>
@@ -150,14 +163,14 @@ export default function BannerUltimoEvento({
       {/* Motivos XAI y Línea Base */}
       <div className={styles.motivosRow}>
         <span className={styles.chipBaseLine}>
-          <FaChartLine style={{ marginRight: "0.25rem" }} />
-          Línea Base: {evento.perfil_actualizado?.fuente_linea_base || "164K"}
+          <FaChartLine aria-hidden="true" />
+          <span>Línea base · {evento.perfil_actualizado?.fuente_linea_base || "164K"}</span>
         </span>
 
         {evento.motivos && evento.motivos.length > 0 && (
           evento.motivos.slice(0, 2).map((m, idx) => (
             <span key={idx} className={styles.chipMotivo}>
-              <FaTriangleExclamation /> {m.descripcion}
+              <FaTriangleExclamation aria-hidden="true" /> {m.descripcion}
             </span>
           ))
         )}

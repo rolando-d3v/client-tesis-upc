@@ -22,13 +22,13 @@ const ICON_MAP = {
 
 export default function CardResumenEventos({ icon, label, value, sub }) {
   return (
-    <div className={styles.card}>
+    <article className={styles.card} data-tone={icon}>
       <div className={styles.cardIcon}>{ICON_MAP[icon] || <FaChartBar style={{ fontSize: "2rem" }} />}</div>
       <div className={styles.cardInfo}>
         <span className={styles.cardLabel}>{label}</span>
         <span className={styles.cardValue}>{value}</span>
         {sub && <span className={styles.cardSub}>{sub}</span>}
       </div>
-    </div>
+    </article>
   );
 }

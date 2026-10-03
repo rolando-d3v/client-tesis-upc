@@ -1,24 +1,154 @@
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
-import { useState, useMemo, useRef } from "react";
+import {
+  FaChartColumn,
+  FaDatabase,
+  FaFileShield,
+  FaMoon,
+  FaUsers,
+  FaXmark,
+} from "react-icons/fa6";
 import styles from "./dash2.module.css";
 import TablaUsuarios from "../../componentes/TablaUsuarios/TablaUsuarios";
 import RadarRiesgo from "../../componentes/RadarRiesgo/RadarRiesgo";
 import RoleBadge from "../../../../components/RoleBadge";
+import CardResumenEventos from "../../componentes/CardResumenEventos/CardResumenEventos";
 import { useD2Usuarios, useD5Deteccion } from "../../../../api/apiEventos";
 
 const MESES = [
   { value: "", label: "Todos los meses" },
-  { value: "1", label: "Enero" }, { value: "2", label: "Febrero" }, { value: "3", label: "Marzo" },
-  { value: "4", label: "Abril" }, { value: "5", label: "Mayo" }, { value: "6", label: "Junio" },
-  { value: "7", label: "Julio" }, { value: "8", label: "Agosto" }, { value: "9", label: "Septiembre" },
-  { value: "10", label: "Octubre" }, { value: "11", label: "Noviembre" }, { value: "12", label: "Diciembre" },
+  { value: "1", label: "Enero" },
+  { value: "2", label: "Febrero" },
+  { value: "3", label: "Marzo" },
+  { value: "4", label: "Abril" },
+  { value: "5", label: "Mayo" },
+  { value: "6", label: "Junio" },
+  { value: "7", label: "Julio" },
+  { value: "8", label: "Agosto" },
+  { value: "9", label: "Septiembre" },
+  { value: "10", label: "Octubre" },
+  { value: "11", label: "Noviembre" },
+  { value: "12", label: "Diciembre" },
 ];
 
 const RANKINGS = [
-  { key: "mas_mb", title: "💾 Más MB" },
-  { key: "mas_secreto", title: "🔒 Más Docs Secreto" },
-  { key: "mas_fuera_horario", title: "🌙 Más Fuera Horario" },
+  {
+    key: "mas_mb",
+    title: "Mayor volumen transferido",
+    description: "Usuarios con mayor volumen acumulado.",
+    valueLabel: "MB",
+    icon: FaDatabase,
+    tone: "blue",
+  },
+  {
+    key: "mas_secreto",
+    title: "Más acceso a documentos secretos",
+    description: "Usuarios con mayor actividad en documentos secretos.",
+    valueLabel: "docs",
+    icon: FaFileShield,
+    tone: "red",
+  },
+  {
+    key: "mas_fuera_horario",
+    title: "Más actividad fuera de horario",
+    description: "Usuarios con más eventos fuera de jornada.",
+    valueLabel: "eventos",
+    icon: FaMoon,
+    tone: "amber",
+  },
 ];
+
+const formatoEntero = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
+const formatoVolumen = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 });
+
+function valorRanking(valor, clave) {
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) return valor ?? "0";
+  const formato = clave === "mas_mb" ? formatoVolumen : formatoEntero;
+  const unidad = RANKINGS.find((ranking) => ranking.key === clave)?.valueLabel;
+  return `${formato.format(numero)} ${unidad}`;
+}
+
+function RankingCard({ rankingDef, consulta, baseRanking, mesesRanking, cambiarMes, onSelectUser, selectedUser }) {
+  const { key, title, description, valueLabel, icon: Icon, tone } = rankingDef;
+  const ranking = consulta.data ? consulta.data.rankings?.[key] ?? [] : baseRanking ?? [];
+
+  return (
+    <article className={`${styles.rankingCard} ${styles[`ranking_${tone}`]}`}>
+      <div className={styles.rankingHeader}>
+        <div className={styles.rankingTitleBlock}>
+          <span className={styles.rankingIcon} aria-hidden="true">
+            <Icon />
+          </span>
+          <div>
+            <h3>{title}</h3>
+            <p>{description}</p>
+          </div>
+        </div>
+        <label className={styles.monthFilter} htmlFor={`periodo-${key}`}>
+          <span>Periodo</span>
+          <select id={`periodo-${key}`} value={mesesRanking[key]} onChange={(event) => cambiarMes(key, event.target.value)}>
+            {MESES.map((mes) => (
+              <option key={mes.value} value={mes.value}>
+                {mes.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {consulta.isFetching && (
+        <p className={styles.rankingStatus} role="status">
+          Actualizando periodo…
+        </p>
+      )}
+      {consulta.isError && !consulta.data && (
+        <p className={styles.rankingStatus} role="status">
+          No se pudo actualizar el ranking; se muestran los datos generales.
+        </p>
+      )}
+
+      {ranking.length > 0 ? (
+        <ol className={styles.rankingsList} aria-label={title}>
+          {ranking.map((item, index) => {
+            const isSelected =
+              selectedUser &&
+              (String(selectedUser.user_id ?? "") === String(item.user_id ?? "") ||
+                selectedUser.nombre === item.nombre);
+
+            return (
+              <li key={item.user_id ?? item.nombre ?? index}>
+                <button
+                  type="button"
+                  className={`${styles.rankingItem} ${isSelected ? styles.rankingItemActive : ""}`}
+                  onClick={() => onSelectUser(item)}
+                  aria-pressed={Boolean(isSelected)}
+                  title={`Comparar el perfil de ${item.nombre} en el radar`}
+                >
+                  <span className={styles.rankingPosition}>{String(index + 1).padStart(2, "0")}</span>
+                  <span className={styles.rankingUser}>
+                    <span className={styles.rankingName}>{item.nombre || "Usuario sin nombre"}</span>
+                    <RoleBadge role={item.rol || item.role} size="small" />
+                  </span>
+                  <span className={styles.rankingValue}>{valorRanking(item.valor, key)}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <div className={styles.rankingEmpty}>
+          {consulta.isFetching ? "Cargando ranking…" : "No hay resultados para este periodo."}
+        </div>
+      )}
+
+      <p className={styles.rankingFootnote}>
+        Selecciona una fila para comparar el perfil de riesgo.
+        <span>{valueLabel}</span>
+      </p>
+    </article>
+  );
+}
 
 export default function Dashboard2Usuarios() {
   const [mesesRanking, setMesesRanking] = useState({
@@ -34,46 +164,49 @@ export default function Dashboard2Usuarios() {
   const mbQ = useD2Usuarios(mesesRanking.mas_mb);
   const secretoQ = useD2Usuarios(mesesRanking.mas_secreto);
   const fueraHorarioQ = useD2Usuarios(mesesRanking.mas_fuera_horario);
-  const loading = d2Q.isLoading;
   const data = d2Q.data;
-  const hasData = data && data.usuarios?.length > 0;
+  const usuarios = data?.usuarios || [];
+  const hasData = usuarios.length > 0;
   const consultasRanking = {
     mas_mb: mbQ,
     mas_secreto: secretoQ,
     mas_fuera_horario: fueraHorarioQ,
   };
 
+  const resumen = useMemo(() => {
+    const totalEventos = usuarios.reduce((total, user) => total + (Number(user.n_eventos) || 0), 0);
+    const totalMb = usuarios.reduce((total, user) => total + (Number(user.total_mb) || 0), 0);
+    const usuariosRiesgo = usuarios.filter((user) => ["alto", "critico"].includes(user.nivel_riesgo)).length;
+    return { totalEventos, totalMb, usuariosRiesgo };
+  }, [usuarios]);
+
   const cambiarMes = (key, mes) => {
     setMesesRanking((actual) => ({ ...actual, [key]: mes }));
   };
 
   const handleSelectUser = (item) => {
-    if (selectedUserRadar?.user_id === item.user_id && selectedUserRadar?.nombre === item.nombre) {
+    const mismoUsuario =
+      String(selectedUserRadar?.user_id ?? "") === String(item.user_id ?? "") &&
+      selectedUserRadar?.nombre === item.nombre;
+
+    if (mismoUsuario) {
       setSelectedUserRadar(null);
     } else {
       setSelectedUserRadar(item);
-      setTimeout(() => {
+      window.setTimeout(() => {
         radarRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }, 100);
     }
   };
 
-  // Construir lista dinámica con TODOS los usuarios del sistema (ej. 75 usuarios)
+  // Combina la lista del dashboard con los perfiles ya calculados para el radar.
   const radarUsuarios = useMemo(() => {
     const baseRadar = d5Q.data?.radar_usuarios || [];
-    const todosUsuariosD2 = data?.usuarios || [];
+    const radarMap = new Map(baseRadar.map((user) => [String(user.user_id ?? user.nombre), user]));
 
-    if (todosUsuariosD2.length === 0 && baseRadar.length === 0) return [];
+    if (usuarios.length === 0 && baseRadar.length === 0) return [];
 
-    // Mapeo indexado de los usuarios que ya tienen cálculo de radar en backend
-    const radarMap = new Map();
-    baseRadar.forEach((u) => {
-      const key = String(u.user_id ?? u.nombre);
-      radarMap.set(key, u);
-    });
-
-    // Mapear cada usuario del sistema a sus 6 dimensiones normalizadas
-    const listaCompleta = todosUsuariosD2.map((d2User) => {
+    const listaCompleta = usuarios.map((d2User) => {
       const key = String(d2User.user_id ?? d2User.nombre);
       const enRadar = radarMap.get(key);
       if (enRadar) {
@@ -89,8 +222,7 @@ export default function Dashboard2Usuarios() {
         };
       }
 
-      // Si no estaba en el cálculo inicial, sintetizar sus 6 dimensiones dinámicamente
-      const n = d2User.n_eventos || 1;
+      const n = Number(d2User.n_eventos) || 1;
       return {
         user_id: d2User.user_id,
         nombre: d2User.nombre,
@@ -108,132 +240,176 @@ export default function Dashboard2Usuarios() {
       };
     });
 
-    // Agregar cualquier perfil de radar que no estuviera en la tabla de usuarios
-    baseRadar.forEach((rUser) => {
-      const key = String(rUser.user_id ?? rUser.nombre);
-      const existe = listaCompleta.some((u) => String(u.user_id ?? u.nombre) === key);
-      if (!existe) {
-        listaCompleta.push(rUser);
+    baseRadar.forEach((radarUser) => {
+      const key = String(radarUser.user_id ?? radarUser.nombre);
+      if (!listaCompleta.some((user) => String(user.user_id ?? user.nombre) === key)) {
+        listaCompleta.push(radarUser);
       }
     });
 
-    // Ordenar de mayor a menor riesgo por defecto para facilitar el análisis
-    listaCompleta.sort((a, b) => (b.score_riesgo || 0) - (a.score_riesgo || 0));
-
-    return listaCompleta;
-  }, [d5Q.data?.radar_usuarios, data?.usuarios]);
+    return listaCompleta.sort((a, b) => (b.score_riesgo || 0) - (a.score_riesgo || 0));
+  }, [d5Q.data?.radar_usuarios, usuarios]);
 
   return (
-    <div className={styles.page}>
-      <h1 style={{ marginBottom: "25px" }}>Comportamiento por Usuario</h1>
-      {loading && (
-        <div className={styles.overlay}>
-          <div className={styles.spinner} />
-          <p>Cargando...</p>
+    <main className={styles.page}>
+      <header className={styles.pageHeader}>
+        <p className={styles.eyebrow}>Análisis de actividad</p>
+        <h1>Comportamiento por usuario</h1>
+        <p className={styles.subtitle}>
+          Revisa patrones de uso, identifica actividad fuera de lo habitual y consulta la trazabilidad de cada perfil.
+        </p>
+      </header>
+
+      {d2Q.isLoading && !data && (
+        <div className={styles.loadingState} role="status" aria-live="polite">
+          <span className={styles.spinner} aria-hidden="true" />
+          <div>
+            <strong>Cargando perfiles</strong>
+            <span>Estamos preparando los indicadores y rankings de actividad.</span>
+          </div>
         </div>
       )}
 
-      {!hasData && !loading && (
+      {d2Q.isError && !hasData && !d2Q.isLoading && (
+        <div className={styles.emptyState} role="alert">
+          <span className={styles.emptyIcon} aria-hidden="true">!</span>
+          <h2>No se pudo cargar el análisis</h2>
+          <p>Revisa la conexión e inténtalo nuevamente.</p>
+          <button type="button" className={styles.retryButton} onClick={() => d2Q.refetch()}>
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {!d2Q.isLoading && !d2Q.isError && !hasData && (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>👤</div>
-          <p>
-            No hay datos. Ve a{" "}
-            <Link to="/carga_eventos" className={styles.link}>
-              Cargar CSV
-            </Link>{" "}
-            primero.
-          </p>
+          <span className={styles.emptyIcon} aria-hidden="true"><FaUsers /></span>
+          <h2>Aún no hay perfiles para mostrar</h2>
+          <p>Carga un archivo de eventos para analizar la actividad por usuario.</p>
+          <Link to="/carga_eventos" className={styles.emptyLink}>Ir a cargar eventos</Link>
         </div>
       )}
 
       {hasData && (
         <>
-          {data.rankings && (
-            <div className={styles.chartsGrid}>
-              {RANKINGS.map(({ key, title }) => {
-                const consulta = consultasRanking[key];
-                const ranking = consulta.data
-                  ? (consulta.data.rankings?.[key] ?? [])
-                  : (data.rankings[key] ?? []);
-
-                return (
-                  <div key={key} className={styles.chartCard}>
-                    <div className={styles.chartHeader}>
-                      <h3>{title}</h3>
-                      <label className={styles.monthFilter}>
-                        <span className={styles.srOnly}>Filtrar {title} por mes</span>
-                        <select value={mesesRanking[key]} onChange={(event) => cambiarMes(key, event.target.value)}>
-                          {MESES.map((mes) => <option key={mes.value} value={mes.value}>{mes.label}</option>)}
-                        </select>
-                      </label>
-                    </div>
-                    <div className={styles.rankingsList}>
-                      {consulta.isFetching && <p className={styles.rankingStatus}>Actualizando ranking…</p>}
-                      {!consulta.isFetching && ranking.length === 0 && <p className={styles.rankingStatus}>No hay datos para el mes seleccionado.</p>}
-                      {ranking.map((item, i) => {
-                        const isSelected =
-                          selectedUserRadar &&
-                          (selectedUserRadar.user_id === item.user_id ||
-                            selectedUserRadar.nombre === item.nombre);
-                        return (
-                          <div
-                            key={i}
-                            className={`${styles.rankingItem} ${isSelected ? styles.rankingItemActive : ""}`}
-                            onClick={() => handleSelectUser(item)}
-                            title="Haz clic para proyectar su Radar de Riesgo (6 dimensiones)"
-                          >
-                            <span className={styles.rankingName}>
-                              <span>{i + 1}. {item.nombre}</span>
-                              <RoleBadge role={item.rol || item.role} size="small" />
-                            </span>
-                            <span className={styles.rankingValue}>
-                              {typeof item.valor === "number" ? item.valor.toLocaleString() : item.valor}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+          <section className={styles.summarySection} aria-labelledby="usuarios-resumen-title">
+            <div className={styles.sectionIntro}>
+              <div>
+                <h2 id="usuarios-resumen-title">Resumen del conjunto analizado</h2>
+                <p>Indicadores agregados de los perfiles disponibles.</p>
+              </div>
             </div>
+            <div className={styles.kpiGrid}>
+              <CardResumenEventos
+                icon="usuarios"
+                label="Usuarios analizados"
+                value={formatoEntero.format(usuarios.length)}
+                sub="Perfiles incluidos en el análisis"
+              />
+              <CardResumenEventos
+                icon="total"
+                label="Eventos registrados"
+                value={formatoEntero.format(resumen.totalEventos)}
+                sub="Actividad acumulada de los usuarios"
+              />
+              <CardResumenEventos
+                icon="total"
+                label="Volumen transferido"
+                value={`${formatoVolumen.format(resumen.totalMb)} MB`}
+                sub="Suma de los volúmenes por perfil"
+              />
+              <CardResumenEventos
+                icon="anomalos"
+                label="Riesgo alto o crítico"
+                value={formatoEntero.format(resumen.usuariosRiesgo)}
+                sub="Usuarios que requieren revisión"
+              />
+            </div>
+          </section>
+
+          {data.rankings && (
+            <section className={styles.dashboardSection} aria-labelledby="usuarios-rankings-title">
+              <div className={styles.sectionIntro}>
+                <div>
+                  <p className={styles.sectionEyebrow}>Comparación</p>
+                  <h2 id="usuarios-rankings-title">Rankings de actividad</h2>
+                  <p>Filtra cada indicador por mes. Selecciona una persona para abrir su comparación de perfil.</p>
+                </div>
+              </div>
+              <div className={styles.chartsGrid}>
+                {RANKINGS.map((rankingDef) => (
+                  <RankingCard
+                    key={rankingDef.key}
+                    rankingDef={rankingDef}
+                    consulta={
+                      consultasRanking[rankingDef.key] || {
+                        data: null,
+                        isFetching: false,
+                        isError: false,
+                      }
+                    }
+                    baseRanking={data.rankings[rankingDef.key]}
+                    mesesRanking={mesesRanking}
+                    cambiarMes={cambiarMes}
+                    onSelectUser={handleSelectUser}
+                    selectedUser={selectedUserRadar}
+                  />
+                ))}
+              </div>
+            </section>
           )}
 
-          {/* Radar de Riesgo (aparece al seleccionar un usuario en los rankings) */}
           {selectedUserRadar && (
-            <div ref={radarRef} className={styles.radarCard}>
+            <section ref={radarRef} className={styles.radarCard} aria-labelledby="usuarios-radar-title">
               <div className={styles.radarHeader}>
-                <div>
-                  <h3 className={styles.radarTitle}>
-                    <span>🎯</span> Radar de Riesgo (6 dimensiones): <strong>{selectedUserRadar.nombre}</strong>
-                  </h3>
-                
+                <div className={styles.radarTitleGroup}>
+                  <span className={styles.radarIcon} aria-hidden="true"><FaChartColumn /></span>
+                  <div>
+                    <p className={styles.sectionEyebrow}>Perfil comparativo</p>
+                    <h2 id="usuarios-radar-title" className={styles.radarTitle}>
+                      Radar de riesgo
+                    </h2>
+                    <p className={styles.radarSubtitle}>
+                      <strong>{selectedUserRadar.nombre}</strong>
+                      {(selectedUserRadar.rol || selectedUserRadar.role) && (
+                        <RoleBadge role={selectedUserRadar.rol || selectedUserRadar.role} size="small" />
+                      )}
+                      <span>Seis dimensiones normalizadas de 0 a 100</span>
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   className={styles.closeRadarBtn}
                   onClick={() => setSelectedUserRadar(null)}
-                  title="Cerrar Radar de Riesgo"
+                  aria-label="Cerrar comparación de riesgo"
                 >
-                  ✕ Ocultar Radar
+                  <FaXmark aria-hidden="true" />
+                  <span>Cerrar radar</span>
                 </button>
               </div>
-            
               <RadarRiesgo
                 usuarios={radarUsuarios}
                 activeUserId={selectedUserRadar.user_id || selectedUserRadar.nombre}
               />
-            </div>
+            </section>
           )}
 
-          <div className={styles.chartCard}>
-            <h3>
-              <span>📋</span> Tabla de Usuarios (clic en &quot;Ver&quot; para drill-down cronológico)
-            </h3>
-            <TablaUsuarios usuarios={data.usuarios} />
-          </div>
+          <section className={styles.tableSection} aria-labelledby="usuarios-tabla-title">
+            <div className={styles.sectionIntro}>
+              <div>
+                <p className={styles.sectionEyebrow}>Detalle</p>
+                <h2 id="usuarios-tabla-title">Todos los usuarios</h2>
+                <p>Filtra por rol, revisa los indicadores y abre la cronología individual.</p>
+              </div>
+              <span className={styles.totalBadge}>{formatoEntero.format(usuarios.length)} perfiles</span>
+            </div>
+            <div className={styles.tableCard}>
+              <TablaUsuarios usuarios={usuarios} />
+            </div>
+          </section>
         </>
       )}
-    </div>
+    </main>
   );
 }
