@@ -255,9 +255,7 @@ export default function Dashboard2Usuarios() {
       <header className={styles.pageHeader}>
         <p className={styles.eyebrow}>Análisis de actividad</p>
         <h1>Comportamiento por usuario</h1>
-        <p className={styles.subtitle}>
-          Revisa patrones de uso, identifica actividad fuera de lo habitual y consulta la trazabilidad de cada perfil.
-        </p>
+       
       </header>
 
       {d2Q.isLoading && !data && (
@@ -294,10 +292,7 @@ export default function Dashboard2Usuarios() {
         <>
           <section className={styles.summarySection} aria-labelledby="usuarios-resumen-title">
             <div className={styles.sectionIntro}>
-              <div>
-                <h2 id="usuarios-resumen-title">Resumen del conjunto analizado</h2>
-                <p>Indicadores agregados de los perfiles disponibles.</p>
-              </div>
+            
             </div>
             <div className={styles.kpiGrid}>
               <CardResumenEventos
@@ -333,7 +328,7 @@ export default function Dashboard2Usuarios() {
                 <div>
                   <p className={styles.sectionEyebrow}>Comparación</p>
                   <h2 id="usuarios-rankings-title">Rankings de actividad</h2>
-                  <p>Filtra cada indicador por mes. Selecciona una persona para abrir su comparación de perfil.</p>
+                  
                 </div>
               </div>
               <div className={styles.chartsGrid}>

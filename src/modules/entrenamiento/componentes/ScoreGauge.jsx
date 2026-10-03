@@ -44,15 +44,21 @@ export default function ScoreGauge({ incidente }) {
 
   // Misma regla que correlacion_engine.py: con ambas fuentes el puntaje pesa 45% trazabilidad y
   // 55% actividad; si falta una, se usa completa la que está disponible.
-  const tieneTraza = scoreTraza > 0;
-  const tieneEv = scoreEv > 0;
+  const modoFusion = incidente.modo_fusion;
+  const tieneTraza = modoFusion
+    ? modoFusion === "fusion" || modoFusion === "solo_trazabilidad"
+    : scoreTraza > 0;
+  const tieneEv = modoFusion
+    ? modoFusion === "fusion" || modoFusion === "solo_eventos"
+    : scoreEv > 0;
   const fusionCompleta = tieneTraza && tieneEv;
+  const soloEventos = !tieneTraza && tieneEv;
   const pesoTraza = fusionCompleta ? "45%" : tieneTraza ? "100%" : null;
   const pesoEv = fusionCompleta ? "55%" : tieneEv ? "100%" : null;
   const descripcionFusion = fusionCompleta
     ? "El puntaje combina la trazabilidad del documento (45%) y la actividad del usuario (55%), junto con factores del caso."
     : tieneEv
-    ? "Este documento no tiene trazabilidad registrada: el puntaje usa solo la actividad del usuario, junto con factores del caso."
+    ? "Sin trazabilidad evaluada: el puntaje usa el 100% del score final de comportamiento de usuario, sin aplicar multiplicadores adicionales."
     : tieneTraza
     ? "Este caso no tiene actividad de usuario registrada: el puntaje usa solo la trazabilidad del documento, junto con factores del caso."
     : "No hay puntajes de trazabilidad ni de actividad registrados.";
@@ -106,7 +112,7 @@ export default function ScoreGauge({ incidente }) {
               color: colors.text,
             }}
           >
-            <span className={styles.gaugeVal}>{(scoreCorr * 100).toFixed(0)}%</span>
+            <span className={styles.gaugeVal}>{(scoreCorr * 100).toFixed(1)}%</span>
             <span className={styles.gaugeMax}>{scoreCorr.toFixed(4)} / 1.0</span>
           </div>
 
@@ -190,7 +196,14 @@ export default function ScoreGauge({ incidente }) {
         </div>
       </div>
 
-      {/* Factores Contextuales Multiplicadores */}
+      {/* UEBA ya incluye los factores del evento; solo se ajustan al correlacionar. */}
+      {soloEventos ? (
+        <div className={styles.factorsSection}>
+          <span className={`${styles.factorBadge} ${styles.factorNeutral}`}>
+            Factores del evento incluidos en el score de comportamiento de usuario
+          </span>
+        </div>
+      ) : (
       <div className={styles.factorsSection}>
         <div className={styles.factorsTitle}>Factores que elevan el riesgo</div>
         <div className={styles.factorsList}>
@@ -231,6 +244,7 @@ export default function ScoreGauge({ incidente }) {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

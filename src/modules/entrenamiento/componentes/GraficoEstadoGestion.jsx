@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Cell,
+  LabelList,
 } from "recharts";
 import { FaShieldHalved } from "react-icons/fa6";
 
@@ -44,24 +45,34 @@ const ORDEN_ESTADOS = [
   "falso_positivo",
 ];
 
-const CustomTooltip = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload, total }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const pct = total > 0 ? Math.round((data.cantidad / total) * 100) : 0;
     return (
       <div className={styles.tooltip}>
         <div className={styles.tooltipHeader} style={{ color: data.color }}>
+          <div className={styles.tooltipHeaderLeft}>
+            <span
+              className={styles.tooltipDot}
+              style={{ backgroundColor: data.color }}
+            />
+            {data.name}
+          </div>
           <span
-            className={styles.tooltipDot}
-            style={{ backgroundColor: data.color }}
-          ></span>
-          {data.name}
+            className={styles.tooltipBadge}
+            style={{ backgroundColor: `${data.color}15`, color: data.color }}
+          >
+            {pct}%
+          </span>
         </div>
         <div className={styles.tooltipBody}>
           <div className={styles.tooltipStat}>
-            <span className={styles.tooltipLabel}>Volumen:</span>
-            <span className={styles.tooltipValue}>{data.cantidad} incidentes</span>
+            <span className={styles.tooltipLabel}>Total incidentes:</span>
+            <span className={styles.tooltipValue}>{data.cantidad}</span>
           </div>
           <p className={styles.tooltipDesc}>{data.descripcion}</p>
+          <div className={styles.tooltipHint}>Clic para filtrar tabla por este estado</div>
         </div>
       </div>
     );
@@ -91,114 +102,147 @@ export default function GraficoEstadoGestion({
     });
   }, [resumen]);
 
+  const totalIncidentes = useMemo(() => {
+    return chartData.reduce((acc, curr) => acc + curr.cantidad, 0);
+  }, [chartData]);
+
   const handleBarClick = (data) => {
     if (!data || !data.key) return;
 
-    if (filtros.estado === data.key) {
+    if (filtros?.estado === data.key) {
       setFiltros((prev) => ({ ...prev, estado: "" }));
     } else {
       setFiltros((prev) => ({ ...prev, estado: data.key, nivel_riesgo: "" }));
     }
-    setPage(1);
+    if (setPage) setPage(1);
   };
 
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <div>
-          <h3 className={styles.title}>
-            <FaShieldHalved style={{ color: "#4f46e5" }} />
-            Estado de Gestión de Incidentes
-          </h3>
-        
+        <div className={styles.titleGroup}>
+          <div className={styles.headerTitleRow}>
+            <span className={styles.iconBadge}>
+              <FaShieldHalved />
+            </span>
+            <h3 className={styles.title}>Estado de Gestión de Incidentes</h3>
+          </div>
+          <p className={styles.subtitle}>
+            Ciclo de vida y respuesta de incidentes en el SOC
+          </p>
         </div>
-        
+
         <div className={styles.controlsGroup}>
           <select
             className={styles.monthSelect}
-            value={filtros.mes || ""}
+            value={filtros?.mes || ""}
             onChange={(e) => {
               setFiltros((prev) => ({ ...prev, mes: e.target.value }));
-              setPage(1);
+              if (setPage) setPage(1);
             }}
             title="Filtrar incidentes por mes"
           >
-            <option value="">Todos los meses</option>
+            <option value="">Todo el año</option>
             {resumen?.evolucion_mensual
               ?.filter((m) => m.total > 0)
               .map((m) => (
                 <option key={m.key} value={m.key}>
-                  {m.mes_completo}
+                  {m.mes_completo || m.key}
                 </option>
               ))}
           </select>
-
-          {filtros.estado && (
-            <span className={styles.activeFilter}>
-              Filtro: {NOMBRES_ESTADO[filtros.estado] || filtros.estado}
-              <button
-                onClick={() => {
-                  setFiltros((prev) => ({ ...prev, estado: "" }));
-                  setPage(1);
-                }}
-                title="Quitar filtro"
-              >
-                ×
-              </button>
-            </span>
-          )}
         </div>
       </div>
 
       <div className={styles.chartContainer}>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={240}>
           <BarChart
             data={chartData}
             layout="vertical"
-            margin={{ top: 10, right: 30, left: 30, bottom: 5 }}
+            margin={{ top: 8, right: 35, left: 15, bottom: 5 }}
           >
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
             <XAxis
               type="number"
               stroke="#94a3b8"
-              fontSize={12}
+              fontSize={11}
               tickLine={false}
-              axisLine={false}
+              axisLine={{ stroke: "#e2e8f0" }}
             />
             <YAxis
               dataKey="name"
               type="category"
-              stroke="#64748b"
-              fontSize={13}
+              stroke="#475569"
+              fontSize={12}
               fontWeight={600}
               tickLine={false}
               axisLine={false}
-              width={130}
+              width={125}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f1f5f9" }} />
+            <Tooltip
+              content={<CustomTooltip total={totalIncidentes} />}
+              cursor={{ fill: "#f8fafc" }}
+            />
             <Bar
               dataKey="cantidad"
               isAnimationActive={!tiempoReal}
-              radius={[0, 4, 4, 0]}
-              barSize={24}
+              radius={[0, 6, 6, 0]}
+              barSize={20}
               onClick={handleBarClick}
               cursor="pointer"
             >
+              <LabelList
+                dataKey="cantidad"
+                position="right"
+                fill="#334155"
+                fontSize={12}
+                fontWeight={700}
+                offset={8}
+                formatter={(val) => (val > 0 ? val : "")}
+              />
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={entry.color}
-                  stroke={filtros.estado === entry.key ? "#1e293b" : "transparent"}
-                  strokeWidth={filtros.estado === entry.key ? 2 : 0}
+                  stroke={filtros?.estado === entry.key ? "#0f172a" : "transparent"}
+                  strokeWidth={filtros?.estado === entry.key ? 2 : 0}
                   style={{
-                    opacity: filtros.estado && filtros.estado !== entry.key ? 0.4 : 1,
-                    transition: "all 0.2s ease"
+                    opacity: filtros?.estado && filtros.estado !== entry.key ? 0.35 : 1,
+                    transition: "all 0.2s ease",
                   }}
                 />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Footer consistente con GraficoTipoEvento */}
+      <div className={styles.cardFooter}>
+        <div className={styles.footerInfo}>
+          <span>
+            Total: <strong>{totalIncidentes.toLocaleString()}</strong> incidentes
+          </span>
+        </div>
+
+        <div className={styles.footerFilters}>
+          {filtros?.estado && (
+            <span className={styles.filterBadgeActive}>
+              Filtro: {NOMBRES_ESTADO[filtros.estado] || filtros.estado}
+              <button
+                type="button"
+                className={styles.btnClearFilter}
+                onClick={() => {
+                  setFiltros((prev) => ({ ...prev, estado: "" }));
+                  if (setPage) setPage(1);
+                }}
+                title="Quitar filtro de estado"
+              >
+                ×
+              </button>
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

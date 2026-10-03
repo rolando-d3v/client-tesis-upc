@@ -112,13 +112,19 @@ export default function TablaIncidentesMotor({
 
     // Aplicar filtros en memoria para los elementos en vivo y combinados
     return listaCompleta.filter((inc) => {
-      if (filtros.nivel_riesgo && String(inc.nivel_riesgo).toLowerCase() !== String(filtros.nivel_riesgo).toLowerCase()) {
+      if (
+        filtros.nivel_riesgo &&
+        String(inc.nivel_riesgo).toLowerCase() !== String(filtros.nivel_riesgo).toLowerCase()
+      ) {
         return false;
       }
       if (filtros.estado && String(inc.estado).toLowerCase() !== String(filtros.estado).toLowerCase()) {
         return false;
       }
-      if (filtros.clasificacion && String(inc.clasificacion_doc).toUpperCase() !== String(filtros.clasificacion).toUpperCase()) {
+      if (
+        filtros.clasificacion &&
+        String(inc.clasificacion_doc).toUpperCase() !== String(filtros.clasificacion).toUpperCase()
+      ) {
         return false;
       }
       if (filtros.busqueda) {
@@ -186,11 +192,11 @@ export default function TablaIncidentesMotor({
 
   const hasActiveFilters = Boolean(
     filtros.busqueda ||
-      filtros.nivel_riesgo ||
-      filtros.estado ||
-      filtros.clasificacion ||
-      filtros.tipo_evento ||
-      filtros.mes
+    filtros.nivel_riesgo ||
+    filtros.estado ||
+    filtros.clasificacion ||
+    filtros.tipo_evento ||
+    filtros.mes,
   );
 
   // Columnas TanStack Table
@@ -199,30 +205,25 @@ export default function TablaIncidentesMotor({
       {
         id: "id_fecha",
         accessorKey: "id",
-        header: "ID / Detección",
-        meta: { align: "left", width: "19%" },
+        header: "#N",
+        meta: { align: "left", width: "10%" },
         cell: ({ row }) => {
           const inc = row.original;
           const dt = inc.fecha_deteccion ? dayjs(inc.fecha_deteccion) : null;
+          const numeroRegistro = (page - 1) * pageSize + row.index + 1;
           return (
             <div className={styles.idFechaCell}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                <span className={styles.idBadge}>#{inc.id}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <span className={styles.idBadge} title={`Registro #${numeroRegistro} (ID: ${inc.id})`}>
+                  {numeroRegistro}
+                </span>
+
                 {inc.es_en_vivo && (
                   <span className={liveStyles.liveBadge} title="Detectado en vivo en la simulación activa">
                     <span className={liveStyles.liveDot} /> En Vivo
                   </span>
                 )}
               </div>
-              {dt ? (
-                <span className={styles.fechaInline}>
-                  {dt.format("DD/MM/YY")} <FaClock className={styles.fechaClockIcon} /> {dt.format("HH:mm:ss")}
-                </span>
-              ) : (
-                <span className={styles.fechaInline} style={{ color: "#9ca3af" }}>
-                  N/A
-                </span>
-              )}
             </div>
           );
         },
@@ -273,20 +274,40 @@ export default function TablaIncidentesMotor({
             >
               <div className={styles.userInfoCompact} style={{ width: "100%" }}>
                 <div className={styles.userMetaLine}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", marginRight: "0.4rem", flexWrap: "wrap" }}>
-                  {isBloqueado ? (
-                    <span className={liveStyles.badgeBloqueado} title="Cuenta bloqueada y neutralizada en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)">
-                      <FaBan /> Cuenta Bloqueada
-                    </span>
-                  ) : (
-                    <span style={{ fontSize: "0.72rem", color: "#10b981", display: "inline-flex", alignItems: "center", gap: 3 }}>
-                      ● Cuenta Activa
-                    </span>
-                  )}
-                
-                </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.45rem",
+                      marginRight: "0.4rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {isBloqueado ? (
+                      <span
+                        className={liveStyles.badgeBloqueado}
+                        title="Cuenta bloqueada y neutralizada en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
+                      >
+                        <FaBan /> User Bloqueado
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: "0.72rem",
+                          color: "#10b981",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 3,
+                        }}
+                      >
+                        ● Cuenta Activa
+                      </span>
+                    )}
+                  </div>
                   <RoleBadge role={inc.name_role || inc.rol || inc.role} size="small" />
-                  <div style={{ display: "flex", flexDirection: "row", gap: 5, alignItems: "center", flexWrap: "wrap" }}>
+                  <div
+                    style={{ display: "flex", flexDirection: "row", gap: 5, alignItems: "center", flexWrap: "wrap" }}
+                  >
                     <span className={styles.userName} title={inc.nombre_usuario}>
                       {inc.nombre_usuario || "Desconocido"}
                     </span>
@@ -318,7 +339,8 @@ export default function TablaIncidentesMotor({
               <div className={styles.scoreTopRow}>
                 <span className={styles.scoreVal}>{scorePercent}%</span>
                 <div className={styles.scoreSubLine}>
-                  T:{Math.round(Number(inc.score_trazabilidad || 0) * 100)}% · E:{Math.round(Number(inc.score_eventos || 0) * 100)}%
+                  T:{Math.round(Number(inc.score_trazabilidad || 0) * 100)}% · E:
+                  {Math.round(Number(inc.score_eventos || 0) * 100)}%
                   {inc.total_pasos_storyline > 0 && ` · ${inc.total_pasos_storyline}p`}
                 </div>
                 <span className={`${styles.badgeRiesgo} ${getRiesgoClass(inc.nivel_riesgo)}`}>
@@ -336,20 +358,25 @@ export default function TablaIncidentesMotor({
         id: "estado",
         accessorKey: "estado",
         header: "Estado",
-        meta: { align: "center", width: "10%" },
+        meta: { align: "center", width: "13%" },
         cell: ({ row }) => {
           const inc = row.original;
           const estado = inc.estado || "abierto";
-          const esCritico = inc.es_critico_auto || inc.nivel_riesgo === "critico" || Number(inc.score_correlacion || 0) >= 0.75;
+          const esCritico =
+            inc.es_critico_auto || inc.nivel_riesgo === "critico" || Number(inc.score_correlacion || 0) >= 0.75;
           return (
             <div className={styles.estadoAccionCell}>
-              <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
-                <span className={styles.statusDot} />
-                {estado.replace(/_/g, " ")}
-              </span>
-              {esCritico && estado === "contenido" && (
-                <span className={liveStyles.badgeContenidoTag} title="Contenido preventivamente en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)">
+              {esCritico && estado === "contenido" ? (
+                <span
+                  className={liveStyles.badgeContenidoTag}
+                  title="Contenido preventivamente en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
+                >
                   <FaShieldHalved /> Auto-Contenido
+                </span>
+              ) : (
+                <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
+                  <span className={styles.statusDot} />
+                  {estado.replace(/_/g, " ")}
                 </span>
               )}
             </div>
@@ -400,7 +427,7 @@ export default function TablaIncidentesMotor({
         },
       },
     ],
-    [expandedRows, detalleBasePath]
+    [page, pageSize, expandedRows, detalleBasePath],
   );
 
   const table = useReactTable({
@@ -453,12 +480,7 @@ export default function TablaIncidentesMotor({
             onChange={handleSearchChange}
           />
           {filtros.busqueda && (
-            <button
-              type="button"
-              className={styles.searchClearBtn}
-              onClick={handleClearSearch}
-              title="Borrar búsqueda"
-            >
+            <button type="button" className={styles.searchClearBtn} onClick={handleClearSearch} title="Borrar búsqueda">
               <FaXmark />
             </button>
           )}
@@ -666,7 +688,8 @@ export default function TablaIncidentesMotor({
                                 <div className={styles.telemetryLabel}>Score Trazabilidad Doc</div>
                                 <div className={styles.telemetryValue}>{scoreTrazaPct}%</div>
                                 <div className={styles.telemetrySub}>
-                                  {inc.total_motivos_traza || inc.motivos_trazabilidad?.length || 0} anomalías documentales
+                                  {inc.total_motivos_traza || inc.motivos_trazabilidad?.length || 0} anomalías
+                                  documentales
                                 </div>
                               </div>
 
@@ -688,15 +711,30 @@ export default function TablaIncidentesMotor({
 
                               <div className={styles.telemetryCard}>
                                 <div className={styles.telemetryLabel}>Estado SOC & Cuenta</div>
-                                <div className={styles.telemetryValue} style={{ fontSize: "0.86rem", display: "flex", alignItems: "center", gap: 5, marginTop: "0.2rem" }}>
+                                <div
+                                  className={styles.telemetryValue}
+                                  style={{
+                                    fontSize: "0.86rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 5,
+                                    marginTop: "0.2rem",
+                                  }}
+                                >
                                   {inc.cuenta_bloqueada ? (
-                                    <span style={{ color: "#dc2626", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                    <span
+                                      style={{
+                                        color: "#dc2626",
+                                        fontWeight: 700,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 4,
+                                      }}
+                                    >
                                       <FaBan /> Cuenta Bloqueada
                                     </span>
                                   ) : (
-                                    <span style={{ color: "#059669", fontWeight: 600 }}>
-                                      ● Cuenta Activa
-                                    </span>
+                                    <span style={{ color: "#059669", fontWeight: 600 }}>● Cuenta Activa</span>
                                   )}
                                 </div>
                                 <div className={styles.telemetrySub}>
@@ -726,7 +764,8 @@ export default function TablaIncidentesMotor({
                   <FaTriangleExclamation className={styles.emptyIcon} />
                   <div className={styles.emptyTitle}>No se encontraron incidentes</div>
                   <p className={styles.emptyText}>
-                    No hay incidentes que coincidan con los filtros aplicados o aún no se han registrado eventos anómalos en la simulación.
+                    No hay incidentes que coincidan con los filtros aplicados o aún no se han registrado eventos
+                    anómalos en la simulación.
                   </p>
                   {hasActiveFilters && (
                     <button type="button" className={styles.btnResetFilters} onClick={handleResetFilters}>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import styles from "./GraficoTipoEvento.module.css";
 import { toast } from "sonner";
+import { FaBolt } from "react-icons/fa6";
 
 // Meses del año para el selector
 const MESES = [
@@ -24,7 +25,7 @@ const DEFAULT_EVENT_TYPES = [
   {
     id: "VISTA",
     nombre: "VISTA",
-    sub: "Lectura / visualización de documento",
+
     cantidad: 0,
     color: "#64748b",
     peso_accion: 1.0,
@@ -33,7 +34,7 @@ const DEFAULT_EVENT_TYPES = [
   {
     id: "DESCARGAR",
     nombre: "DESCARGAR",
-    sub: "Descarga y tenencia de copia local",
+
     cantidad: 0,
     color: "#eab308",
     peso_accion: 2.0,
@@ -42,7 +43,7 @@ const DEFAULT_EVENT_TYPES = [
   {
     id: "EDITAR",
     nombre: "EDITAR",
-    sub: "Modificación o alteración de documento",
+
     cantidad: 0,
     color: "#3b82f6",
     peso_accion: 2.0,
@@ -51,7 +52,7 @@ const DEFAULT_EVENT_TYPES = [
   {
     id: "ELIMINAR",
     nombre: "ELIMINAR",
-    sub: "Destrucción / sabotaje de registro (Riesgo máximo)",
+
     cantidad: 0,
     color: "#ef4444",
     peso_accion: 3.0,
@@ -60,7 +61,7 @@ const DEFAULT_EVENT_TYPES = [
   {
     id: "GUARDAR_COPIA",
     nombre: "GUARDAR_COPIA",
-    sub: "Duplicación de archivo / riesgo de fuga",
+
     cantidad: 0,
     color: "#f97316",
     peso_accion: 2.5,
@@ -150,6 +151,11 @@ export default function GraficoTipoEvento({
     return Math.max(...items.map((i) => i.cantidad), 1);
   }, [items]);
 
+  // Total acumulado de eventos en el período
+  const totalEventos = useMemo(() => {
+    return items.reduce((acc, curr) => acc + curr.cantidad, 0);
+  }, [items]);
+
   // Manejo de clic para filtrar por acción de evento
   const handleEventClick = (item) => {
     if (!setFiltros) return;
@@ -172,168 +178,90 @@ export default function GraficoTipoEvento({
     }
   };
 
-  const getBadgeVariantClass = (id) => {
-    switch (id?.toUpperCase()) {
-      case "VISTA":
-        return styles.badgeVista;
-      case "DESCARGAR":
-        return styles.badgeDescargar;
-      case "EDITAR":
-        return styles.badgeEditar;
-      case "ELIMINAR":
-        return styles.badgeEliminar;
-      case "GUARDAR_COPIA":
-        return styles.badgeGuardarCopia;
-      default:
-        return "";
-    }
+  const etiquetas = {
+    VISTA: "Visualización",
+    DESCARGAR: "Descarga",
+    EDITAR: "Edición",
+    ELIMINAR: "Eliminación",
+    GUARDAR_COPIA: "Guardar copia",
   };
-
   const nombreMesActual =
     MESES.find((m) => m.id === mesSeleccionado)?.label || "Todo el año";
 
   return (
-    <div className={styles.card}>
-      {/* Cabecera del gráfico con selector de meses */}
+    <section className={styles.card} aria-label="Tipos de evento y acciones">
       <div className={styles.header}>
         <div className={styles.titleGroup}>
-          <div className={styles.headerTitleRow}>
-            <span className={styles.columnHeaderBadge}>Evento</span>
-            <h3 className={styles.title}>Tipos de Evento</h3>
-          </div>
-          <p className={styles.subtitle}>
-            {mesSeleccionado === "todos"
-              ? "Telemetría y acciones UEBA de usuarios (Todo el año)"
-              : `Telemetría y acciones UEBA registradas en ${nombreMesActual}`}
-          </p>
+          <FaBolt className={styles.iconBadge} aria-hidden="true" />
+          <h3 className={styles.title}>Tipos de evento</h3>
+          <span className={styles.total} title={`${totalEventos.toLocaleString()} eventos · ${nombreMesActual}`}>
+            <strong>{totalEventos.toLocaleString()}</strong> eventos
+          </span>
         </div>
-
-        <div>
-          {/* Selector de meses de Enero a Diciembre */}
+        <div className={styles.controls}>
+          {setFiltros && (filtros.tipo_evento || filtros.busqueda) && (
+            <button
+              type="button"
+              className={styles.btnClearFilter}
+              onClick={() => {
+                setFiltros((prev) => ({ ...prev, tipo_evento: "", busqueda: "" }));
+                if (setPage) setPage(1);
+              }}
+              aria-label="Quitar filtro de evento"
+              title={`Quitar filtro: ${filtros.tipo_evento || filtros.busqueda}`}
+            >
+              ×
+            </button>
+          )}
           <select
             className={styles.periodSelect}
             value={mesSeleccionado}
             onChange={handleMesChange}
-            title="Filtrar telemetría de eventos por mes (Enero a Diciembre)"
+            aria-label="Filtrar eventos por mes"
           >
             {MESES.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
+              <option key={m.id} value={m.id}>{m.label}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Lista de barras horizontales por cada tipo de evento */}
       <div className={styles.channelList}>
         {items.map((item) => {
-          // Si cantidad es 0, barra en 0; de lo contrario escala proporcional
-          const pct =
-            item.cantidad === 0
-              ? 0
-              : Math.min(
-                  100,
-                  Math.max(
-                    12,
-                    Math.round((Math.sqrt(item.cantidad) / Math.sqrt(maxVal)) * 100)
-                  )
-                );
+          const pct = Math.min(100, Math.max(0, (item.cantidad / maxVal) * 100));
           const tipoFiltro = item.id === "DESCARGAR" ? "DESCARGA" : item.id;
           const isActive =
-            filtros.tipo_evento?.toUpperCase() === tipoFiltro.toUpperCase() ||
-            filtros.tipo_evento?.toUpperCase() === item.id.toUpperCase() ||
-            filtros.busqueda?.toUpperCase() === item.nombre.toUpperCase();
+            filtros.tipo_evento?.toUpperCase() === tipoFiltro ||
+            filtros.tipo_evento?.toUpperCase() === item.id ||
+            filtros.busqueda?.toUpperCase() === item.nombre;
 
           return (
-            <div
+            <button
               key={item.id}
-              className={`${styles.channelRow} ${
-                isActive ? styles.channelRowActive : ""
-              }`}
+              type="button"
+              className={`${styles.channelRow} ${isActive ? styles.channelRowActive : ""}`}
               onClick={() => handleEventClick(item)}
-              title={`Clic para filtrar incidentes por ${item.nombre} (${item.cantidad.toLocaleString()} registros) — ${item.sub}`}
+              disabled={!setFiltros}
+              aria-pressed={isActive}
+              aria-label={`${item.nombre}: ${item.cantidad.toLocaleString()} eventos`}
+              title={`${item.nombre}: ${item.cantidad.toLocaleString()} eventos${item.sub ? ` · ${item.sub}` : ""}`}
             >
-              {/* Badge idéntico a la imagen de referencia */}
-              <div className={styles.badgeCol}>
-                <span
-                  className={`${styles.eventBadge} ${getBadgeVariantClass(
-                    item.id
-                  )}`}
-                >
-                  {item.nombre}
+              <span className={styles.channelInfo}>
+                <span className={styles.eventName}>
+                  <span className={styles.colorDot} style={{ backgroundColor: item.color }} />
+                  {etiquetas[item.id]}
                 </span>
-               
-              </div>
-
-              {/* Barra de progreso interactiva */}
-              <div className={styles.barTrack}>
-                <div
-                  className={styles.barFill}
-                  style={{
-                    width: `${pct}%`,
-                    backgroundColor: item.color,
-                    color: item.color,
-                    opacity: item.cantidad === 0 ? 0.2 : 1,
-                  }}
-                />
-              </div>
-
-              {/* Valor numérico de eventos */}
-              <span
-                className={styles.channelValue}
-                style={{ opacity: item.cantidad === 0 ? 0.5 : 1 }}
-                title={`${item.cantidad.toLocaleString()} eventos`}
-              >
-                {item.cantidad.toLocaleString()}
+                <strong className={styles.channelValue}>
+                  {item.cantidad.toLocaleString()} <span className={styles.channelUnit}>eventos</span>
+                </strong>
               </span>
-            </div>
+              <span className={styles.barTrack} aria-hidden="true">
+                <span className={styles.barFill} style={{ width: `${pct}%`, backgroundColor: item.color }} />
+              </span>
+            </button>
           );
         })}
       </div>
-
-      {/* Pie de tarjeta con indicador de filtros activos */}
-      <div className={styles.cardFooter}>
-        <span className={styles.footerNotice}>
-          {mesSeleccionado !== "todos"
-            ? `Mostrando registros del mes de ${nombreMesActual}`
-            : "Monitoreo forense UEBA & Trazabilidad Documental"}
-        </span>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          {mesSeleccionado !== "todos" && (
-            <span className={styles.filterBadgeActive}>
-              Mes: {nombreMesActual}
-              <button
-                type="button"
-                className={styles.btnClearFilter}
-                onClick={() =>
-                  handleMesChange({ target: { value: "todos" } })
-                }
-                title="Quitar filtro de mes"
-              >
-                (todo)
-              </button>
-            </span>
-          )}
-
-          {(filtros.tipo_evento || filtros.busqueda) && (
-            <span className={styles.filterBadgeActive}>
-              Evento: {filtros.tipo_evento || filtros.busqueda}
-              <button
-                type="button"
-                className={styles.btnClearFilter}
-                onClick={() =>
-                  setFiltros((prev) => ({ ...prev, tipo_evento: "", busqueda: "" }))
-                }
-                title="Quitar filtro de evento"
-              >
-                (quitar)
-              </button>
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }

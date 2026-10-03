@@ -389,8 +389,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(100%, 1100px);
-  max-height: min(88vh, 900px);
+  width: min(100%, 1300px);
+  max-height: min(88vh, 1000px);
   overflow: hidden;
   border: 1px solid #dce4ed;
   border-radius: 0.9rem;

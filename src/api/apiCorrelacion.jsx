@@ -136,6 +136,8 @@ export const useEjecutarCorrelacion = () => {
     mutationFn: postEjecutarCorrelacion,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["incidentes"] });
+      queryClient.invalidateQueries({ queryKey: ["incidente"] });
+      queryClient.invalidateQueries({ queryKey: ["reporte_incidente"] });
       queryClient.invalidateQueries({ queryKey: ["resumen_soc"] });
       queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
     },

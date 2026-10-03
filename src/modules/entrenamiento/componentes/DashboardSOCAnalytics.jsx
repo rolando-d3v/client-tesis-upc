@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import styles from "./DashboardSOCAnalytics.module.css";
+import GraficoTipoEvento from "./GraficoTipoEvento";
 import {
   ResponsiveContainer,
   XAxis,
@@ -429,92 +430,14 @@ export default function DashboardSOCAnalytics({
               )}
             </div>
 
-            <div className={`${styles.card} ${styles.topChartCard}`}>
-              <div className={styles.cardHeader}>
-                <div>
-                  <h3 className={styles.cardTitle}>
-                    <FaShieldHalved style={{ color: "#2563eb" }} />
-                    Incidentes por estado
-                  </h3>
-                  <p className={styles.cardSubtitle}>Casos según su etapa de atención. Selecciona una barra para filtrar.</p>
-                </div>
-                {filtros.estado && (
-                  <span className={styles.activeFilterBadge}>
-                    {NOMBRES_ESTADO[filtros.estado] || filtros.estado}
-                    <button
-                      type="button"
-                      onClick={() => handleEstadoClick(filtros.estado)}
-                      title="Quitar filtro de estado"
-                      aria-label="Quitar filtro de estado"
-                    >
-                      ×
-                    </button>
-                  </span>
-                )}
-              </div>
 
-              {estadoData.length > 0 ? (
-                <div className={styles.chartBarWrapper}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={estadoData}
-                      layout="vertical"
-                      margin={{ top: 6, right: 28, bottom: 6, left: 0 }}
-                    >
-                      <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="#e8edf3" />
-                      <XAxis
-                        type="number"
-                        allowDecimals={false}
-                        tick={{ fontSize: 10, fill: "#64748b" }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="name"
-                        width={116}
-                        interval={0}
-                        tick={{ fontSize: 10, fill: "#475569", fontWeight: 500 }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <Tooltip
-                        cursor={{ fill: "#f8fafc" }}
-                        formatter={(value) => [`${Number(value).toLocaleString()} incidentes`, "Casos"]}
-                      />
-                      <Bar
-                        dataKey="cantidad"
-                        barSize={20}
-                        isAnimationActive={!tiempoReal}
-                        radius={[0, 5, 5, 0]}
-                        onClick={(entry) => handleEstadoClick(entry.key)}
-                        cursor="pointer"
-                      >
-                        {estadoData.map((entry) => (
-                          <Cell
-                            key={`estado-${entry.key}`}
-                            fill={entry.color}
-                            stroke={filtros.estado === entry.key ? "#0f172a" : "none"}
-                            strokeWidth={filtros.estado === entry.key ? 2 : 0}
-                            opacity={filtros.estado && filtros.estado !== entry.key ? 0.35 : 1}
-                          />
-                        ))}
-                        <LabelList
-                          dataKey="cantidad"
-                          position="right"
-                          formatter={(value) => Number(value).toLocaleString()}
-                          fill="#475569"
-                          fontSize={10}
-                          fontWeight={600}
-                        />
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className={styles.emptyChartState}>No hay incidentes con estado de gestión registrado.</div>
-              )}
-            </div>
+
+            <GraficoTipoEvento
+              resumen={resumen}
+              filtros={filtros}
+              setFiltros={setFiltros}
+              setPage={setPage}
+            />
 
             <div className={`${styles.card} ${styles.topChartCard} ${styles.topChartWide}`}>
               <div className={styles.cardHeader}>

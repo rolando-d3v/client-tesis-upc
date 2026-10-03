@@ -1,13 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router";
-import {
-  FaBuilding,
-  FaChartLine,
-  FaFileLines,
-  FaLock,
-  FaMoon,
-  FaUsers,
-} from "react-icons/fa6";
+import { FaBuilding, FaChartLine, FaFileLines, FaLock, FaMoon, FaUsers } from "react-icons/fa6";
 import styles from "./clasifi.module.css";
 import {
   TablaClasificacion,
@@ -27,14 +20,14 @@ function SectionHeader({ id, icon: Icon, title, description, tag, tagTone = "def
           <Icon />
         </span>
         <div>
-          <h2 id={id} className={styles.sectionTitle}>{title}</h2>
+          <h2 id={id} className={styles.sectionTitle}>
+            {title}
+          </h2>
           <p className={styles.sectionDescription}>{description}</p>
         </div>
       </div>
       {tag && (
-        <span className={`${styles.sectionTag} ${tagTone !== "default" ? styles[`tag_${tagTone}`] : ""}`}>
-          {tag}
-        </span>
+        <span className={`${styles.sectionTag} ${tagTone !== "default" ? styles[`tag_${tagTone}`] : ""}`}>{tag}</span>
       )}
     </div>
   );
@@ -63,28 +56,23 @@ export default function Dashboard4Clasificacion() {
   const loading = d4Q.isLoading;
   const hasData = Boolean(
     data &&
-      [
-        data.por_clasificacion,
-        data.cruce_clasificacion_horario,
-        data.mb_por_dia,
-        data.mb_por_oficina,
-        data.por_tipo_documento,
-        scatterData,
-      ].some((list) => Array.isArray(list) && list.length > 0),
+    [
+      data.por_clasificacion,
+      data.cruce_clasificacion_horario,
+      data.mb_por_dia,
+      data.mb_por_oficina,
+      data.por_tipo_documento,
+      scatterData,
+    ].some((list) => Array.isArray(list) && list.length > 0),
   );
 
   const kpis = useMemo(() => {
     if (!data?.por_clasificacion) return null;
 
     const totalMb = data.por_clasificacion.reduce((acc, row) => acc + (Number(row.total_mb) || 0), 0);
-    const secreto = data.por_clasificacion.find(
-      (row) => row.clasificacion?.toLowerCase() === "secreto",
-    );
+    const secreto = data.por_clasificacion.find((row) => row.clasificacion?.toLowerCase() === "secreto");
     const mbSecreto = Number(secreto?.total_mb) || 0;
-    const descargasFueraHr = data.por_clasificacion.reduce(
-      (acc, row) => acc + (Number(row.n_fuera_horario) || 0),
-      0,
-    );
+    const descargasFueraHr = data.por_clasificacion.reduce((acc, row) => acc + (Number(row.n_fuera_horario) || 0), 0);
     const usuariosCriticos = scatterData.filter(
       (row) => row.nivel_riesgo === "critico" || row.nivel_riesgo === "alto",
     ).length;
@@ -97,9 +85,7 @@ export default function Dashboard4Clasificacion() {
       <header className={styles.pageHeader}>
         <p className={styles.eyebrow}>Seguridad de la información</p>
         <h1>Clasificación documental y volumen</h1>
-        <p className={styles.subtitle}>
-          Revisa la sensibilidad de los documentos, los patrones de transferencia y las señales de riesgo por usuario.
-        </p>
+       
       </header>
 
       {loading && !data && (
@@ -205,15 +191,8 @@ export default function Dashboard4Clasificacion() {
           </section>
 
           <section className={styles.dashboardSection} aria-labelledby="volumen-title">
-            <SectionHeader
-              id="volumen-title"
-              icon={FaChartLine}
-              title="Evolución y distribución del volumen"
-              description="Explora cuándo se concentra el tráfico y qué dependencias registran mayor volumen."
-              tag="Contexto operativo"
-              tagTone="info"
-            />
-            <div className={styles.chartsGrid}>
+          
+            <div className={styles.chartsGrid_2}>
               <ChartCard
                 icon={FaChartLine}
                 title="Volumen transferido por día"
@@ -221,31 +200,19 @@ export default function Dashboard4Clasificacion() {
               >
                 <MbPorDia mbPorDia={data?.mb_por_dia} />
               </ChartCard>
+            </div>
+          </section>
+
+          <section className={styles.dashboardSection} aria-labelledby="auditoria-title">
+          
+            <div className={styles.chartsGrid}>
+          
               <ChartCard
                 icon={FaBuilding}
                 title="Volumen por oficina"
                 description="Dependencias con mayor volumen transferido; desplázate para revisar el listado completo."
               >
                 <MbPorOficina mbPorOficina={data?.mb_por_oficina} />
-              </ChartCard>
-            </div>
-          </section>
-
-          <section className={styles.dashboardSection} aria-labelledby="auditoria-title">
-            <SectionHeader
-              id="auditoria-title"
-              icon={FaFileLines}
-              title="Clasificación y actividad documental"
-              description="Consulta el detalle de eventos y los tipos de documento con mayor frecuencia de acceso."
-              tag="Auditoría"
-            />
-            <div className={styles.chartsGrid}>
-              <ChartCard
-                icon={FaLock}
-                title="Actividad por nivel de clasificación"
-                description="Eventos, descargas, volumen y actividad registrada fuera de horario."
-              >
-                <TablaClasificacion porClasificacion={data?.por_clasificacion} />
               </ChartCard>
               <ChartCard
                 icon={FaFileLines}

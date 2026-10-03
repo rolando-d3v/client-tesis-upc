@@ -1,16 +1,17 @@
 /* ===== REAL-TIME STREAMING EXTENSIONS PARA MOTOR DE DETECCIÓN ===== */
 
 .liveBadge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+
   gap: 0.35rem;
   background: rgba(16, 185, 129, 0.12);
   color: #059669;
   border: 1px solid rgba(16, 185, 129, 0.35);
   padding: 0.18rem 0.5rem;
   border-radius: 9999px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.55rem;
+  font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import styles from "./EntrenamientoPage.module.css";
 import KPICardsSOC from "../componentes/KPICardsSOC";
-import GraficoEvolucionRiesgos from "../componentes/GraficoEvolucionRiesgos";
 import GraficoTipoEvento from "../componentes/GraficoTipoEvento";
 import DashboardSOCAnalytics from "../componentes/DashboardSOCAnalytics";
 import GraficoEstadoGestion from "../componentes/GraficoEstadoGestion";
@@ -120,6 +119,7 @@ export default function EntrenamientoPage() {
         </div>
 
         <div className={styles.trainingGrid}>
+          {/* *****************************************************************  ojo   */}
           <div className={styles.paramBox}>
             <label className={styles.paramLabel}>Tasa de Contaminación (Anomaly %)</label>
             <select
@@ -128,7 +128,7 @@ export default function EntrenamientoPage() {
               onChange={(e) => setContaminacion(e.target.value)}
             >
               <option value="0.01">1% (Muy Estricto)</option>
-              <option value="0.03">3% (Recomendado - Tesis)</option>
+              <option value="0.03">3% (Recomendado )</option>
               <option value="0.05">5% (Alta Sensibilidad)</option>
               <option value="0.10">10% (Exploratorio)</option>
             </select>
@@ -192,33 +192,7 @@ export default function EntrenamientoPage() {
         onFilterClick={handleQuickFilter}
       />
 
-      {/* Grid Analítico de Inteligencia SOC: Evolución Temporal y Canales de Fuga */}
-      <div className={styles.chartsGrid}>
-        <div className={styles.chartMain}>
-          <GraficoEvolucionRiesgos
-            resumen={resumen}
-            filtros={filtros}
-            setFiltros={setFiltros}
-            setPage={setPage}
-          />
-        </div>
-        <div className={styles.chartSide}>
-          <GraficoTipoEvento
-            resumen={resumen}
-            filtros={filtros}
-            setFiltros={setFiltros}
-            setPage={setPage}
-          />
-        </div>
-      </div>
-      <div className={styles.chartsGridFull}>
-        <GraficoEstadoGestion
-          resumen={resumen}
-          filtros={filtros}
-          setFiltros={setFiltros}
-          setPage={setPage}
-        />
-      </div>
+     
 
       {/* Visual Analytics & Cross-Domain Intelligence */}
       <DashboardSOCAnalytics

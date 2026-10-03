@@ -743,25 +743,7 @@ export default function MotorDeteccion() {
             )}
           </div>
 
-          <div className={styles.chartsGrid}>
-            <div className={styles.chartMain}>
-              <GraficoEvolucionRiesgos
-                resumen={resumenEnVivo}
-                tiempoReal
-                filtros={filtrosSOC}
-                setFiltros={setFiltrosSOC}
-                setPage={setPageSOC}
-              />
-            </div>
-            <div className={styles.chartSide}>
-              <GraficoTipoEvento
-                resumen={resumenEnVivo}
-                filtros={filtrosSOC}
-                setFiltros={setFiltrosSOC}
-                setPage={setPageSOC}
-              />
-            </div>
-          </div>
+    
 
           <DashboardSOCAnalytics
             resumen={resumenEnVivo}

@@ -180,7 +180,7 @@ export default function TablaIncidentes({
                   {inc.clasificacion_doc || "COMUN"}
                 </span>
                 <span className={`${styles.docDestino} ${inc.destino_doc === "exterior" ? styles.docDestinoExt : ""}`}>
-                  {inc.destino_doc === "exterior" ? "ðŸŒ" : "ðŸ¢"}
+                  {inc.destino_doc === "exterior" ? "EXT" : "INT"}
                 </span>
                 {inc.tipo_documento && <span className={styles.docTipo}>{inc.tipo_documento}</span>}
               </div>
@@ -221,7 +221,7 @@ export default function TablaIncidentes({
         cell: ({ row }) => {
           const inc = row.original;
           const score = Number(inc.score_correlacion || 0);
-          const scorePercent = Math.min(100, Math.max(0, Math.round(score * 100)));
+          const scorePercent = Math.min(100, Math.max(0, score * 100));
           const riesgo = (inc.nivel_riesgo || "bajo").toLowerCase();
 
           let barClass = styles.barBajo;
@@ -232,10 +232,10 @@ export default function TablaIncidentes({
           return (
             <div className={styles.scoreCellCompact}>
               <div className={styles.scoreTopRow}>
-                <span className={styles.scoreVal}>{scorePercent}%</span>
+                <span className={styles.scoreVal}>{scorePercent.toFixed(1)}%</span>
                 <div className={styles.scoreSubLine}>
-                  T:{Math.round(Number(inc.score_trazabilidad || 0) * 100)}%{" · "}
-                  E:{Math.round(Number(inc.score_eventos || 0) * 100)}%
+                  T:{(Number(inc.score_trazabilidad || 0) * 100).toFixed(1)}%{" · "}
+                  E:{(Number(inc.score_eventos || 0) * 100).toFixed(1)}%
                   {inc.total_pasos_storyline > 0 && ` · ${inc.total_pasos_storyline}p`}
                 </div>
                 <span className={`${styles.badgeRiesgo} ${getRiesgoClass(inc.nivel_riesgo)}`}>
