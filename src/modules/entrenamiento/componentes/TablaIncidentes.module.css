@@ -405,7 +405,7 @@
 .userName {
   font-weight: 600;
   color: #111827;
-  font-size: 0.82rem;
+  font-size: 0.7rem;
   line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
@@ -443,7 +443,7 @@
 
 .scoreVal {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   color: #111827;
 }
 

@@ -1,9 +1,7 @@
 import { useState } from "react";
 import styles from "./EntrenamientoPage.module.css";
 import KPICardsSOC from "../componentes/KPICardsSOC";
-import GraficoTipoEvento from "../componentes/GraficoTipoEvento";
 import DashboardSOCAnalytics from "../componentes/DashboardSOCAnalytics";
-import GraficoEstadoGestion from "../componentes/GraficoEstadoGestion";
 import TablaIncidentes from "../componentes/TablaIncidentes";
 import {
   useIncidentes,
@@ -26,11 +24,6 @@ export default function EntrenamientoPage() {
     tipo_evento: "",
   });
 
-  // Parámetros de calibración MLOps
-  const [contaminacion, setContaminacion] = useState("0.03");
-  const [umbralCritico, setUmbralCritico] = useState("0.80");
-  const [pesoSecreto, setPesoSecreto] = useState("3.0");
-
   const { data: resumen } = useResumenSOC();
   const { data: alertasBloqueo } = useAlertasBloqueados();
   const {
@@ -47,13 +40,9 @@ export default function EntrenamientoPage() {
 
   const handleEjecutar = async () => {
     try {
-      const res = await ejecutarMutation.mutateAsync({
-        contaminacion: Number(contaminacion),
-        umbral_critico: Number(umbralCritico),
-        peso_secreto: Number(pesoSecreto),
-      });
+      const res = await ejecutarMutation.mutateAsync({});
       toast.success(
-        `Entrenamiento y correlación completada: ${res.total_incidentes_generados} incidentes analizados y sincronizados.`
+        `Entrenamiento y correlación completada: ${res.total_incidentes_generados} incidentes analizados y sincronizados.`,
       );
       refetch();
     } catch (error) {
@@ -88,7 +77,7 @@ export default function EntrenamientoPage() {
 
   const totalBloqueados = Array.isArray(alertasBloqueo)
     ? alertasBloqueo.length
-    : (alertasBloqueo?.total_cuentas_bloqueadas || 0);
+    : alertasBloqueo?.total_cuentas_bloqueadas || 0;
 
   return (
     <div className={styles.page}>
@@ -98,7 +87,8 @@ export default function EntrenamientoPage() {
             <FaBrain style={{ color: "#7c3aed" }} /> Módulo de Entrenamiento y Calibración
           </h1>
           <p className={styles.subtitle}>
-            Fase de Aprendizaje MLOps: Calibración de Isolation Forest Dual, Ponderación de Riesgo y Serialización (.joblib)
+            Fase de Aprendizaje MLOps: Calibración de Isolation Forest Dual, Ponderación de Riesgo y Serialización
+            (.joblib)
           </p>
         </div>
       </div>
@@ -108,68 +98,27 @@ export default function EntrenamientoPage() {
         <div className={styles.trainingTop}>
           <div className={styles.trainingHeaderLeft}>
             <h3>
-              <FaGear style={{ color: "#7c3aed" }} /> Parámetros de Calibración del Modelo Predictivo
+              <FaGear style={{ color: "#7c3aed" }} /> Ejecución del Motor de Correlación
             </h3>
-            <p>Ajusta los hiperparámetros antes de reentrenar y correlacionar los patrones de tráfico</p>
+            <p>Ejecuta la correlación para actualizar los incidentes analizados</p>
+          </div>
+
+          <div className={styles.trainingGrid}>
+            <button
+              type="button"
+              className={styles.btnTrainExecute}
+              onClick={handleEjecutar}
+              disabled={ejecutarMutation.isPending}
+              title="Ejecutar reentrenamiento y correlación"
+            >
+              <FaArrowsRotate className={ejecutarMutation.isPending ? "fa-spin" : ""} />
+              {ejecutarMutation.isPending ? "Entrenando Modelo..." : "Reentrenar y Correlacionar"}
+            </button>
           </div>
           <div className={styles.modelBadgeActive}>
             <span className={styles.activeDot} />
             Modelo Activo: Isolation Forest v2.1 (.joblib)
           </div>
-        </div>
-
-        <div className={styles.trainingGrid}>
-          {/* *****************************************************************  ojo   */}
-          <div className={styles.paramBox}>
-            <label className={styles.paramLabel}>Tasa de Contaminación (Anomaly %)</label>
-            <select
-              className={styles.paramSelect}
-              value={contaminacion}
-              onChange={(e) => setContaminacion(e.target.value)}
-            >
-              <option value="0.01">1% (Muy Estricto)</option>
-              <option value="0.03">3% (Recomendado )</option>
-              <option value="0.05">5% (Alta Sensibilidad)</option>
-              <option value="0.10">10% (Exploratorio)</option>
-            </select>
-          </div>
-
-          <div className={styles.paramBox}>
-            <label className={styles.paramLabel}>Umbral Score Crítico (Disparador)</label>
-            <select
-              className={styles.paramSelect}
-              value={umbralCritico}
-              onChange={(e) => setUmbralCritico(e.target.value)}
-            >
-              <option value="0.75">Score ≥ 0.75 (Sensible)</option>
-              <option value="0.80">Score ≥ 0.80 (Equilibrado)</option>
-              <option value="0.85">Score ≥ 0.85 (Alta Certeza)</option>
-            </select>
-          </div>
-
-          <div className={styles.paramBox}>
-            <label className={styles.paramLabel}>Ponderador Doc. Secreto / Reservado</label>
-            <select
-              className={styles.paramSelect}
-              value={pesoSecreto}
-              onChange={(e) => setPesoSecreto(e.target.value)}
-            >
-              <option value="2.0">2.0x (Estándar)</option>
-              <option value="3.0">3.0x (Prioridad Máxima)</option>
-              <option value="4.0">4.0x (Rigor Militar)</option>
-            </select>
-          </div>
-
-          <button
-            type="button"
-            className={styles.btnTrainExecute}
-            onClick={handleEjecutar}
-            disabled={ejecutarMutation.isPending}
-            title="Ejecutar reentrenamiento y correlación"
-          >
-            <FaArrowsRotate className={ejecutarMutation.isPending ? "fa-spin" : ""} />
-            {ejecutarMutation.isPending ? "Entrenando Modelo..." : "Reentrenar y Correlacionar"}
-          </button>
         </div>
       </div>
 
@@ -179,20 +128,14 @@ export default function EntrenamientoPage() {
           <FaShieldHalved className={styles.alertIcon} />
           <div>
             <strong>Centro de Contención SOC Activo:</strong> Se registran{" "}
-            <span className={styles.alertCount}>{totalBloqueados}</span> cuentas neutralizadas
-            preventivamente ante intentos críticos de fuga de información.
+            <span className={styles.alertCount}>{totalBloqueados}</span> cuentas neutralizadas preventivamente ante
+            intentos críticos de fuga de información.
           </div>
         </div>
       )}
 
       {/* KPI Cards */}
-      <KPICardsSOC
-        resumen={resumen}
-        filtros={filtros}
-        onFilterClick={handleQuickFilter}
-      />
-
-     
+      <KPICardsSOC resumen={resumen} filtros={filtros} onFilterClick={handleQuickFilter} />
 
       {/* Visual Analytics & Cross-Domain Intelligence */}
       <DashboardSOCAnalytics

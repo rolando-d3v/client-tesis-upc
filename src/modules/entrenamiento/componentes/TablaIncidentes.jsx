@@ -192,7 +192,7 @@ export default function TablaIncidentes({
         id: "usuario",
         accessorKey: "nombre_usuario",
         header: "Usuario",
-        meta: { align: "left", width: "23%" },
+        meta: { align: "left", width: "22%" },
         cell: ({ row }) => {
           const inc = row.original;
           const initial = inc.nombre_usuario ? inc.nombre_usuario.charAt(0).toUpperCase() : "U";
@@ -236,7 +236,7 @@ export default function TablaIncidentes({
                 <div className={styles.scoreSubLine}>
                   T:{(Number(inc.score_trazabilidad || 0) * 100).toFixed(1)}%{" · "}
                   E:{(Number(inc.score_eventos || 0) * 100).toFixed(1)}%
-                  {inc.total_pasos_storyline > 0 && ` · ${inc.total_pasos_storyline}p`}
+                  {/* {inc.total_pasos_storyline > 0 && ` · ${inc.total_pasos_storyline}p`} */}
                 </div>
                 <span className={`${styles.badgeRiesgo} ${getRiesgoClass(inc.nivel_riesgo)}`}>
                   {inc.nivel_riesgo || "Bajo"}
