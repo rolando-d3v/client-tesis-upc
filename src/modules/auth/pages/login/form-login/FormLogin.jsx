@@ -14,7 +14,7 @@ import { useNavigate } from "react-router";
 
 
 // Schema de formulario con zod — ahora usa email
-export const schema = z.object({
+const schema = z.object({
   email: z
     .string()
     .min(1, "Email es obligatorio")

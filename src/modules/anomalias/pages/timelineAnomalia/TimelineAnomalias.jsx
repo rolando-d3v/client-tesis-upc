@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useLocation } from "react-router";
 import { useSelector } from "react-redux";
 import styles from "./time.module.css";
 import LineaDias from "../../components/linea_dias/LineaDias";
@@ -16,7 +15,6 @@ import {
 } from "../../../../api/apiAnomalias";
 
 export default function TimelineAnomalias() {
-  const location = useLocation();
 
   // Filtro global de fechas desde Redux
   const { fechaInicio, fechaFin } = useSelector((state) => state.FILTRO_FECHAS);

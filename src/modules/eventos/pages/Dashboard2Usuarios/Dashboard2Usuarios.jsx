@@ -165,7 +165,7 @@ export default function Dashboard2Usuarios() {
   const secretoQ = useD2Usuarios(mesesRanking.mas_secreto);
   const fueraHorarioQ = useD2Usuarios(mesesRanking.mas_fuera_horario);
   const data = d2Q.data;
-  const usuarios = data?.usuarios || [];
+  const usuarios = useMemo(() => data?.usuarios || [], [data?.usuarios]);
   const hasData = usuarios.length > 0;
   const consultasRanking = {
     mas_mb: mbQ,

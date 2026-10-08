@@ -67,7 +67,6 @@ export default function DashboardSOCAnalytics({
   const {
     total_incidentes = 0,
     total_eventos_analizados = 0,
-    por_estado = {},
     tasa_contencion_porcentaje = 0,
     top_documentos = [],
     top_usuarios = [],
@@ -89,24 +88,6 @@ export default function DashboardSOCAnalytics({
   }, [por_clasificacion]);
 
   const totalClasificaciones = clasifData.reduce((total, item) => total + item.value, 0);
-
-  // 2. Datos para gráfico de Estado de Gestión
-  const estadoData = useMemo(() => {
-    if (!por_estado) return [];
-    return Object.entries(por_estado)
-      .filter(([, val]) => val > 0)
-      .map(([key, val]) => ({
-        key,
-        name: NOMBRES_ESTADO[key] || key,
-        cantidad: Number(val) || 0,
-        color: COLOR_ESTADO[key] || "#64748b",
-      }))
-      .sort((a, b) => {
-        const indexA = ORDEN_ESTADOS.indexOf(a.key);
-        const indexB = ORDEN_ESTADOS.indexOf(b.key);
-        return (indexA < 0 ? ORDEN_ESTADOS.length : indexA) - (indexB < 0 ? ORDEN_ESTADOS.length : indexB);
-      });
-  }, [por_estado]);
 
   const evolucionData = useMemo(
     () =>
@@ -159,19 +140,6 @@ export default function DashboardSOCAnalytics({
       setFiltros((prev) => ({ ...prev, clasificacion: clasif }));
       setPage(1);
       toast.success(`Filtrando por clasificación: ${clasif}`);
-    }
-  };
-
-  // Manejador de Cross-Filtering por Estado
-  const handleEstadoClick = (estadoKey) => {
-    if (filtros.estado === estadoKey) {
-      setFiltros((prev) => ({ ...prev, estado: "" }));
-      setPage(1);
-      toast.info("Filtro de estado removido");
-    } else {
-      setFiltros((prev) => ({ ...prev, estado: estadoKey }));
-      setPage(1);
-      toast.success(`Filtrando por estado: ${NOMBRES_ESTADO[estadoKey] || estadoKey}`);
     }
   };
 

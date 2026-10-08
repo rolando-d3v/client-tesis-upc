@@ -31,6 +31,7 @@ const isExteriorPaso = (p) =>
 
 export default function ArbolTrazabilidad({ info = {}, pasos = [], activePaso = null, onSelectPaso = null }) {
   const containerRef = useRef(null);
+  const [viewportSize, setViewportSize] = useState({ width: 800, height: 600 });
   const [pan, setPan] = useState({ x: 60, y: 50 });
   const [zoom, setZoom] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -244,7 +245,7 @@ export default function ArbolTrazabilidad({ info = {}, pasos = [], activePaso = 
         const child = children[0];
         const xIn = child.x;
         const yIn = child.centerY;
-        let pathD = "";
+        let pathD;
         if (Math.abs(yOut - yIn) < 3) {
           pathD = `M ${xOut} ${yOut} H ${xIn}`;
         } else {
@@ -308,6 +309,16 @@ export default function ArbolTrazabilidad({ info = {}, pasos = [], activePaso = 
       totalHeight,
     };
   }, [pasos, info]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      setViewportSize({ width: container.clientWidth, height: container.clientHeight });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [layout]);
 
   // Centrar o ajustar el árbol al contenedor
   const handleFitToView = useCallback(() => {
@@ -447,12 +458,10 @@ export default function ArbolTrazabilidad({ info = {}, pasos = [], activePaso = 
   const miniWidth = 150;
   const miniHeight = 95;
   const miniScale = layout ? Math.min(miniWidth / layout.totalWidth, miniHeight / layout.totalHeight) : 0.1;
-  const containerCw = containerRef.current?.clientWidth || 800;
-  const containerCh = containerRef.current?.clientHeight || 600;
   const viewportRectX = layout ? Math.max(0, -pan.x / zoom) * miniScale : 0;
   const viewportRectY = layout ? Math.max(0, -pan.y / zoom) * miniScale : 0;
-  const viewportRectW = layout ? Math.min(layout.totalWidth, containerCw / zoom) * miniScale : 0;
-  const viewportRectH = layout ? Math.min(layout.totalHeight, containerCh / zoom) * miniScale : 0;
+  const viewportRectW = layout ? Math.min(layout.totalWidth, viewportSize.width / zoom) * miniScale : 0;
+  const viewportRectH = layout ? Math.min(layout.totalHeight, viewportSize.height / zoom) * miniScale : 0;
 
   const handleMinimapClick = (e) => {
     if (!layout || !containerRef.current) return;
@@ -760,7 +769,6 @@ export default function ArbolTrazabilidad({ info = {}, pasos = [], activePaso = 
                   ? `${formatDateTime(p.fecha_creacion).fecha} ${formatDateTime(p.fecha_creacion).hora}`
                   : "-";
 
-              const isDecretado = p.estado?.toUpperCase().includes("DECRET") || (!p.estado && !p.es_anomalo);
               const isPendiente = p.estado?.toUpperCase().includes("PEND");
               const isFinalizado =
                 p.estado?.toUpperCase().includes("FINAL") || p.estado?.toUpperCase().includes("RECEP");

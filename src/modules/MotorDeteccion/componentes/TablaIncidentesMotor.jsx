@@ -2,7 +2,6 @@ import { Fragment, useMemo, useState } from "react";
 import { Link } from "react-router";
 import styles from "../../entrenamiento/componentes/TablaIncidentes.module.css";
 import liveStyles from "./TablaIncidentesMotor.module.css";
-import dayjs from "dayjs";
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from "@tanstack/react-table";
 import {
   FaMagnifyingGlass,
@@ -90,7 +89,7 @@ export default function TablaIncidentesMotor({
   const [selectedIncidenteForense, setSelectedIncidenteForense] = useState(null);
 
   // Combinar incidentes persistidos en base de datos con incidentes capturados en vivo
-  // y normalizar estado a 'contenido' y cuenta bloqueada para incidentes críticos según constantes.py
+  // y distinguir el riesgo crítico de una contención confirmada por el servidor.
   const incidentesCombinados = useMemo(() => {
     const persistidos = data?.incidentes || [];
     const idsPersistidos = new Set(persistidos.map((i) => String(i.id)));
@@ -99,14 +98,14 @@ export default function TablaIncidentesMotor({
     const vivosNuevos = incidentesEnVivo.filter((i) => !idsPersistidos.has(String(i.id)));
 
     // Los incidentes en vivo van al inicio con prioridad
-    // Y a todos se les evalúa su estado forense según constantes.py (score >= 0.75 / UMBRAL_CRITICO)
+    // El score identifica el riesgo; los IDs confirmados identifican el bloqueo.
     const listaCompleta = [...vivosNuevos, ...persistidos].map((inc) => {
       const evalForense = evaluarEstadoForense(inc, neutralizadosIds);
       return {
         ...inc,
         estado: evalForense.estadoEfectivo,
         cuenta_bloqueada: evalForense.esBloqueado,
-        es_critico_auto: evalForense.esCritico,
+        es_critico: evalForense.esCritico,
       };
     });
 
@@ -209,7 +208,6 @@ export default function TablaIncidentesMotor({
         meta: { align: "left", width: "10%" },
         cell: ({ row }) => {
           const inc = row.original;
-          const dt = inc.fecha_deteccion ? dayjs(inc.fecha_deteccion) : null;
           const numeroRegistro = (page - 1) * pageSize + row.index + 1;
           return (
             <div className={styles.idFechaCell}>
@@ -286,7 +284,7 @@ export default function TablaIncidentesMotor({
                     {isBloqueado ? (
                       <span
                         className={liveStyles.badgeBloqueado}
-                        title="Cuenta bloqueada y neutralizada en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
+                        title="Bloqueo de cuenta confirmado por el servidor"
                       >
                         <FaBan /> User Bloqueado
                       </span>
@@ -362,16 +360,14 @@ export default function TablaIncidentesMotor({
         cell: ({ row }) => {
           const inc = row.original;
           const estado = inc.estado || "abierto";
-          const esCritico =
-            inc.es_critico_auto || inc.nivel_riesgo === "critico" || Number(inc.score_correlacion || 0) >= 0.75;
           return (
             <div className={styles.estadoAccionCell}>
-              {esCritico && estado === "contenido" ? (
+              {inc.cuenta_bloqueada && estado === "contenido" ? (
                 <span
                   className={liveStyles.badgeContenidoTag}
-                  title="Contenido preventivamente en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
+                  title="Contención por bloqueo confirmado de la cuenta"
                 >
-                  <FaShieldHalved /> Auto-Contenido
+                  <FaShieldHalved /> Bloqueo confirmado
                 </span>
               ) : (
                 <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
@@ -427,7 +423,7 @@ export default function TablaIncidentesMotor({
         },
       },
     ],
-    [page, pageSize, expandedRows, detalleBasePath],
+    [page, pageSize, expandedRows],
   );
 
   const table = useReactTable({
@@ -734,11 +730,11 @@ export default function TablaIncidentesMotor({
                                       <FaBan /> Cuenta Bloqueada
                                     </span>
                                   ) : (
-                                    <span style={{ color: "#059669", fontWeight: 600 }}>● Cuenta Activa</span>
+                                    <span style={{ color: "#64748b", fontWeight: 600 }}>Sin bloqueo confirmado</span>
                                   )}
                                 </div>
                                 <div className={styles.telemetrySub}>
-                                  {inc.es_critico_auto ? "Auto-Contenido (Score ≥ 75%)" : `Estado: ${inc.estado}`}
+                                  {`Estado: ${inc.estado}`}
                                 </div>
                               </div>
 

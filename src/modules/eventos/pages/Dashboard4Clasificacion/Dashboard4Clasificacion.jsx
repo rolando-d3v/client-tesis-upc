@@ -52,7 +52,10 @@ export default function Dashboard4Clasificacion() {
   const d4Q = useD4Clasificacion();
   const d5Q = useD5Deteccion();
   const data = d4Q.data;
-  const scatterData = data?.scatter_data || d5Q.data?.scatter_data || [];
+  const scatterData = useMemo(
+    () => data?.scatter_data || d5Q.data?.scatter_data || [],
+    [data?.scatter_data, d5Q.data?.scatter_data],
+  );
   const loading = d4Q.isLoading;
   const hasData = Boolean(
     data &&

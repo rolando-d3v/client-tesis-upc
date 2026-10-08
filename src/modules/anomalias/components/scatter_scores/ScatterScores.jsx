@@ -54,10 +54,9 @@ const CustomTooltip = ({ active, payload, umbral = 0.7 }) => {
 };
 
 export default function ScatterScores({ data = [] }) {
-  if (!data || !data.length) return null;
-
   // Procesamiento y normalización a escala [0, 1] (0 = Normal, 1 = Máx. Anomalía)
   const { normales, anomalias, umbral } = useMemo(() => {
+    if (!data?.length) return { normales: [], anomalias: [], umbral: 0.7 };
     const rawScores = data.map((d) => Number(d.score));
     const minRaw = Math.min(...rawScores);
     const maxRaw = Math.max(...rawScores);
@@ -106,6 +105,8 @@ export default function ScatterScores({ data = [] }) {
       umbral: Math.max(0.1, Math.min(0.95, umbralCalc)),
     };
   }, [data]);
+
+  if (!data?.length) return null;
 
   return (
     <div className={styles.container}>

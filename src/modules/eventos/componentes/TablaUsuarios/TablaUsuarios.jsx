@@ -11,7 +11,7 @@ const PAGE_SIZE = 10;
 export default function TablaUsuarios({ usuarios = [] }) {
   const modalTitleId = useId();
   const [selectedUser, setSelectedUser] = useState(null);
-  const [page, setPage] = useState(1);
+  const [requestedPage, setPage] = useState(1);
   const [filtroRol, setFiltroRol] = useState("");
   const detalleQuery = useD2UsuarioDetalle(selectedUser);
 
@@ -44,18 +44,11 @@ export default function TablaUsuarios({ usuarios = [] }) {
   }, [usuarios, filtroRol]);
 
   const totalPages = Math.max(1, Math.ceil(filteredUsuarios.length / PAGE_SIZE));
+  const page = Math.min(requestedPage, totalPages);
   const paginated = useMemo(
     () => filteredUsuarios.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filteredUsuarios, page]
   );
-
-  useEffect(() => {
-    setPage(1);
-  }, [filtroRol]);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [totalPages, page]);
 
   const selectedUserObj = useMemo(
     () => (selectedUser ? usuarios.find((u) => u.user_id === selectedUser) : null),
@@ -76,7 +69,10 @@ export default function TablaUsuarios({ usuarios = [] }) {
             id="filtro-rol-usuarios"
             className={styles.roleSelect}
             value={filtroRol}
-            onChange={(e) => setFiltroRol(e.target.value)}
+            onChange={(e) => {
+              setFiltroRol(e.target.value);
+              setPage(1);
+            }}
           >
             <option value="">Todos los roles ({usuarios.length})</option>
             {availableRoles.map((r) => (
@@ -152,7 +148,7 @@ export default function TablaUsuarios({ usuarios = [] }) {
           <button
             className={styles.pageBtn}
             disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => setPage(Math.max(1, page - 1))}
           >
             ‹ Anterior
           </button>
@@ -172,7 +168,7 @@ export default function TablaUsuarios({ usuarios = [] }) {
           <button
             className={styles.pageBtn}
             disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
           >
             Siguiente ›
           </button>

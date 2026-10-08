@@ -42,7 +42,7 @@ export default function PerfilUsuarioEWMA({ perfiles = [], ewmaTemporal = [] }) 
       <div className={styles.section}>
         <h4 className={styles.subtitle}>📊 Perfiles de Usuario — Score EWMA</h4>
         <div className={styles.userSelector}>
-          {topUsers.map((u, idx) => (
+          {topUsers.map((u) => (
             <button key={u.user_id} className={`${styles.userBtn} ${selectedUsers.includes(u.user_id) ? styles.active : ""}`}
               style={selectedUsers.includes(u.user_id) ? { borderColor: COLORES[selectedUsers.indexOf(u.user_id) % COLORES.length] } : {}}
               onClick={() => toggleUser(u.user_id)}>

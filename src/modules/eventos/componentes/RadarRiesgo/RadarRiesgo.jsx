@@ -18,6 +18,11 @@ const MAX_SELECTION = 3;
 const COLORES = ["#2563eb", "#7c3aed", "#0891b2"];
 
 export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
+  const activeUser = activeUserId == null ? null : usuarios.find(
+    (u) => u.user_id === activeUserId || u.id === activeUserId || u.nombre === activeUserId
+  );
+  const activeId = activeUser ? activeUser.user_id ?? activeUser.nombre : null;
+  const [previousActiveId, setPreviousActiveId] = useState(activeId);
   const [selectedUserIds, setSelectedUserIds] = useState(() => {
     if (activeUserId != null && usuarios.length > 0) {
       const found = usuarios.find(
@@ -32,21 +37,15 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Sincronizar usuario activo recibido desde props
-  useEffect(() => {
-    if (activeUserId != null && usuarios.length > 0) {
-      const found = usuarios.find(
-        (u) => u.user_id === activeUserId || u.id === activeUserId || u.nombre === activeUserId
-      );
-      if (found) {
-        const id = found.user_id ?? found.nombre;
-        setSelectedUserIds((prev) => {
-          if (prev.includes(id)) return prev;
-          return [id, ...prev.filter((x) => x !== id)].slice(0, MAX_SELECTION);
-        });
-      }
+  // Ajustar la selección solo cuando cambia la identidad recibida.
+  if (previousActiveId !== activeId) {
+    setPreviousActiveId(activeId);
+    if (activeId != null) {
+      setSelectedUserIds((prev) => prev.includes(activeId)
+        ? prev
+        : [activeId, ...prev].slice(0, MAX_SELECTION));
     }
-  }, [activeUserId, usuarios]);
+  }
 
   // Manejo de clic exterior para cerrar el dropdown
   useEffect(() => {

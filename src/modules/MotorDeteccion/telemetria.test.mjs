@@ -220,7 +220,7 @@ test("crearTelemetria reinicia contadores sin compartir datos con la sesión ant
   assert.equal(cantidad(acumulada.tipos_eventos, "DESCARGAR"), 1);
 });
 
-test("evaluarEstadoForense contiene automáticamente eventos críticos (Score >= 0.75 según constantes.py) y bloquea cuenta", () => {
+test("un riesgo crítico no confirma un bloqueo; los IDs confirmados sí contienen el incidente", () => {
   // Caso 1: Score crítico >= 0.75
   const incScoreCritico = {
     id: 101,
@@ -232,8 +232,8 @@ test("evaluarEstadoForense contiene automáticamente eventos críticos (Score >=
   };
   const eval1 = evaluarEstadoForense(incScoreCritico, []);
   assert.equal(eval1.esCritico, true);
-  assert.equal(eval1.esBloqueado, true);
-  assert.equal(eval1.estadoEfectivo, "contenido");
+  assert.equal(eval1.esBloqueado, false);
+  assert.equal(eval1.estadoEfectivo, "abierto");
 
   // Caso 2: Evento leve (score 0.30, nivel medio)
   const incNormal = {
@@ -254,6 +254,13 @@ test("evaluarEstadoForense contiene automáticamente eventos críticos (Score >=
   assert.equal(eval3.esCritico, false);
   assert.equal(eval3.esBloqueado, true);
   assert.equal(eval3.estadoEfectivo, "contenido");
+
+  // Un nombre compartido nunca acredita el bloqueo de otra identidad.
+  assert.equal(evaluarEstadoForense(incNormal, ["Perez"]).esBloqueado, false);
+  assert.equal(evaluarEstadoForense({ ...incNormal, cuenta_bloqueada: true }).esBloqueado, true);
+  for (const estado of ["en_investigacion", "mitigado", "falso_positivo"]) {
+    assert.equal(evaluarEstadoForense({ ...incNormal, estado }, ["50"]).estadoEfectivo, estado);
+  }
 });
 
 test("la correlación cuenta un incidente por par documento+usuario, no uno por evento", () => {
@@ -308,8 +315,8 @@ test("correlacionarEnVivo conserva un único incidente por par con el último c�
   assert.equal(par9.total_eventos_asociados, 3);
   assert.equal(par9.nivel_riesgo, "critico");
   assert.equal(par9.score_correlacion, 0.9);
-  assert.equal(par9.estado, "contenido");
-  assert.equal(par9.cuenta_bloqueada, true);
+  assert.equal(par9.estado, "abierto");
+  assert.equal(par9.cuenta_bloqueada, false);
   assert.equal(par9.es_en_vivo, true);
 });
 

@@ -17,20 +17,8 @@ import MotorDeteccion from "../modules/MotorDeteccion/MotorDeteccion";
 // Módulo de Entrenamiento & Calibración
 import EntrenamientoPage from "../modules/entrenamiento/pages/EntrenamientoPage";
 import IncidenteDetallePage from "../modules/entrenamiento/pages/IncidenteDetallePage";
+import ComingSoon from "../components/ComingSoon";
 
-
-const NoFount = () => {
-  return <div>Fount 404</div>;
-};
-
-const ComingSoon = ({ title }) => (
-  <div style={{ padding: "2rem" }}>
-    <h2>{title}</h2>
-    <p style={{ color: "var(--text)", marginTop: "0.5rem" }}>
-      Esta sección está en desarrollo...
-    </p>
-  </div>
-);
 
 export const router = createBrowserRouter([
   {

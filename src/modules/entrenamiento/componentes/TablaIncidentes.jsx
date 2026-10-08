@@ -195,7 +195,6 @@ export default function TablaIncidentes({
         meta: { align: "left", width: "22%" },
         cell: ({ row }) => {
           const inc = row.original;
-          const initial = inc.nombre_usuario ? inc.nombre_usuario.charAt(0).toUpperCase() : "U";
           return (
             <div className={styles.userCellCompact}>
               
@@ -257,7 +256,6 @@ export default function TablaIncidentes({
         cell: ({ row }) => {
           const inc = row.original;
           const estado = inc.estado || "abierto";
-          const isExpanded = !!expandedRows[row.id];
           return (
             <div className={styles.estadoAccionCell}>
               <span className={`${styles.estadoBadge} ${getEstadoClass(estado)}`}>
@@ -269,13 +267,12 @@ export default function TablaIncidentes({
         },
       },
       {
-        id: "estado_accion",
+        id: "accion",
         accessorKey: "accion_tomada",
         header: "Acción",
         meta: { align: "center", width: "6%" },
         cell: ({ row }) => {
           const inc = row.original;
-          const estado = inc.estado || "abierto";
           const isExpanded = !!expandedRows[row.id];
           return (
             <div className={styles.estadoAccionCell}>
@@ -297,7 +294,7 @@ export default function TablaIncidentes({
         },
       },
     ],
-    [expandedRows],
+    [expandedRows, detalleBasePath],
   );
 
   // TanStack Table Instance

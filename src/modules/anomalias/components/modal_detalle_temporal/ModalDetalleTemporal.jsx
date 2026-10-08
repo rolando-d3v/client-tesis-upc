@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useDetalleAnomalias, useRarezaEstadistica } from "../../../../api/apiAnomalias";
 import styles from "./ModalDetalleTemporal.module.css";
 
@@ -108,7 +108,6 @@ function calcularMatrizEvaluacion(row) {
   const matriz = [];
 
   // 1. Horario de Operación
-  let hora = null;
   let esFueraHorario = false;
   let esMadrugada = false;
   let diaSemanaNum = null;
@@ -121,14 +120,16 @@ function calcularMatrizEvaluacion(row) {
         : String(row.fecha_creacion).replace(" ", "T");
       const dt = new Date(isoStr);
       if (!isNaN(dt.getTime())) {
-        hora = dt.getHours();
+        const hora = dt.getHours();
         diaSemanaNum = dt.getDay(); // 0=Dom, 6=Sáb
         const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         diaSemanaNombre = dias[diaSemanaNum] || "-";
         esFueraHorario = hora < 8 || hora >= 16;
         esMadrugada = hora < 6 || hora >= 22;
       }
-    } catch {}
+    } catch {
+      // Una fecha inválida conserva los valores predeterminados de la matriz.
+    }
   }
 
   const horaTexto = row.fecha_creacion ? formatDateTime(row.fecha_creacion).hora : "--:--";
@@ -311,10 +312,6 @@ function SeccionRarezaEstadistica({ row }) {
 
   const factores = rareza?.factores || [];
   const totalDataset = rareza?.total_dataset ? rareza.total_dataset.toLocaleString() : "10,000";
-  const factorDeterminante =
-    rareza?.factor_determinante ||
-    "Comportamiento multivariado complejo analizado por el ensamble de 300 árboles de Isolation Forest.";
-
   if (!factores.length) return null;
 
   return (
@@ -471,15 +468,14 @@ export default function ModalDetalleTemporal({
 
   // Consulta al backend
   const { data: result, isLoading, isError, error } = useDetalleAnomalias(1, 1000, queryFiltros);
-  const rawAnomalias = result?.data || [];
 
   // Enriquecer registros con motivos calculados
   const anomalias = useMemo(() => {
-    return rawAnomalias.map((item) => ({
+    return (result?.data || []).map((item) => ({
       ...item,
       motivosCalculados: inferirMotivos(item),
     }));
-  }, [rawAnomalias]);
+  }, [result?.data]);
 
   // Matriz de evaluación del documento seleccionado en el modal ficha
   const matrizEvaluacion = useMemo(() => {
@@ -902,9 +898,9 @@ export default function ModalDetalleTemporal({
                 </tr>
               </thead>
               <tbody>
-                {paginatedAnomalias.map((row) => {
+                {paginatedAnomalias.map((row, rowIndex) => {
                   const numDoc = row.numero_doc || row.id_documento;
-                  const rowId = row.id_registro || `${row.id_documento}-${Math.random()}`;
+                  const rowId = row.id_registro ?? `${row.id_documento}-${row.fecha_creacion}-${rowIndex}`;
                   const isSelected = selectedFichaRow?.id_registro === row.id_registro;
                   const dateInfo = formatDateTime(row.fecha_creacion);
                   const scoreNum = Number(row.score) || 0;

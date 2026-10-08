@@ -12,7 +12,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa6";
 
-const getIcon = (icono, nivel) => {
+const getIcon = (icono) => {
   switch (icono) {
     case "download":
       return <FaDownload />;

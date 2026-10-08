@@ -21,6 +21,7 @@ import {
 } from "react-icons/fa6";
 import RoleBadge from "../../../components/RoleBadge";
 import { toast } from "sonner";
+import { evaluarEstadoForense } from "../telemetria";
 
 const MAX_EVENTOS_VISIBLES = 100;
 
@@ -189,10 +190,7 @@ export default function TablaEventosEnVivo({
           const ev = row.original;
           const numeroRegistro = row.index + 1;
           const userDni = ev.dni || ev.dni_user || ev.id_user;
-          const isNeutralizado =
-            neutralizadosIds.includes(String(userDni)) ||
-            neutralizadosIds.includes(String(ev.id_user)) ||
-            neutralizadosIds.includes(ev.name_user);
+          const isNeutralizado = evaluarEstadoForense(ev, neutralizadosIds).esBloqueado;
 
           return (
             <div className={styles.userCell}>

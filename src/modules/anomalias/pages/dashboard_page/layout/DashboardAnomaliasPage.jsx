@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import { useSelector } from "react-redux";
 import style from "./dashboard.module.css";
 
@@ -17,7 +17,6 @@ import {
 } from "../../../../../api/apiAnomalias";
 
 export default function DashboardAnomalias() {
-  const location = useLocation();
 
   // Filtro global de fechas desde Redux
   const { fechaInicio, fechaFin } = useSelector(

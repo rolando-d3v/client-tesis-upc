@@ -124,28 +124,11 @@ export default function ModalExpedienteForense({
 
     const evalForense = evaluarEstadoForense(base, neutralizadosIds);
 
-    // Garantizar que si es crítico, el storyline incluya el paso de Contención Inmediata SOC
-    let storylineFinal = [...base.storyline];
-    const tienePasoContencion = storylineFinal.some(
-      (s) => String(s.fase || "").toLowerCase().includes("contención") || String(s.fase || "").toLowerCase().includes("contencion")
-    );
-    if (evalForense.esCritico && !tienePasoContencion) {
-      storylineFinal.push({
-        paso: storylineFinal.length + 1,
-        fase: "Contención Inmediata SOC",
-        descripcion: `Neutralización automática ejecutada según constantes.py (Score ${(Number(base.score_correlacion || 0.85) * 100).toFixed(0)}% >= 75%). Cuenta del usuario bloqueada y accesos revocados preventivamente.`,
-        timestamp: base.fecha_deteccion || new Date().toISOString(),
-        icono: "shield",
-        nivel_riesgo: "critico",
-      });
-    }
-
     return {
       ...base,
       estado: evalForense.estadoEfectivo,
       cuenta_bloqueada: evalForense.esBloqueado,
-      es_critico_auto: evalForense.esCritico,
-      storyline: storylineFinal,
+      es_critico: evalForense.esCritico,
     };
   }, [incidente, detalleDB, neutralizadosIds]);
 
@@ -394,23 +377,22 @@ export default function ModalExpedienteForense({
 
             <Indicador
               etiqueta="Estado"
-              detalle={dataActiva.es_critico_auto ? "Contención automática" : null}
-              title={claveEstado === "contenido" ? "Contenido en tiempo real según constantes.py" : undefined}
+              detalle={dataActiva.cuenta_bloqueada ? "Bloqueo confirmado" : null}
             >
               <Marca tono={estado.tono}>{estado.label}</Marca>
             </Indicador>
 
             <Indicador
               etiqueta="Cuenta del usuario"
-              detalle={dataActiva.cuenta_bloqueada ? "Neutralizada preventivamente" : "Sin restricciones"}
+              detalle={dataActiva.cuenta_bloqueada ? "Neutralizada preventivamente" : "Sin bloqueo confirmado"}
               title={
                 dataActiva.cuenta_bloqueada
-                  ? "Cuenta bloqueada y neutralizada en tiempo real según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
+                  ? "Bloqueo de cuenta confirmado por el servidor"
                   : undefined
               }
             >
               <Marca tono={dataActiva.cuenta_bloqueada ? "critico" : "ok"}>
-                {dataActiva.cuenta_bloqueada ? "Bloqueada" : "Activa"}
+                {dataActiva.cuenta_bloqueada ? "Bloqueada" : "Sin confirmar"}
               </Marca>
             </Indicador>
           </section>

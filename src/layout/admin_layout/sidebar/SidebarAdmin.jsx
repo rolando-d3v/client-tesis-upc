@@ -1,13 +1,8 @@
 import styles from "./sidebar.module.css";
 import logo from "../../../assets/logos/machine.png";
 import { Link, useNavigate, useLocation } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { xlogin_false } from "../../../Redux/slice/usuarioAuthSlice";
-import {
-  setFechaInicio,
-  setFechaFin,
-  limpiarFechas,
-} from "../../../Redux/slice/filtroFechasSlice";
 import { logoutAuth } from "../../../api/apiAuthLogin";
 import {
   FaChartLine,
@@ -28,7 +23,6 @@ export default function SidebarAdmin() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { fechaInicio, fechaFin } = useSelector((state) => state.FILTRO_FECHAS);
 
   const anomaliasLinks = [
     {
@@ -102,12 +96,6 @@ export default function SidebarAdmin() {
     dispatch(xlogin_false());
     navigate("/");
   };
-
-  const handleLimpiar = () => {
-    dispatch(limpiarFechas());
-  };
-
-  const tieneFiltroDeFecha = fechaInicio || fechaFin;
 
   return (
     <aside className={styles.aside}>

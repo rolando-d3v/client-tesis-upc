@@ -222,16 +222,13 @@ export const UMBRAL_ALTO = 0.50;
 export const UMBRAL_MEDIO = 0.25;
 
 /**
- * Evalúa el estado forense de contención y bloqueo de cuenta según constantes.py:
- * - Cualquier evento con riesgo 'critico' o score >= 0.75 (UMBRAL_CRITICO) debe ser contenido
- *   preventivamente en tiempo real (estado: 'contenido') y su cuenta bloqueada (cuenta_bloqueada: true).
- * - Usuarios en neutralizadosIds también son considerados contenidos con cuenta bloqueada.
+ * El riesgo crítico es una alerta. La contención requiere un bloqueo confirmado
+ * por el servidor, identificado por el ID del usuario, o un estado persistido.
  */
 export function evaluarEstadoForense(inc, neutralizadosIds = []) {
   if (!inc) return { esCritico: false, esBloqueado: false, estadoEfectivo: "abierto" };
 
   const userId = String(inc.id_user ?? inc.ID_USER ?? inc.user_id ?? "");
-  const userName = String(inc.nombre_usuario || inc.name_user || inc.nombre || "").trim();
   const scoreVal = Number(inc.score_correlacion ?? inc.score_final ?? 0);
   const scoreEscala = Number(inc.score_riesgo ?? 0);
   const riesgoStr = String(inc.nivel_riesgo || "").trim().toLowerCase();
@@ -241,22 +238,19 @@ export function evaluarEstadoForense(inc, neutralizadosIds = []) {
   );
 
   const esPorId = Boolean(userId && neutralizadosSet.has(userId));
-  const esPorNombre = Boolean(userName && neutralizadosSet.has(userName));
 
   // Criterio institucional según constantes.py: UMBRAL_CRITICO = 0.75 (o 22.5 en escala 0-30)
   const esCritico = riesgoStr === "critico" || scoreVal >= UMBRAL_CRITICO || scoreEscala >= 22.5;
 
   const esBloqueado = Boolean(
     inc.cuenta_bloqueada === true ||
-    esCritico ||
-    esPorId ||
-    esPorNombre
+    esPorId
   );
 
-  // En Motor de Detección, eventos críticos deben estar contenidos preventivamente en tiempo real
-  const estadoEfectivo = (esCritico || esBloqueado)
+  const estadoPersistido = String(inc.estado || "abierto").trim().toLowerCase();
+  const estadoEfectivo = esBloqueado && estadoPersistido === "abierto"
     ? "contenido"
-    : String(inc.estado || "abierto").trim().toLowerCase();
+    : estadoPersistido;
 
   return {
     esCritico,
@@ -284,7 +278,7 @@ export function correlacionarEnVivo(mapa, evento, correlacion, secuencia = Date.
   const forense = evaluarEstadoForense(incidente);
   incidente.estado = forense.estadoEfectivo;
   incidente.cuenta_bloqueada = forense.esBloqueado;
-  incidente.es_critico_auto = forense.esCritico;
+  incidente.es_critico = forense.esCritico;
   const siguiente = { ...mapa, [clave]: incidente };
   const claves = Object.keys(siguiente);
   if (claves.length > MAX_INCIDENTES_EN_VIVO) {

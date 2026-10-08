@@ -6,6 +6,7 @@ import TablaEventosEnVivo from "../componentes/TablaEventosEnVivo";
 import ModalInspeccionEvento from "../componentes/ModalInspeccionEvento";
 import GraficosDeteccion from "./GraficosDeteccion";
 import { FaTowerBroadcast, FaListUl, FaCirclePause } from "react-icons/fa6";
+import { evaluarEstadoForense } from "../telemetria";
 
 export default function DeteccionAuth({
   simuladorEstado = {
@@ -85,7 +86,7 @@ export default function DeteccionAuth({
   };
 
   const isUltimoEventoNeutralizado = Boolean(
-    ultimoEvento && neutralizadosIds?.includes(String(ultimoEvento.id_user || ultimoEvento.name_user)),
+    evaluarEstadoForense(ultimoEvento, neutralizadosIds).esBloqueado,
   );
   const estadoFlujo = simuladorEstado.pausado
     ? "pausado"
@@ -187,7 +188,7 @@ export default function DeteccionAuth({
           onClose={handleCloseModal}
           onNeutralizarUsuario={onNeutralizarUsuario}
           isNeutralizado={
-            neutralizadosIds && neutralizadosIds.includes(String(selectedEvento.id_user || selectedEvento.name_user))
+            evaluarEstadoForense(selectedEvento, neutralizadosIds).esBloqueado
           }
         />
       )}

@@ -9,6 +9,7 @@ import {
   crearTelemetria,
   listarIncidentesEnVivo,
 } from "./telemetria";
+import { esEventoCritico, neutralizarAutomaticamente, solicitarBloqueoVerificado } from "./neutralizacion";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Componentes Analíticos SOC (compartidos con Entrenamiento)
@@ -49,18 +50,14 @@ import {
 export default function MotorDeteccion() {
   const queryClient = useQueryClient();
   // Modos de Vista: "integral" (ambos), "streaming" (solo feed/simulador), "graficos" (solo analítica SOC)
-  const [viewMode, setViewMode] = useState("integral");
+  const [viewMode] = useState("integral");
 
   // Neutralización Automática vs Supervisada
   const [autoNeutralize, setAutoNeutralize] = useState(false);
   const autoNeutralizeRef = useRef(false);
-  const [neutralizadosIds, setNeutralizadosIds] = useState([]);
+  const [bloqueosLocales, setBloqueosLocales] = useState([]);
   const neutralizacionesPendientesRef = useRef(new Set());
   const neutralizadosRef = useRef(new Set());
-
-  useEffect(() => {
-    autoNeutralizeRef.current = autoNeutralize;
-  }, [autoNeutralize]);
 
   // Estado WebSocket
   const [conexionStatus, setConexionStatus] = useState("conectando"); // "conectado" | "conectando" | "desconectado"
@@ -107,7 +104,7 @@ export default function MotorDeteccion() {
   });
 
   const { data: resumenSOC } = useResumenSOC();
-  const { data: alertasBloqueo } = useAlertasBloqueados();
+  const { data: alertasBloqueo, dataUpdatedAt: alertasActualizadasEn } = useAlertasBloqueados();
   const { data: incidentesData } = useIncidentes({
     page: pageSOC,
     page_size: 10,
@@ -174,16 +171,25 @@ export default function MotorDeteccion() {
     ? (telemetria.score_total / totalRecibidos).toFixed(3)
     : "0.000";
 
-  const cuentasBloqueadas = new Set([
-    ...(Array.isArray(alertasBloqueo) ? alertasBloqueo.map((alerta) => String(alerta.id_user)) : []),
-    ...neutralizadosIds,
-  ]);
-  const totalBloqueados = cuentasBloqueadas.size;
+  const idsBloqueadosConfirmados = useMemo(() => [...new Set([
+    // La confirmación local cubre la espera del siguiente snapshot del servidor.
+    ...bloqueosLocales.filter((bloqueo) => bloqueo.confirmadoEn >= alertasActualizadasEn)
+      .map((bloqueo) => bloqueo.id),
+    ...(Array.isArray(alertasBloqueo)
+      ? alertasBloqueo.filter((alerta) => alerta.confirmacion_bloqueo === true && alerta.id_user != null)
+        .map((alerta) => String(alerta.id_user))
+      : []),
+  ])], [alertasBloqueo, alertasActualizadasEn, bloqueosLocales]);
+  const totalBloqueados = idsBloqueadosConfirmados.length;
+
+  useEffect(() => {
+    neutralizadosRef.current = new Set(idsBloqueadosConfirmados);
+  }, [idsBloqueadosConfirmados]);
 
   // Los gráficos leen una versión diferida: React prioriza el feed/KPIs y repinta
   // las gráficas en cuanto puede, así una ráfaga de eventos no las congela ni las salta.
   const telemetriaGraficos = useDeferredValue(telemetria);
-  const neutralizadosGraficos = useDeferredValue(neutralizadosIds);
+  const neutralizadosGraficos = useDeferredValue(idsBloqueadosConfirmados);
   const resumenEnVivo = useMemo(
     () => combinarResumenSOC(resumenSOC, telemetriaGraficos, neutralizadosGraficos),
     [resumenSOC, telemetriaGraficos, neutralizadosGraficos]
@@ -209,31 +215,26 @@ export default function MotorDeteccion() {
     const motivo =
       motivoCustom ||
       `Neutralización inmediata en vivo: Detección crítica en evento #${evento.id_evento} (${evento.name_clasificacion || "Documento"}) por ${userName}`;
+    const aviso = toast.loading(`Verificando el bloqueo de ${userName}…`);
 
     try {
-      const resultado = await postNeutralizarUsuario({
-        id_evento: evento.id_evento,
-        evento_registro_id: evento.evento_registro_id,
-        id_user: userId,
-        nombre_usuario: userName,
-        motivo,
-        responsable: "MOTOR_DETECCION_REALTIME",
-      });
-      if (resultado?.confirmacion_bloqueo !== true) {
-        throw new Error("El servidor no confirmó el bloqueo de la cuenta.");
-      }
+      await solicitarBloqueoVerificado(evento, motivo, postNeutralizarUsuario);
       neutralizadosRef.current.add(userKey);
       if (!montadoRef.current) return;
-      setNeutralizadosIds((prev) => [...new Set([...prev, userKey])]);
+      setBloqueosLocales((prev) => [
+        ...prev.filter((bloqueo) => bloqueo.id !== userKey),
+        { id: userKey, confirmadoEn: Date.now() },
+      ]);
       queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
-      toast.success(`🛡️ Usuario ${userName} neutralizado y cuenta bloqueada en tiempo real.`);
+      toast.success(`Usuario ${userName}: bloqueo confirmado por el servidor.`, { id: aviso, duration: 5000 });
     } catch (err) {
       console.error("Error neutralizando:", err);
       if (montadoRef.current) {
-        toast.error(err.response?.data?.detail || err.message || `No se pudo neutralizar a ${userName}.`);
+        toast.error(err.response?.data?.detail || err.message || `No se pudo neutralizar a ${userName}.`, { id: aviso, duration: 5000 });
       }
     } finally {
       neutralizacionesPendientesRef.current.delete(userKey);
+      if (!montadoRef.current) toast.dismiss(aviso);
     }
   }, [queryClient]);
 
@@ -288,26 +289,11 @@ export default function MotorDeteccion() {
               setIncidentesPares((prev) => correlacionarEnVivo(prev, ev, correlacion, Date.now()));
 
               // Criterio institucional según constantes.py: UMBRAL_CRITICO = 0.75
-              const esCritico = ev.nivel_riesgo === "critico" || Number(ev.score_final || 0) >= 0.75;
-              if (esCritico) {
-                // Marca visual inmediata (los gráficos pasan el incidente a "Contenido").
-                // OJO: no tocar neutralizadosRef aquí; lo agrega handleNeutralizarUsuario
-                // cuando el servidor confirma el bloqueo. Si se agregara antes, esa función
-                // retornaría al instante y el POST /correlacion/neutralizar nunca saldría.
-                const userKey = String(ev.id_user ?? ev.user_id ?? ev.name_user ?? "");
-                if (userKey) {
-                  setNeutralizadosIds((prev) => (prev.includes(userKey) ? prev : [...prev, userKey]));
-                }
-
+              if (esEventoCritico(ev)) {
                 toast.error(
-                  `🚨 Evento Crítico #${ev.id_evento}: ${ev.name_user} descargó ${ev.size_archivo_mb} MB (${ev.name_clasificacion}) — Auto-Contenido y cuenta bloqueada en tiempo real.`
+                  `Evento crítico #${ev.id_evento}: ${ev.name_user} — ${ev.name_tipo_evento || "Actividad"} (${ev.name_clasificacion || "Documento"}). ${autoNeutralizeRef.current ? "Se solicitará el bloqueo al servidor." : "Pendiente de decisión del operador."}`
                 );
-
-                // Neutralización Automática / persistencia en backend
-                handleNeutralizarUsuario(
-                  ev,
-                  "Neutralización automática en tiempo real: Amenaza crítica detectada según constantes.py (Score >= 0.75 / UMBRAL_CRITICO)"
-                );
+                neutralizarAutomaticamente(ev, autoNeutralizeRef.current, handleNeutralizarUsuario);
               }
             }
 
@@ -662,11 +648,13 @@ export default function MotorDeteccion() {
           <label className={styles.switchToggle}>
             <input
               type="checkbox"
+              aria-label="Activar neutralización automática"
               checked={autoNeutralize}
               onChange={(e) => {
+                autoNeutralizeRef.current = e.target.checked;
                 setAutoNeutralize(e.target.checked);
                 if (e.target.checked) {
-                  toast.error("⚡ Modo Automático ACTIVADO: Amenazas críticas serán neutralizadas al instante.");
+                  toast.info("Modo automático activado: se solicitará al servidor el bloqueo de las amenazas críticas.");
                 } else {
                   toast.info("Modo Supervisado: La neutralización requiere confirmación del operador.");
                 }
@@ -713,7 +701,7 @@ export default function MotorDeteccion() {
           isUploadingCSV={isUploadingCSV}
           ultimoEvento={ultimoEvento}
           onNeutralizarUsuario={handleNeutralizarUsuario}
-          neutralizadosIds={neutralizadosIds}
+          neutralizadosIds={idsBloqueadosConfirmados}
           eventos={eventos}
           filtros={filtros}
           setFiltros={setFiltros}
@@ -809,7 +797,7 @@ export default function MotorDeteccion() {
           <TablaIncidentesMotor
             data={incidentesForenseData}
             incidentesEnVivo={incidentesEnVivo}
-            neutralizadosIds={neutralizadosIds}
+            neutralizadosIds={idsBloqueadosConfirmados}
             onNeutralizarUsuario={handleNeutralizarUsuario}
             detalleBasePath="/eventos/motor-deteccion/incidente"
             page={pageIncidentes}
