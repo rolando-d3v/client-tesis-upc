@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from "react";
 import styles from "./motorDeteccion.module.css";
-import KPICardsMonitoreo from "./componentes/KPICardsMonitoreo";
+import KPICardsMonitoreo from "./componentes/kpi_cards_monitoreo/KPICardsMonitoreo";
 import DeteccionAuth from "./deteccion_automatica/DeteccionAuth";
 import {
   acumularEvento,
@@ -13,10 +13,10 @@ import { esEventoCritico, neutralizarAutomaticamente, solicitarBloqueoVerificado
 import { useQueryClient } from "@tanstack/react-query";
 
 // Componentes Analíticos SOC (compartidos con Entrenamiento)
-import GraficoEvolucionRiesgos from "../entrenamiento/componentes/GraficoEvolucionRiesgos";
-import GraficoTipoEvento from "../entrenamiento/componentes/GraficoTipoEvento";
-import DashboardSOCAnalytics from "../entrenamiento/componentes/DashboardSOCAnalytics";
-import TablaIncidentesMotor from "./componentes/TablaIncidentesMotor";
+import GraficoEvolucionRiesgos from "../entrenamiento/componentes/grafico_evolucion_riesgos/GraficoEvolucionRiesgos";
+import GraficoTipoEvento from "../entrenamiento/componentes/grafico_tipo_evento/GraficoTipoEvento";
+import DashboardSOCAnalytics from "../entrenamiento/componentes/dashboard_soc_analytics/DashboardSOCAnalytics";
+import TablaIncidentesMotor from "./componentes/tabla_incidentes_motor/TablaIncidentesMotor";
 
 import { API_MACHINE } from "../../api/apiRestMachine";
 import {
@@ -92,24 +92,8 @@ export default function MotorDeteccion() {
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [isUploadingCSV, setIsUploadingCSV] = useState(false);
 
-  // Estado para los Gráficos Analíticos SOC (mismos de IncidentesPage)
-  const [pageSOC, setPageSOC] = useState(1);
-  const [filtrosSOC, setFiltrosSOC] = useState({
-    nivel_riesgo: "",
-    estado: "",
-    clasificacion: "",
-    busqueda: "",
-    mes: "",
-    tipo_evento: "",
-  });
-
   const { data: resumenSOC } = useResumenSOC();
   const { data: alertasBloqueo, dataUpdatedAt: alertasActualizadasEn } = useAlertasBloqueados();
-  const { data: incidentesData } = useIncidentes({
-    page: pageSOC,
-    page_size: 10,
-    ...filtrosSOC,
-  });
 
   // Estado para Expediente Forense (TablaIncidentes en Motor de Detección)
   // Correlación en vivo: un incidente por par (documento, usuario) que se actualiza con cada evento.
@@ -197,8 +181,8 @@ export default function MotorDeteccion() {
   // Lista combinada de incidentes para el modal y tabla de analytics:
   // los correlacionados en vivo (1 por documento+usuario) primero, luego los persistidos.
   const listaIncidentesEnVivo = useMemo(
-    () => [...incidentesEnVivo, ...(incidentesData?.incidentes || [])],
-    [incidentesData?.incidentes, incidentesEnVivo]
+    () => [...incidentesEnVivo, ...(incidentesForenseData?.incidentes || [])],
+    [incidentesForenseData?.incidentes, incidentesEnVivo]
   );
 
   // Ejecución de Neutralización Preventiva (Manual o Automática)
@@ -733,12 +717,14 @@ export default function MotorDeteccion() {
 
     
 
+          {/* Los clics en los gráficos (clasificación, mes, usuario, documento) filtran la
+              tabla del Expediente Forense: comparten su estado de filtros y paginación. */}
           <DashboardSOCAnalytics
             resumen={resumenEnVivo}
             tiempoReal
-            filtros={filtrosSOC}
-            setFiltros={setFiltrosSOC}
-            setPage={setPageSOC}
+            filtros={filtrosIncidentes}
+            setFiltros={setFiltrosIncidentes}
+            setPage={setPageIncidentes}
             incidentesList={listaIncidentesEnVivo}
           />
         </div>

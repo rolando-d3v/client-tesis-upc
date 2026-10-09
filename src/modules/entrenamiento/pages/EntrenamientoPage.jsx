@@ -1,8 +1,8 @@
 import { useState } from "react";
 import styles from "./EntrenamientoPage.module.css";
-import KPICardsSOC from "../componentes/KPICardsSOC";
-import DashboardSOCAnalytics from "../componentes/DashboardSOCAnalytics";
-import TablaIncidentes from "../componentes/TablaIncidentes";
+import KPICardsSOC from "../componentes/kpi_cards_soc/KPICardsSOC";
+import DashboardSOCAnalytics from "../componentes/dashboard_soc_analytics/DashboardSOCAnalytics";
+import TablaIncidentes from "../componentes/tabla_incidentes/TablaIncidentes";
 import {
   useIncidentes,
   useResumenSOC,

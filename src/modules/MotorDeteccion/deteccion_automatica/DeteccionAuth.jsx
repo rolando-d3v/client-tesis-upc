@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import styles from "./DeteccionAuth.module.css";
-import ControlSimulador from "../componentes/ControlSimulador";
-import BannerUltimoEvento from "../componentes/BannerUltimoEvento";
-import TablaEventosEnVivo from "../componentes/TablaEventosEnVivo";
-import ModalInspeccionEvento from "../componentes/ModalInspeccionEvento";
+import ControlSimulador from "../componentes/control_simulador/ControlSimulador";
+import BannerUltimoEvento from "../componentes/banner_ultimo_evento/BannerUltimoEvento";
+import TablaEventosEnVivo from "../componentes/tabla_eventos_en_vivo/TablaEventosEnVivo";
+import ModalInspeccionEvento from "../componentes/modal_inspeccion_evento/ModalInspeccionEvento";
 import GraficosDeteccion from "./GraficosDeteccion";
 import { FaTowerBroadcast, FaListUl, FaCirclePause } from "react-icons/fa6";
 import { evaluarEstadoForense } from "../telemetria";

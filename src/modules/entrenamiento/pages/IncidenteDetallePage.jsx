@@ -2,10 +2,10 @@ import { useParams, Link, useLocation } from "react-router";
 import styles from "./IncidenteDetallePage.module.css";
 import dayjs from "dayjs";
 import { useIncidenteDetalle } from "../../../api/apiCorrelacion";
-import ScoreGauge from "../componentes/ScoreGauge";
-import MotivosDesglose from "../componentes/MotivosDesglose";
-import StorylineTimeline from "../componentes/StorylineTimeline";
-import AccionesContencion from "../componentes/AccionesContencion";
+import ScoreGauge from "../componentes/score_gauge/ScoreGauge";
+import MotivosDesglose from "../componentes/motivos_desglose/MotivosDesglose";
+import StorylineTimeline from "../componentes/storyline_timeline/StorylineTimeline";
+import AccionesContencion from "../componentes/acciones_contencion/AccionesContencion";
 import RoleBadge from "../../../components/RoleBadge";
 import {
   FaArrowLeft,

@@ -3,10 +3,10 @@ import LayoutLogin from "../modules/auth/pages/login/layout-login/LayoutLogin";
 import { PrivateRoute, PublicRoute } from "./PrivateRoutes";
 import MainLayout from "../layout/admin_layout/layout/MainLayout";
 import TablaPage from "../modules/auth/pages/tabla/Tabla";
-import DashboardAnomaliasPage from "../modules/anomalias/pages/dashboard_page/layout/DashboardAnomaliasPage";
-import TablaAnomaliasPage from "../modules/anomalias/pages/tabla_anomalias_page/TablaAnomaliaPage";
-import TimelineAnomalias from "../modules/anomalias/pages/timelineAnomalia/TimelineAnomalias";
-import CargaAnomalias from "../modules/anomalias/pages/carga_csv_anomalias/CargaAnomalias";
+import DashboardAnomaliasPage from "../modules/trazabilidad/pages/dashboard_page/layout/DashboardAnomaliasPage";
+import TablaAnomaliasPage from "../modules/trazabilidad/pages/tabla_anomalias_page/TablaAnomaliaPage";
+import TimelineAnomalias from "../modules/trazabilidad/pages/timelineAnomalia/TimelineAnomalias";
+import CargaAnomalias from "../modules/trazabilidad/pages/carga_csv_anomalias/CargaAnomalias";
 
 // Eventos — Risk Dashboard
 import CargaCSVEventos from "../modules/eventos/pages/CargaCSVEventos/CargaCSVEventos";

@@ -22,6 +22,15 @@ export const getIncidenteDetalle = async (id) => {
   return response.data;
 };
 
+// Ficha ampliada del documento auditado y del usuario investigado (expediente forense).
+// Funciona con incidentes persistidos y con los correlacionados en vivo.
+export const getFichaForense = async (idDocumento, idUser) => {
+  const response = await api.get("/correlacion/ficha-forense", {
+    params: { id_documento: idDocumento, id_user: idUser },
+  });
+  return response.data;
+};
+
 export const getResumenSOC = async () => {
   const response = await api.get("/correlacion/resumen");
   return response.data;
@@ -98,6 +107,15 @@ export const useIncidentes = (params = {}) => {
     queryFn: () => getIncidentes(params),
     keepPreviousData: true,
     staleTime: 1000 * 30, // 30s
+  });
+};
+
+export const useFichaForense = (idDocumento, idUser) => {
+  return useQuery({
+    queryKey: ["ficha_forense", idDocumento, idUser],
+    queryFn: () => getFichaForense(idDocumento, idUser),
+    enabled: idDocumento != null && idUser != null,
+    staleTime: 1000 * 30, // los incidentes en vivo siguen sumando eventos
   });
 };
 

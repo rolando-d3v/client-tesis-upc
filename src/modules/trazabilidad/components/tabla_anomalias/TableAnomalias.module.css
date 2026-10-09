@@ -1,0 +1,901 @@
+/* Summary and query controls */
+.summarySection {
+  margin-bottom: 24px;
+}
+
+.summaryHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.sectionHint {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kpiCard {
+  --card-accent: #64748b;
+  display: flex; flex-direction: column; gap: 12px;
+  min-width: 0; padding: 16px; text-align: left; font-family: inherit;
+  background: #fff; border: 1px solid #e2e8f0; border-top: 3px solid var(--card-accent);
+  border-radius: 12px; cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.kpiCard:hover {
+  background: #f8fafc;
+  border-color: var(--card-accent);
+}
+
+.kpiCardActive {
+  background: #fff;
+  border-color: var(--card-accent);
+  box-shadow: 0 0 0 1px var(--card-accent);
+}
+
+.kpiCardTotal {
+  --card-accent: #475569;
+}
+
+.kpiCardCritico {
+  --card-accent: #b91c1c;
+}
+
+.kpiCardAlto {
+  --card-accent: #c2410c;
+}
+
+.kpiCardMedio {
+  --card-accent: #a16207;
+}
+
+.kpiCardExterior {
+  --card-accent: #8b1a2b;
+}
+
+.kpiCardBajo {
+  --card-accent: #15803d;
+}
+
+.kpiTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kpiTitle {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.kpiIcon {
+  flex-shrink: 0;
+  color: var(--card-accent);
+  font-size: 15px;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.kpiNumber {
+  color: var(--card-accent);
+  font-size: 30px;
+  font-weight: 750;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiShare {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.kpiSub {
+  margin-top: auto;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.toolbarContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tableHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.toolbarActionsRight {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+
+.classificationField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.controlLabel {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.selectFilter {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d9dee7;
+  border-radius: 8px;
+  color: #334155;
+  background: #fff;
+  font: 13px var(--sans, system-ui, sans-serif);
+  cursor: pointer;
+}
+
+.btnExportar, .btnResetFilters {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnExportar {
+  background: #8b1a2b;
+  color: #fff;
+  border: 1px solid #8b1a2b;
+}
+
+.btnExportar:hover:not(:disabled) {
+  background: #701522;
+}
+
+.btnExportar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnResetFilters {
+  background: #fff;
+  color: #475569;
+  border: 1px solid #d9dee7;
+}
+
+.btnResetFilters:hover {
+  color: #8b1a2b;
+  background: #faf0f2;
+}
+
+.btnExportar svg, .btnResetFilters svg {
+  font-size: 14px;
+}
+
+.kpiCard:focus-visible, .selectFilter:focus-visible, .btnExportar:focus-visible, .btnResetFilters:focus-visible {
+  outline: 3px solid #8b1a2b;
+  outline-offset: 3px;
+}
+
+.statusCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+}
+
+.statusIcon {
+  color: #8b1a2b;
+  font-size: 32px;
+}
+
+.statusCard h3 {
+  font-size: 18px;
+  color: #1e293b;
+}
+
+.statusCard p {
+  max-width: 65ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+@container auditPage (max-width: 1000px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpiCardTotal {
+    grid-column: 1 / -1;
+  }
+
+  .toolbarActionsRight {
+    width: 100%;
+  }
+
+  .classificationField {
+    flex: 1;
+  }
+
+}
+@container auditPage (max-width: 420px) {
+  .summaryHeading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kpiGrid {
+    gap: 10px;
+  }
+
+  .kpiCard {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .classificationField {
+    flex-basis: 100%;
+  }
+
+  .btnExportar {
+    flex: 1;
+  }
+
+}
+
+@container auditPage (max-width: 280px) {
+  .kpiGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
+/* ===== TABLE CELLS ===== */
+
+/* Columna 1: Documento & Metadata */
+.docCellPrimary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.docNumTitle {
+  font-weight: 700;
+  font-size: 13px;
+  color: #0f172a;
+  transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.docCellPrimary:hover .docNumTitle {
+  color: #8b1a2b;
+  text-decoration: underline;
+}
+
+.docMetaSubline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.docTipoBadge {
+  background: #f1f5f9;
+  color: #334155;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  border: 1px solid #e2e8f0;
+}
+
+.docIdText {
+  color: #94a3b8;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 10px;
+}
+
+.docPesoNormal {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.docPesoHeavy {
+  color: #b91c1c;
+  font-weight: 700;
+  background: #fee2e2;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* Columna 2: Clasificación */
+.badgeClasif {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.clasifSecreto {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.clasifReservado {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
+.clasifConfidencial {
+  background: #fef9c3;
+  color: #a16207;
+  border: 1px solid #fde047;
+}
+
+.clasifComun {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* Columna 3: Score & Riesgo */
+.scoreCellWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  padding: 2px 0;
+}
+
+.scoreHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.scoreNumberVal {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-weight: 800;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.scorePercentVal {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.badgeRiesgo {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.riesgoCritico {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.riesgoAlto {
+  background: #ffedd5;
+  color: #ea580c;
+  border: 1px solid #fdba74;
+}
+
+.riesgoMedio {
+  background: #fef9c3;
+  color: #ca8a04;
+  border: 1px solid #fde047;
+}
+
+.riesgoBajo {
+  background: #ecfdf5;
+  color: #16a34a;
+  border: 1px solid #a7f3d0;
+}
+
+.scoreBarTrack {
+  width: 100%;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.scoreBarFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.barCritico {
+  background: linear-gradient(90deg, #ef4444, #b91c1c);
+}
+
+.barAlto {
+  background: linear-gradient(90deg, #f97316, #c2410c);
+}
+
+.barMedio {
+  background: linear-gradient(90deg, #eab308, #a16207);
+}
+
+.barBajo {
+  background: linear-gradient(90deg, #22c55e, #15803d);
+}
+
+.scoreBreakdownRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Columna 4: Motivos Chips */
+.motivosCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 250px;
+}
+
+.motivoChip {
+  display: inline-block;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.motivoChipAlert {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+  font-weight: 600;
+}
+
+.motivoMore {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 600;
+  cursor: help;
+  padding-left: 2px;
+}
+
+/* Columna 5: Ruta de Trámite */
+.rutaContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 170px;
+}
+
+.rutaFlow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.rutaOrigen {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.rutaArrow {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.rutaDestino {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.badgeExterior {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.badgeInterno {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+/* Columna 6: Usuario & Fecha */
+.userContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 140px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.userAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.userTimeRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.badgeFueraHorario {
+  font-size: 10px;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Columna 7: Estado */
+.estadoBadge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Columna 8: Botón de Trazabilidad */
+.btnTrazabilidad {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btnTrazabilidad:hover:not(:disabled) {
+  background: #8b1a2b;
+  color: #ffffff;
+  border-color: #8b1a2b;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px rgba(139, 26, 43, 0.25);
+}
+
+.btnTrazabilidad:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btnTrazabilidad:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+/* ===== FICHA FORENSE EXPANDIDA ===== */
+.forensicCard {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.forensicHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.forensicTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.forensicTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.forensicBadgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.forensicGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.forensicBox {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.forensicBoxTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 6px;
+}
+
+.xaiMetricList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.xaiMetric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 3px 0;
+}
+
+.xaiMetricLabel {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.xaiMetricVal {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.motivosFullList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.motivoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: #334155;
+  background: #f8fafc;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #8b1a2b;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.metaValue {
+  font-size: 12px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.forensicFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.btnForensicAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #8b1a2b;
+  color: #ffffff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(139, 26, 43, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btnForensicAction:hover {
+  background: #731523;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 26, 43, 0.35);
+}
+
+.docNumTitle > span, .userRow > span, .userTimeRow > span, .scoreBreakdownRow > span {
+
+  font-size: inherit;
+
+}
+
+.forensicCard {
+  white-space: normal;
+}
+
+.forensicTitleArea, .forensicBadgeGroup, .forensicFooter {
+  flex-wrap: wrap;
+}
+
+.btnTrazabilidad:focus-visible, .btnForensicAction:focus-visible {
+  outline: 3px solid #8b1a2b;
+  outline-offset: 3px;
+}
+
+.btnText {
+  font-size: inherit;
+}
