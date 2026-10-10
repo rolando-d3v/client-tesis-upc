@@ -9,7 +9,7 @@ import {
   crearTelemetria,
   listarIncidentesEnVivo,
 } from "./telemetria";
-import { esEventoCritico, neutralizarAutomaticamente, solicitarBloqueoVerificado } from "./neutralizacion";
+import { esAmenazaCritica, neutralizarAutomaticamente, scoreTotal, solicitarBloqueoVerificado } from "./neutralizacion";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Componentes Analíticos SOC (compartidos con Entrenamiento)
@@ -47,14 +47,160 @@ import {
   FaFolderOpen,
 } from "react-icons/fa6";
 
+// Pool de pruebas sintéticas: 5 casos Críticos (Score ≥ 0.75) y 3 casos Altos (Score 0.50 - 0.74)
+// Todos los usuarios y documentos pertenecen a los datasets institucionales (dt_eventos.csv y registro_trazabilidad.csv)
+// lo que garantiza la compatibilidad con las líneas base entrenadas y la correlación cruzada en tiempo real.
+const CASOS_PRUEBA_INYECTAR = [
+  // ── 5 CASOS CRÍTICOS (Score ≥ 0.75 / Alerta Directa y Contención) ──
+  {
+    nivel_esperado: "critico",
+    name_user: "CARLOS ALBERTO",
+    id_user: 20043477,
+    name_oficina: "B-2 (SDI)",
+    id_oficina: 2,
+    id_documento: 152790,
+    numero_documento: "109",
+    id_tipo_documento: 2,
+    id_clasificacion: 1,
+    name_clasificacion: "SECRETO",
+    id_tipo_evento: 2,
+    name_tipo_evento: "DESCARGAR",
+    doc_interno_externo: "exterior",
+    size_archivo_mb: 120.0,
+    hora_evento: 2,
+  },
+  {
+    nivel_esperado: "critico",
+    name_user: "ROBERTO CARLOS",
+    id_user: 80137703,
+    name_oficina: "A9 -Trafico ilicito de drogas y delitos conexos",
+    id_oficina: 121,
+    id_documento: 152791,
+    numero_documento: "110",
+    id_tipo_documento: 2,
+    id_clasificacion: 1,
+    name_clasificacion: "SECRETO",
+    id_tipo_evento: 4,
+    name_tipo_evento: "ELIMINAR",
+    doc_interno_externo: "interior",
+    size_archivo_mb: 18.5,
+    hora_evento: 23,
+  },
+  {
+    nivel_esperado: "critico",
+    name_user: "ALEX",
+    id_user: 10350450,
+    name_oficina: "A1 -Crimen Organizado y Delincuencia Comun",
+    id_oficina: 124,
+    id_documento: 152794,
+    numero_documento: "105",
+    id_tipo_documento: 2,
+    id_clasificacion: 1,
+    name_clasificacion: "SECRETO",
+    id_tipo_evento: 5,
+    name_tipo_evento: "GUARDAR_COPIA",
+    doc_interno_externo: "exterior",
+    size_archivo_mb: 92.0,
+    hora_evento: 1,
+  },
+  {
+    nivel_esperado: "critico",
+    name_user: "ARTURO",
+    id_user: 23854735,
+    name_oficina: "A10- Contaminacion al ambiente y su afectacion al des. disp.",
+    id_oficina: 122,
+    id_documento: 152799,
+    numero_documento: "2122",
+    id_tipo_documento: 2,
+    id_clasificacion: 1,
+    name_clasificacion: "SECRETO",
+    id_tipo_evento: 2,
+    name_tipo_evento: "DESCARGAR",
+    doc_interno_externo: "exterior",
+    size_archivo_mb: 185.0,
+    hora_evento: 3,
+  },
+  {
+    nivel_esperado: "critico",
+    name_user: "JUAN PABLO",
+    id_user: 18137788,
+    name_oficina: "BRASIL",
+    id_oficina: 137,
+    id_documento: 152798,
+    numero_documento: "2121",
+    id_tipo_documento: 2,
+    id_clasificacion: 1,
+    name_clasificacion: "SECRETO",
+    id_tipo_evento: 4,
+    name_tipo_evento: "ELIMINAR",
+    doc_interno_externo: "exterior",
+    size_archivo_mb: 5.0,
+    hora_evento: 4,
+  },
+
+  // ── 3 CASOS ALTOS (Score 0.50 - 0.74 / Amenaza sin Alerta Directa) ──
+  {
+    nivel_esperado: "alto",
+    name_user: "FREDDY MAX",
+    id_user: 10326966,
+    name_oficina: "A10- Contaminacion al ambiente y su afectacion al des. disp.",
+    id_oficina: 122,
+    id_documento: 152797,
+    numero_documento: "21",
+    id_tipo_documento: 6,
+    id_clasificacion: 2,
+    name_clasificacion: "RESERVADO",
+    id_tipo_evento: 2,
+    name_tipo_evento: "DESCARGAR",
+    doc_interno_externo: "exterior",
+    size_archivo_mb: 52.0,
+    hora_evento: 21,
+  },
+  {
+    nivel_esperado: "alto",
+    name_user: "ANTONIO",
+    id_user: 43500589,
+    name_oficina: "A7 - Conflictividad Social",
+    id_oficina: 125,
+    id_documento: 152803,
+    numero_documento: "21",
+    id_tipo_documento: 6,
+    id_clasificacion: 2,
+    name_clasificacion: "RESERVADO",
+    id_tipo_evento: 5,
+    name_tipo_evento: "GUARDAR_COPIA",
+    doc_interno_externo: "interior",
+    size_archivo_mb: 40.0,
+    hora_evento: 22,
+  },
+  {
+    nivel_esperado: "alto",
+    name_user: "ANDRES MOISES",
+    id_user: 2601745,
+    name_oficina: "JEFE DE FRENTE INTERNO",
+    id_oficina: 147,
+    id_documento: 152816,
+    numero_documento: "22",
+    id_tipo_documento: 6,
+    id_clasificacion: 2,
+    name_clasificacion: "RESERVADO",
+    id_tipo_evento: 2,
+    name_tipo_evento: "DESCARGAR",
+    doc_interno_externo: "exterior",
+    size_archivo_mb: 48.0,
+    hora_evento: 20,
+  },
+];
+
 export default function MotorDeteccion() {
   const queryClient = useQueryClient();
   // Modos de Vista: "integral" (ambos), "streaming" (solo feed/simulador), "graficos" (solo analítica SOC)
   const [viewMode] = useState("integral");
 
-  // Neutralización Automática vs Supervisada
-  const [autoNeutralize, setAutoNeutralize] = useState(false);
-  const autoNeutralizeRef = useRef(false);
+  // Neutralización Automática vs Supervisada. Arranca en automático: una amenaza crítica
+  // (score ≥ 0.75) bloquea la cuenta sin esperar al operador; el interruptor permite pasar a supervisado.
+  const [autoNeutralize, setAutoNeutralize] = useState(true);
+  const autoNeutralizeRef = useRef(true);
   const [bloqueosLocales, setBloqueosLocales] = useState([]);
   const neutralizacionesPendientesRef = useRef(new Set());
   const neutralizadosRef = useRef(new Set());
@@ -102,6 +248,7 @@ export default function MotorDeteccion() {
   // IDs de evento ya contados: si el CSV vuelve a empezar (bucle / reinicio) el evento repetido
   // se muestra en el feed pero no se vuelve a sumar a gráficos, KPIs ni incidentes.
   const eventosContadosRef = useRef(new Set());
+  const ultimoIndiceInyectadoRef = useRef(-1);
   const [repetidosOmitidos, setRepetidosOmitidos] = useState(0);
   const [pageIncidentes, setPageIncidentes] = React.useState(1);
   const [pageSizeIncidentes, setPageSizeIncidentes] = React.useState(10);
@@ -165,6 +312,14 @@ export default function MotorDeteccion() {
       : []),
   ])], [alertasBloqueo, alertasActualizadasEn, bloqueosLocales]);
   const totalBloqueados = idsBloqueadosConfirmados.length;
+  // Últimos usuarios bloqueados (confirmados por el servidor) para la alerta del banner
+  const ultimosBloqueados = useMemo(
+    () => (Array.isArray(alertasBloqueo) ? alertasBloqueo : [])
+      .filter((alerta) => alerta.confirmacion_bloqueo === true && alerta.id_user != null)
+      .filter((alerta, i, lista) => lista.findIndex((a) => String(a.id_user) === String(alerta.id_user)) === i)
+      .slice(0, 3),
+    [alertasBloqueo]
+  );
 
   useEffect(() => {
     neutralizadosRef.current = new Set(idsBloqueadosConfirmados);
@@ -202,7 +357,7 @@ export default function MotorDeteccion() {
     const aviso = toast.loading(`Verificando el bloqueo de ${userName}…`);
 
     try {
-      await solicitarBloqueoVerificado(evento, motivo, postNeutralizarUsuario);
+      const resultado = await solicitarBloqueoVerificado(evento, motivo, postNeutralizarUsuario);
       neutralizadosRef.current.add(userKey);
       if (!montadoRef.current) return;
       setBloqueosLocales((prev) => [
@@ -210,7 +365,14 @@ export default function MotorDeteccion() {
         { id: userKey, confirmadoEn: Date.now() },
       ]);
       queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
-      toast.success(`Usuario ${userName}: bloqueo confirmado por el servidor.`, { id: aviso, duration: 5000 });
+      const scoreBloqueo = Number(resultado?.score_correlacion);
+      toast.error(`🔒 Usuario bloqueado: ${userName} (DNI ${userKey})`, {
+        id: aviso,
+        duration: 8000,
+        description: `Cuenta neutralizada automáticamente y confirmada por el servidor${
+          Number.isFinite(scoreBloqueo) ? ` · score total ${Math.round(scoreBloqueo * 100)}%` : ""
+        }.`,
+      });
     } catch (err) {
       console.error("Error neutralizando:", err);
       if (montadoRef.current) {
@@ -272,12 +434,14 @@ export default function MotorDeteccion() {
               // (anomalía, riesgo alto/crítico o score >= UMBRAL_ALTO).
               setIncidentesPares((prev) => correlacionarEnVivo(prev, ev, correlacion, Date.now()));
 
-              // Criterio institucional según constantes.py: UMBRAL_CRITICO = 0.75
-              if (esEventoCritico(ev)) {
+              // Criterio institucional según constantes.py: UMBRAL_CRITICO = 0.75, aplicado al
+              // evento o al score total de la correlación del par (el que muestra la tabla).
+              if (esAmenazaCritica(ev, correlacion)) {
+                const total = scoreTotal(correlacion);
                 toast.error(
-                  `Evento crítico #${ev.id_evento}: ${ev.name_user} — ${ev.name_tipo_evento || "Actividad"} (${ev.name_clasificacion || "Documento"}). ${autoNeutralizeRef.current ? "Se solicitará el bloqueo al servidor." : "Pendiente de decisión del operador."}`
+                  `Amenaza crítica #${ev.id_evento}: ${ev.name_user} — ${ev.name_tipo_evento || "Actividad"} (${ev.name_clasificacion || "Documento"})${total !== null ? ` · score total ${Math.round(total * 100)}%` : ""}. ${autoNeutralizeRef.current ? "Bloqueando la cuenta…" : "Pendiente de decisión del operador."}`
                 );
-                neutralizarAutomaticamente(ev, autoNeutralizeRef.current, handleNeutralizarUsuario);
+                neutralizarAutomaticamente(ev, correlacion, autoNeutralizeRef.current, handleNeutralizarUsuario);
               }
             }
 
@@ -383,69 +547,53 @@ export default function MotorDeteccion() {
     }
   };
 
-  const handleInyectarPrueba = async (tipoPrueba) => {
+  const handleInyectarPrueba = async () => {
     setCargandoAccion(true);
     try {
-      let payload = {
-        name_user: "Juan Pérez",
-        id_user: 74185296,
-        name_oficina: "Dirección de Inteligencia",
-        numero_documento: "PL-SEG-2026-004",
-        name_clasificacion: "SECRETO",
-        name_tipo_evento: "DOWNLOAD",
-        doc_interno_externo: "exterior",
-        size_archivo_mb: 48.5,
-        hora_evento: 23,
-      };
-
-      if (tipoPrueba === "critico") {
-        payload = {
-          name_user: "Carlos Méndez",
-          id_user: 45821937,
-          name_oficina: "Subdirección Operativa",
-          numero_documento: "DOC-ULTRA-CONF-09",
-          name_clasificacion: "SECRETO",
-          name_tipo_evento: "DOWNLOAD",
-          doc_interno_externo: "exterior",
-          size_archivo_mb: 120.0,
-          hora_evento: 2,
-        };
-      } else if (tipoPrueba === "normal") {
-        payload = {
-          name_user: "Ana Gómez",
-          id_user: 31547826,
-          name_oficina: "Recursos Humanos",
-          numero_documento: "CIRC-2026-012",
-          name_clasificacion: "PUBLICO",
-          name_tipo_evento: "READ",
-          doc_interno_externo: "interno",
-          size_archivo_mb: 0.8,
-          hora_evento: 10,
-        };
+      // Selección aleatoria entre los 8 casos (5 críticos y 3 de nivel alto)
+      // Evita repetir el mismo caso de manera consecutiva
+      let indice = Math.floor(Math.random() * CASOS_PRUEBA_INYECTAR.length);
+      if (CASOS_PRUEBA_INYECTAR.length > 1 && indice === ultimoIndiceInyectadoRef.current) {
+        indice =
+          (indice + 1 + Math.floor(Math.random() * (CASOS_PRUEBA_INYECTAR.length - 1))) %
+          CASOS_PRUEBA_INYECTAR.length;
       }
+      ultimoIndiceInyectadoRef.current = indice;
+      const caso = CASOS_PRUEBA_INYECTAR[indice];
 
       const fechaPrueba = new Date();
-      fechaPrueba.setHours(payload.hora_evento, 0, 0, 0);
-      const fechaLocal = [fechaPrueba.getFullYear(),
+      fechaPrueba.setHours(caso.hora_evento, 0, 0, 0);
+      const fechaLocal = [
+        fechaPrueba.getFullYear(),
         String(fechaPrueba.getMonth() + 1).padStart(2, "0"),
-        String(fechaPrueba.getDate()).padStart(2, "0")].join("-");
+        String(fechaPrueba.getDate()).padStart(2, "0"),
+      ].join("-");
+
+      // ID de evento único incremental para que la telemetría y el feed en vivo lo registren individualmente
+      const idEventoGenerado = (Math.floor(Date.now() / 1000) % 900000) + 100000;
+
       await ingestarEventoAPI({
-        ID_USER: payload.id_user,
-        NAME_USER: payload.name_user,
-        NAME_OFICINA: payload.name_oficina,
-        NUMERO_DOCUMENTO: payload.numero_documento,
-        ID_CLASIFICACION: tipoPrueba === "normal" ? 5 : 1,
-        NAME_CLASIFICACION: tipoPrueba === "normal" ? "COMUN" : "SECRETO",
-        ID_TIPO_EVENTO: tipoPrueba === "normal" ? 1 : 2,
-        NAME_TIPO_EVENTO: tipoPrueba === "normal" ? "VISTA" : "DESCARGAR",
-        DOC_INTERNO_EXTERNO: payload.doc_interno_externo,
-        size_archivo_mb: payload.size_archivo_mb,
-        FECHA_EVENTO: `${fechaLocal} ${String(payload.hora_evento).padStart(2, "0")}:00:00`,
+        ID_EVENTO: idEventoGenerado,
+        ID_USER: caso.id_user,
+        NAME_USER: caso.name_user,
+        ID_OFICINA: caso.id_oficina,
+        NAME_OFICINA: caso.name_oficina,
+        ID_DOCUMENTO: caso.id_documento,
+        NUMERO_DOCUMENTO: caso.numero_documento,
+        ID_TIPO_DOCUMENTO: caso.id_tipo_documento,
+        ID_CLASIFICACION: caso.id_clasificacion,
+        NAME_CLASIFICACION: caso.name_clasificacion,
+        ID_TIPO_EVENTO: caso.id_tipo_evento,
+        NAME_TIPO_EVENTO: caso.name_tipo_evento,
+        DOC_INTERNO_EXTERNO: caso.doc_interno_externo,
+        size_archivo_mb: caso.size_archivo_mb,
+        FECHA_EVENTO: `${fechaLocal} ${String(caso.hora_evento).padStart(2, "0")}:00:00`,
       });
 
-      // El backend difunde el evento por WebSocket y entra por el mismo flujo de correlación
-      // en vivo; no se agrega un incidente sintético aquí (duplicaría el conteo).
-      toast.success(`Evento de prueba '${tipoPrueba}' inyectado al motor de detección.`);
+      const esCritico = caso.nivel_esperado === "critico";
+      toast.success(
+        `Evento inyectado (${esCritico ? "🚨 Crítico" : "⚠️ Alto"}): ${caso.name_user} — ${caso.name_tipo_evento} ${caso.name_clasificacion} (${caso.numero_documento})`
+      );
     } catch (err) {
       toast.error(err.response?.data?.detail || "Error al inyectar evento");
     } finally {
@@ -464,6 +612,13 @@ export default function MotorDeteccion() {
       setIncidentesPares({});
       eventosContadosRef.current = new Set();
       setRepetidosOmitidos(0);
+      // El backend borró los bloqueos de la simulación: se vacía el estado local y la lista de
+      // alertas para que el banner "Centro de Contención Activo" se oculte de inmediato.
+      setBloqueosLocales([]);
+      neutralizadosRef.current = new Set();
+      neutralizacionesPendientesRef.current = new Set();
+      queryClient.setQueryData(["alertas_bloqueados"], []);
+      queryClient.invalidateQueries({ queryKey: ["alertas_bloqueados"] });
       setSimuladorEstado((prev) => ({
         ...prev,
         eventos_emitidos: 0,
@@ -594,14 +749,25 @@ export default function MotorDeteccion() {
         <div className={styles.viewModeTabs}>
 
           
-      {/* Banner de Cuentas Neutralizadas */}
+      {/* Banner de Cuentas Neutralizadas: alerta de usuario bloqueado */}
       {totalBloqueados > 0 && (
-        <div className={styles.alertBanner}>
+        <div className={styles.alertBanner} role="alert">
           <FaShieldHalved className={styles.alertIcon} />
           <div>
             <strong>Centro de Contención Activo:</strong> Se registran{" "}
             <span className={styles.alertCount}>{totalBloqueados}</span> cuentas neutralizadas
             para asegurar la información clasificada.
+            {ultimosBloqueados.length > 0 && (
+              <div className={styles.alertUsuarios}>
+                {ultimosBloqueados.map((alerta) => (
+                  <span key={alerta.alerta_id ?? alerta.id_user} className={styles.alertUsuario}>
+                    <FaBan aria-hidden="true" /> {alerta.nombre_usuario || "Usuario"} (DNI {alerta.id_user}) ·
+                    score total {Math.round(Number(alerta.score_correlacion || 0) * 100)}%
+                    {alerta.fecha_registro && ` · ${new Date(alerta.fecha_registro).toLocaleTimeString()}`}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -679,7 +845,7 @@ export default function MotorDeteccion() {
           onPausar={handlePausar}
           onReanudar={handleReanudar}
           onDetener={handleDetener}
-          onInyectarPrueba={() => handleInyectarPrueba("critico")}
+          onInyectarPrueba={handleInyectarPrueba}
           onLimpiarFeed={handleLimpiarFeed}
           onUploadCSV={handleUploadCSV}
           isUploadingCSV={isUploadingCSV}

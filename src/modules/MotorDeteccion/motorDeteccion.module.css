@@ -358,6 +358,27 @@
   color: #b91c1c;
 }
 
+/* Usuarios bloqueados más recientes dentro del banner */
+.alertUsuarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.alertUsuario {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #991b1b;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+}
+
 /* Expediente Forense Section */
 .forenseSection {
   margin-top: 1.5rem;

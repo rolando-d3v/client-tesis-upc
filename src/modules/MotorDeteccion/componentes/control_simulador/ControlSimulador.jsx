@@ -146,10 +146,10 @@ export default function ControlSimulador({
           <button
             onClick={onInyectarPrueba}
             className={styles.btnInyectar}
-            title="Inyecta 1 evento crítico instantáneo para probar la alerta en vivo durante la sustentación"
+            title="Inyecta aleatoriamente 1 evento de prueba (5 casos críticos y 3 de nivel alto) para evaluar la respuesta del motor en tiempo real"
             disabled={cargandoAccion}
           >
-            <FaBolt className={styles.iconBolt} /> Inyectar Evento Crítico
+            <FaBolt className={styles.iconBolt} /> Inyectar Evento Crítico / Alto
           </button>
         </div>
 

@@ -15,12 +15,8 @@ Node >= 22.12 is required (`engines` in package.json).
 - `npm run lint`: ESLint (flat config; `no-unused-vars` ignores names starting with a capital letter or `_`)
 - `npm run preview`: serve the built bundle
 
-There is no test runner script. The only test is `src/modules/MotorDeteccion/telemetria.test.mjs`, which uses Node's built-in runner:
+There is no test runner script configured in package.json.
 
-```
-node --test src/modules/MotorDeteccion/telemetria.test.mjs
-node --test --test-name-pattern="acumulados" src/modules/MotorDeteccion/telemetria.test.mjs   # single test
-```
 
 Prettier uses `printWidth: 120` (`.prettierrc`). The codebase is plain JS/JSX (no TypeScript).
 
@@ -47,7 +43,7 @@ Prettier uses `printWidth: 120` (`.prettierrc`). The codebase is plain JS/JSX (n
 - `entrenamiento`: incident list and forensic detail (`IncidenteDetallePage`), also mounted at `/incidentes`. Several routes deliberately render the same component under different paths (`/eventos/motor-deteccion` and `/eventos/monitoreo-vivo`, and the `/entrenamiento` and `/incidentes` pairs). Keep the aliases in sync when changing them.
 - `auth`: login pages and `AuthProvider`.
 
-**Live monitoring** (`src/modules/MotorDeteccion/MotorDeteccion.jsx`) opens a WebSocket to `${API_MACHINE as ws}/eventos/ws/monitoreo`, reconnecting every 3s. Incoming events are passed through the pure functions in `telemetria.js` (`acumularEvento`, `combinarResumenSOC`, `correlacionarEnVivo`, `listarIncidentesEnVivo`, ...). Those functions keep cumulative counters and incident correlation, with a threat defined as a (documento, usuario) pair. The counters are kept separate from the capped (300-row) live feed on purpose, so totals must not be derived from the feed. `telemetria.js` has no React or DOM dependencies, so it stays testable with plain Node. Put logic changes there and cover them in `telemetria.test.mjs`.
+**Live monitoring** (`src/modules/MotorDeteccion/MotorDeteccion.jsx`) opens a WebSocket to `${API_MACHINE as ws}/eventos/ws/monitoreo`, reconnecting every 3s. Incoming events are passed through the pure functions in `telemetria.js` (`acumularEvento`, `combinarResumenSOC`, `correlacionarEnVivo`, `listarIncidentesEnVivo`, ...). Those functions keep cumulative counters and incident correlation, with a threat defined as a (documento, usuario) pair. The counters are kept separate from the capped (300-row) live feed on purpose, so totals must not be derived from the feed. `telemetria.js` has no React or DOM dependencies, so it stays testable with plain Node. Put logic changes there.
 
 Other notes:
 - `src/modules/eventos/task.md` and `walkthrough.md` document the backend/frontend design of the risk dashboard. They are useful background for the event pipeline (ETL, Isolation Forest, hybrid score, EWMA profiles).
