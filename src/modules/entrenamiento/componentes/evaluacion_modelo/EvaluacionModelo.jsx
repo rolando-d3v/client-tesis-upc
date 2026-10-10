@@ -1,5 +1,4 @@
 import { useId, useState } from "react";
-import { useIsMutating } from "@tanstack/react-query";
 import {
   Area,
   CartesianGrid,
@@ -26,7 +25,6 @@ import {
   useUltimaEvaluacion,
 } from "../../../../api/apiEvaluacion";
 import styles from "./EvaluacionModelo.module.css";
-import RevisionEtiquetas from "./RevisionEtiquetas";
 
 const INDICADORES = [
   { key: "accuracy", label: "Accuracy", meta: "≥ 95.0%", formula: "(TP + TN) / total" },
@@ -48,6 +46,7 @@ const CELDAS = [
   { key: "tp", label: "TP · Verdaderos positivos", detalle: "Anomalía → Anomalía", correcto: true },
 ];
 const porcentaje = (valor) => (valor == null ? "—" : `${(valor * 100).toFixed(1)}%`);
+const porcentajeEje = (valor) => `${Math.round(valor * 100)}%`;
 const formatoValor = (valor, key) => (key === "auc_roc" ? (valor == null ? "—" : valor.toFixed(3)) : porcentaje(valor));
 const formatoBrecha = (brecha, key) => {
   if (key === "auc_roc") return `Falta ${brecha < 0.0001 ? "< 0.0001" : brecha.toFixed(4)}`;
@@ -74,19 +73,15 @@ function TooltipROC({ active, payload }) {
   return (
     <div className={styles.tooltip}>
       <strong>Umbral: {punto.umbral == null ? "Sin detecciones" : punto.umbral.toFixed(4)}</strong>
-      <span>FPR: {porcentaje(punto.fpr)}</span>
-      <span>TPR: {porcentaje(punto.tpr)}</span>
+      <span>Falsos positivos (FPR): {porcentaje(punto.fpr)}</span>
+      <span>Verdaderos positivos (TPR): {porcentaje(punto.tpr)}</span>
     </div>
   );
 }
 
 export default function EvaluacionModelo() {
-  const actividadRevision = useIsMutating({
-    predicate: (mutacion) => ["revision_guardar", "revision_evaluar", "revision_preparar"].includes(mutacion.options.mutationKey?.[0]),
-  }) > 0;
   const [dominio, setDominio] = useState("eventos");
   const [archivo, setArchivo] = useState(null);
-  const [versionArchivo, setVersionArchivo] = useState(0);
   const [verificadas, setVerificadas] = useState(false);
   const [celda, setCelda] = useState("fn");
   const [errorLocal, setErrorLocal] = useState("");
@@ -99,6 +94,7 @@ export default function EvaluacionModelo() {
   const maxMb = estado.data?.max_mb ?? 30;
   const gradiente = `roc-${useId().replace(/:/g, "")}`;
   const certificado = resultado?.certificado_critico && resultado?.vigente !== false;
+  const calidad = resultado?.verificacion?.calidad_etiquetas;
 
   const ejecutar = async (event) => {
     event.preventDefault();
@@ -140,7 +136,7 @@ export default function EvaluacionModelo() {
           Motor a evaluar
           <select
             value={dominio}
-            disabled={evaluar.isPending || actividadRevision}
+            disabled={evaluar.isPending}
             onChange={(event) => {
               setDominio(event.target.value);
               setArchivo(null);
@@ -156,17 +152,17 @@ export default function EvaluacionModelo() {
         <label>
           Conjunto de prueba etiquetado
           <input
-            key={`${dominio}-${versionArchivo}`}
+            key={dominio}
             type="file"
             accept=".csv,text/csv"
-            disabled={evaluar.isPending || actividadRevision}
+            disabled={evaluar.isPending}
             onChange={(event) => {
               setArchivo(event.target.files?.[0] || null);
               setErrorLocal("");
             }}
           />
         </label>
-        <button className={styles.boton} type="submit" disabled={evaluar.isPending || actividadRevision || !archivo || !modelo?.disponible}>
+        <button className={styles.boton} type="submit" disabled={evaluar.isPending || !archivo || !modelo?.disponible}>
           <FaFileCsv /> {evaluar.isPending ? "Evaluando observaciones…" : "Evaluar el conjunto"}
         </button>
         <label className={styles.checkbox}>
@@ -186,9 +182,7 @@ export default function EvaluacionModelo() {
         </p>
       </form>
 
-      {dominio === "eventos" && <RevisionEtiquetas ocupado={evaluar.isPending} onDatasetActualizado={() => {
-        setArchivo(null); setVerificadas(false); setVersionArchivo((version) => version + 1);
-      }} />}
+
 
       {evaluar.isPending && (
         <p role="status" className={styles.aviso}>
@@ -230,11 +224,6 @@ export default function EvaluacionModelo() {
               <span className={styles.kpiLabel}>{label}</span>
               <strong className={styles.kpiValor}>{formatoValor(indicador?.valor, key)}</strong>
               <span className={styles.meta}>Meta {meta}</span>
-              {indicador?.ic95 && (
-                <small title={`Intervalo de confianza del 95% (${resultado.intervalos?.metodo})`}>
-                  IC 95%: {textoIC(indicador.ic95, key)}
-                </small>
-              )}
               {indicador?.valor == null ? (
                 <span className={styles.pendiente}>
                   {resultado ? "No calculable con esta muestra" : "Pendiente de evaluación"}
@@ -312,12 +301,12 @@ export default function EvaluacionModelo() {
               El modelo activo cambió. Esta evaluación es histórica; vuelve a evaluar el modelo actual.
             </p>
           )}
-          {resultado.verificacion.advertencias.map((aviso) => (
+          {/* {resultado.verificacion.advertencias.map((aviso) => (
             <p className={styles.aviso} key={aviso}>
               <FaTriangleExclamation /> {aviso}
             </p>
-          ))}
-          {resultado.complementarias && (
+          ))} */}
+          {/* {resultado.complementarias && (
             <div className={styles.complementarias}>
               <article title="Área bajo la curva precisión-recall. El valor de referencia (clasificador al azar) es la prevalencia de anomalías.">
                 <span className={styles.kpiLabel}>PR-AUC</span>
@@ -338,20 +327,25 @@ export default function EvaluacionModelo() {
                 <small>Carga de revisión del analista con el umbral desplegado.</small>
               </article>
             </div>
-          )}
-          <div className={styles.graficos}>
+          )} */}
+          {/* <div className={styles.graficos}>
             <article className={styles.panel}>
               <div className={styles.panelHeader}>
                 <h3>Curva ROC</h3>
                 <span className={styles.auc}>AUC = {formatoValor(resultado.metricas.auc_roc.valor, "auc_roc")}</span>
               </div>
-              <p>TPR frente a FPR · Mayor separación hacia la esquina superior izquierda</p>
+              <p>
+                Cada punto corresponde a un umbral. Más cerca de la esquina superior izquierda significa más
+                anomalías detectadas y menos falsas alarmas.
+              </p>
               {resultado.roc.length ? (
-                <div className={styles.chart}>
+                <figure className={styles.rocGrafico} aria-label="Curva ROC: tasa de verdaderos positivos frente a tasa de falsos positivos">
+                  <span className={styles.ejeVertical}>Tasa de verdaderos positivos (TPR)</span>
+                  <div className={styles.chart}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart
                       data={resultado.roc}
-                      margin={{ top: 15, right: 20, bottom: 25, left: 10 }}
+                      margin={{ top: 12, right: 20, bottom: 8, left: 0 }}
                       accessibilityLayer
                     >
                       <defs>
@@ -366,15 +360,23 @@ export default function EvaluacionModelo() {
                         dataKey="fpr"
                         domain={[0, 1]}
                         ticks={[0, 0.25, 0.5, 0.75, 1]}
-                        tickFormatter={porcentaje}
-                        label={{ value: "FPR · Falsos positivos", position: "bottom", offset: 6 }}
+                        tickFormatter={porcentajeEje}
+                        tick={{ fontSize: 11, fill: "#64748b" }}
+                        tickLine={false}
+                        tickMargin={8}
+                        axisLine={{ stroke: "#94a3b8" }}
+                        height={28}
                       />
                       <YAxis
                         type="number"
                         domain={[0, 1]}
                         ticks={[0, 0.25, 0.5, 0.75, 1]}
-                        tickFormatter={porcentaje}
-                        width={60}
+                        tickFormatter={porcentajeEje}
+                        tick={{ fontSize: 11, fill: "#64748b" }}
+                        tickLine={false}
+                        tickMargin={8}
+                        axisLine={{ stroke: "#94a3b8" }}
+                        width={48}
                       />
                       <Tooltip content={<TooltipROC />} />
                       <ReferenceLine
@@ -405,13 +407,27 @@ export default function EvaluacionModelo() {
                       )}
                     </ComposedChart>
                   </ResponsiveContainer>
-                </div>
+                  </div>
+                  <figcaption className={styles.ejeHorizontal}>Tasa de falsos positivos (FPR)</figcaption>
+                </figure>
               ) : (
                 <div className={styles.sinCurva}>Se necesitan normales y anomalías reales para calcular ROC y AUC.</div>
               )}
+              {resultado.roc.length > 0 && (
+                <div className={styles.rocLeyenda} aria-label="Leyenda de la curva ROC">
+                  <span><i className={styles.claveCurva} aria-hidden="true" /> Modelo (ROC)</span>
+                  <span><i className={styles.claveAzar} aria-hidden="true" /> Referencia aleatoria</span>
+                  <span><i className={styles.claveUmbral} aria-hidden="true" /> Umbral desplegado</span>
+                </div>
+              )}
+              {resultado.roc.length > 0 && resultado.punto_operativo.fpr != null && resultado.punto_operativo.tpr != null && (
+                <p className={styles.puntoOperativo}>
+                  Umbral desplegado: detecta {porcentaje(resultado.punto_operativo.tpr)} de las anomalías y genera
+                  falsas alarmas en {porcentaje(resultado.punto_operativo.fpr)} de los eventos normales.
+                </p>
+              )}
               <p className={styles.nota}>
-                {resultado.nota_roc} El punto verde representa la decisión desplegada. Curva suavizada para
-                visualización; AUC calculada con los scores originales.
+                {resultado.nota_roc} Curva suavizada para visualización; AUC calculada con los scores originales.
               </p>
             </article>
 
@@ -420,7 +436,10 @@ export default function EvaluacionModelo() {
                 <h3>Matriz de confusión</h3>
                 <span className={styles.meta}>Real × Predicción</span>
               </div>
-              <p>Selecciona una celda para inspeccionar sus observaciones.</p>
+              <p>
+                Filas = etiqueta real; columnas = predicción. El porcentaje y el color se calculan dentro de cada fila.
+                Selecciona una celda para inspeccionar sus observaciones.
+              </p>
               <div className={styles.matriz}>
                 <span />
                 <span className={styles.eje}>Pred. normal</span>
@@ -470,12 +489,12 @@ export default function EvaluacionModelo() {
                 </p>
               )}
             </article>
-          </div>
+          </div> */}
 
-          {resultado.ablacion && <PanelAblacion ablacion={resultado.ablacion} />}
+          {/* {resultado.ablacion && <PanelAblacion ablacion={resultado.ablacion} />} */}
 
 
-          <article className={styles.diagnostico}>
+          {/* <article className={styles.diagnostico}>
             <h3>Qué falta para alcanzar las metas</h3>
             <ul>
               {resultado.recomendaciones.map((texto) => (
@@ -486,7 +505,7 @@ export default function EvaluacionModelo() {
               Las métricas de esta vista corresponden al motor seleccionado. La correlación entre ambos dominios
               requiere su propia muestra etiquetada de incidentes.
             </p>
-          </article>
+          </article> */}
         </>
       )}
     </section>
@@ -568,7 +587,11 @@ function PanelAblacion({ ablacion }) {
 
 function CeldaMatriz({ item, resultado, seleccion, onSeleccion }) {
   const valor = resultado.matriz[item.key];
-  const intensidad = 0.08 + (0.32 * valor) / Math.max(1, ...CELDAS.map(({ key }) => resultado.matriz[key]));
+  const totalFila = item.key === "tn" || item.key === "fp"
+    ? resultado.matriz.tn + resultado.matriz.fp
+    : resultado.matriz.fn + resultado.matriz.tp;
+  const tasaFila = totalFila ? valor / totalFila : null;
+  const intensidad = 0.08 + 0.32 * (tasaFila ?? 0);
   return (
     <button
       type="button"
@@ -576,10 +599,11 @@ function CeldaMatriz({ item, resultado, seleccion, onSeleccion }) {
       onClick={() => onSeleccion(item.key)}
       className={`${styles.celda} ${seleccion === item.key ? styles.seleccionada : ""}`}
       style={{ background: `rgba(${item.correcto ? "16, 185, 129" : "239, 68, 68"}, ${intensidad})` }}
-      title={item.detalle}
+      title={`${item.detalle}: ${valor.toLocaleString()} (${porcentaje(tasaFila)} de su fila)`}
     >
       <strong>{valor.toLocaleString()}</strong>
       <span>{item.label}</span>
+      <small>{porcentaje(tasaFila)} de su fila</small>
     </button>
   );
 }

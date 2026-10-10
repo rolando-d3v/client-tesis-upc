@@ -48,13 +48,26 @@
 .panel { border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; background: #fff; min-width: 0; }
 .panelHeader h3 { font-size: 1rem; margin: 0; } .panelHeader > span { font-size: .75rem; }
 .chart { height: 320px; min-width: 0; }
+.rocGrafico { display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: .4rem; row-gap: .4rem; margin: 1rem 0 .8rem; }
+.ejeVertical, .ejeHorizontal { color: #475569; font-size: .75rem; font-weight: 600; line-height: 1.4; text-align: center; }
+.ejeVertical { writing-mode: vertical-rl; transform: rotate(180deg); align-self: center; justify-self: center; white-space: nowrap; }
+.ejeHorizontal { grid-column: 2; padding: 0 20px 0 48px; }
+.rocLeyenda { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: center; gap: .65rem 1rem; padding: .8rem 0 .35rem; border-top: 1px solid #e2e8f0; color: #475569; font-size: .72rem; }
+.rocLeyenda span { display: inline-flex; align-items: center; gap: .4rem; }
+.rocLeyenda i { display: inline-block; flex: 0 0 auto; }
+.claveCurva { width: 20px; border-top: 3px solid #7c3aed; }
+.claveAzar { width: 20px; border-top: 2px dashed #94a3b8; }
+.claveUmbral { width: 9px; height: 9px; border-radius: 50%; background: #059669; }
+.puntoOperativo { margin: .6rem 0 0; padding-left: .6rem; border-left: 3px solid #059669; color: #334155; font-size: .73rem; line-height: 1.5; }
 .tooltip { display: flex; flex-direction: column; gap: .4rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: .8rem; box-shadow: 0 8px 24px #0f172a15; font-size: .75rem; }
 .sinCurva { height: 270px; display: grid; place-items: center; text-align: center; color: #64748b; font-size: .85rem; }
 .panel .nota { font-size: .72rem; line-height: 1.7; margin: .85rem 0 0; }
 .matriz { display: grid; grid-template-columns: 75px 1fr 1fr; gap: .6rem; margin: 1.25rem 0; }
 .eje { color: #64748b; font-size: .65rem; font-weight: 700; text-align: center; align-self: center; }
-.celda { border: 2px solid transparent; border-radius: 9px; min-height: 95px; padding: .6rem; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: .5rem; cursor: pointer; color: #1e293b; }
-.celda strong { font-size: 1.8rem; font-variant-numeric: tabular-nums; } .celda span { font-size: .65rem; }
+.celda { border: 2px solid transparent; border-radius: 9px; min-height: 115px; padding: .55rem; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: .4rem; cursor: pointer; color: #1e293b; text-align: center; }
+.celda strong { font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.celda span { font-size: .63rem; line-height: 1.35; }
+.celda small { color: #475569; font-size: .64rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .seleccionada { border-color: #7c3aed; }
 .celda:focus-visible, .criticos:focus-visible, .boton:focus-visible, .botonBorrar:focus-visible { outline: 3px solid #a78bfa; outline-offset: 3px; }
 .criticos { width: 100%; display: flex; gap: .8rem; align-items: center; justify-content: space-between; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; border-radius: 9px; padding: .8rem; cursor: pointer; text-align: left; }
@@ -65,31 +78,11 @@
 .tabla th { background: #f8fafc; color: #64748b; } .tabla td, .tabla th { padding: .8rem; border-bottom: 1px solid #e2e8f0; } .tabla td:last-child { min-width: 220px; max-width: 550px; line-height: 1.6; }
 .diagnostico { background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 12px; padding: 1.25rem; margin-top: 1rem; }
 .diagnostico h3 { margin: 0 0 .8rem; font-size: 1rem; color: #5b21b6; } .diagnostico li { font-size: .8rem; margin-bottom: .55rem; line-height: 1.6; } .diagnostico p { font-size: .75rem; color: #64748b; line-height: 1.7; }
-.revision { margin: 1rem 0; }
-.revisionResumen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; margin: 1rem 0; }
-.revisionResumen > span { padding: .8rem; border-radius: 8px; background: #f8fafc; color: #64748b; font-size: .75rem; line-height: 1.5; }
-.revisionResumen strong { display: block; color: #334155; font-size: 1.4rem; }
-.revisionFiltros, .revisionAcciones { display: flex; align-items: end; flex-wrap: wrap; gap: .8rem; margin: 1rem 0; }
-.revisionFiltros form { display: flex; align-items: end; flex-wrap: wrap; gap: .7rem; }
-.revisionFiltros label, .revisionCampos label { display: flex; flex-direction: column; gap: .5rem; font-size: .78rem; min-width: 0; }
-.revision select, .revision input:not([type=checkbox]), .revision textarea { border: 1px solid #cbd5e1; border-radius: 7px; padding: .65rem; font: inherit; background: #fff; box-sizing: border-box; width: 100%; min-width: 0; }
-.revision textarea { resize: vertical; }
-.revisionAcciones { align-items: center; justify-content: flex-end; }
-.revisionAcciones span { font-size: .75rem; color: #64748b; }
-.botonSecundario { border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #5b21b6; font: inherit; font-size: .75rem; padding: .65rem .85rem; cursor: pointer; }
-.botonSecundario:disabled { opacity: .5; cursor: not-allowed; }
-.botonSecundario[aria-pressed=true] { background: #f5f3ff; border-color: #7c3aed; }
-.revisionFormulario { border: 1px solid #ddd6fe; border-radius: 10px; background: #fafaff; padding: 1rem; margin-top: 1rem; }
-.revisionFormulario h4 { margin: 0; }
-.revisionFormulario p { font-size: .78rem; line-height: 1.6; }
-.revisionCampos { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; border: 0; padding: 0; }
-.revisionCampos legend { font-size: .8rem; font-weight: 600; margin-bottom: .8rem; }
-.revisionCampos .revisionCheck { display: flex; flex-direction: row; align-items: flex-start; gap: .6rem; line-height: 1.6; grid-column: 1 / -1; }
-.revisionCheck input { accent-color: #7c3aed; margin-top: .2rem; }
-.revisionNota { grid-column: 1 / -1; }
-.revisionHistorial { font-size: .75rem; margin-top: 1rem; line-height: 1.6; overflow-wrap: anywhere; }
-.revision :is(input, select, textarea, button, summary):focus-visible { outline: 3px solid #a78bfa; outline-offset: 2px; }
-@media (max-width: 700px) { .revisionResumen { grid-template-columns: 1fr 1fr; } .revisionCampos { grid-template-columns: 1fr; } .revisionFiltros > label, .revisionFiltros form { width: 100%; } }
+.calidadDataset { padding: 1rem 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin: 1rem 0; font-size: .78rem; overflow-wrap: anywhere; }
+.calidadDataset > strong { display: block; margin-bottom: .8rem; }
+.calidadDataset dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 1rem; margin: 0; }
+.calidadDataset dt { color: #64748b; line-height: 1.5; }
+.calidadDataset dd { margin: .3rem 0 0; font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 @media (max-width: 1300px) { .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .formulario { grid-template-columns: 1fr 1fr; } .boton { grid-column: 1 / -1; } }
 @media (max-width: 900px) { .graficos, .complementarias { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .formulario { grid-template-columns: 1fr; } .panel { padding: .9rem; } .matriz { grid-template-columns: 55px 1fr 1fr; gap: .3rem; } .kpi { padding: .8rem; } .chart { height: 290px; } }
