@@ -75,7 +75,7 @@ export default function KPICardsMonitoreo({
             {totalAnomalias.toLocaleString()}
           </span>
           <span className={styles.subtext}>
-            {porcentajeAnomalias}% outliers Isolation Forest
+            {porcentajeAnomalias}% según el ensemble IF + LSTM
           </span>
         </div>
       </div>
@@ -86,11 +86,11 @@ export default function KPICardsMonitoreo({
           <FaWaveSquare />
         </div>
         <div className={styles.info}>
-          <span className={styles.label}>Score Híbrido Promedio</span>
+          <span className={styles.label}>Score Combinado Promedio</span>
           <span className={styles.value} style={{ color: "#16a34a" }}>
             {scorePromedio}
           </span>
-          <span className={styles.subtext}>Línea base EWMA / Welford activa</span>
+          <span className={styles.subtext}>Isolation Forest 40% + LSTM 60%</span>
         </div>
       </div>
     </div>

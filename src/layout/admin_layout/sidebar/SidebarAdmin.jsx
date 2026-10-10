@@ -6,16 +6,12 @@ import { xlogin_false } from "../../../Redux/slice/usuarioAuthSlice";
 import { logoutAuth } from "../../../api/apiAuthLogin";
 import {
   FaChartLine,
-  FaTable,
-  FaCalendar,
   FaPowerOff,
-  FaEraser,
   FaFileCsv,
   FaUsers,
   FaShieldHalved,
-  FaTriangleExclamation,
-  FaBolt,
   FaBrain,
+  FaBolt,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -24,66 +20,26 @@ export default function SidebarAdmin() {
   const location = useLocation();
 
 
-  const anomaliasLinks = [
-    {
-      id: 9,
-      url: "/carga_anomalias",
-      name: "Cargar CSV",
-      icon: <FaFileCsv />,
-    },
-    {
-      id: 10,
-      url: "/anomalias",
-      name: "Dashboard Anomalías",
-      icon: <FaChartLine />,
-    },
-    {
-      id: 11,
-      url: "/anomalias/tabla",
-      name: "Tabla Anomalías",
-      icon: <FaTable />,
-    },
-    {
-      id: 12,
-      url: "/anomalias/timeline",
-      name: "Timeline",
-      icon: <FaCalendar />,
-    },
-  ];
-
-  const anomaliasEventos = [
+  const eventosLinks = [
+    { id: 6, url: "/entrenamiento", name: "Entrenamiento de eventos", icon: <FaBrain /> },
+    { id: 7, url: "/eventos/motor-deteccion", name: "Detección en tiempo real", icon: <FaBolt /> },
     {
       id: 1,
       url: "/carga_eventos",
-      name: "Cargar CSV Eventos",
+      name: "Cargar dataset de eventos",
       icon: <FaFileCsv />,
     },
     {
       id: 3,
       url: "/eventos/usuarios",
-      name: "Por Usuario",
+      name: "Actividad por usuario",
       icon: <FaUsers />,
     },
     {
       id: 5,
       url: "/eventos/clasificacion",
-      name: "Clasificación Doc.",
+      name: "Análisis de eventos",
       icon: <FaShieldHalved />,
-    },
-    {
-      id: 7,
-      url: "/eventos/motor-deteccion",
-      name: "Motor de Detección",
-      icon: <FaBolt style={{ color: "#38bdf8" }} />,
-    },
-  ];
-
-  const correlacionLinks = [
-    {
-      id: 20,
-      url: "/entrenamiento",
-      name: "Módulo Entrenamiento",
-      icon: <FaBrain />,
     },
   ];
 
@@ -108,29 +64,10 @@ export default function SidebarAdmin() {
 
       <hr className={styles.divider} />
 
-      <div className={styles.sectionTitle}>Trazabilidad de documentos</div>
+      <div className={styles.sectionTitle}>Dataset de eventos</div>
 
       <div className={styles.listUrl}>
-        {anomaliasLinks.map((link) => (
-          <Link
-            key={link.id}
-            className={`${styles.link} ${
-              location.pathname === link.url ? styles.linkActive : ""
-            }`}
-            to={link.url}
-          >
-            <span className={styles.icon}>{link.icon}</span>
-            {link.name}
-          </Link>
-        ))}
-      </div>
-
-      <hr className={styles.divider} />
-
-      <div className={styles.sectionTitle}  >Eventos de usuarios</div>
-
-      <div className={styles.listUrl}>
-        {anomaliasEventos?.map((link) => (
+        {eventosLinks.map((link) => (
           <Link
             key={link.id}
             className={`${styles.link} ${
@@ -147,24 +84,11 @@ export default function SidebarAdmin() {
       <hr className={styles.divider} />
 
       <div className={styles.sectionTitle} style={{ color: "#7c3aed" }}>
-        Entrenamiento & Modelos
+        Ensemble de modelos
       </div>
-
-      <div className={styles.listUrl}>
-        {correlacionLinks?.map((link) => (
-          <Link
-            key={link.id}
-            className={`${styles.link} ${
-              location.pathname.startsWith(link.url) ? styles.linkActive : ""
-            }`}
-            to={link.url}
-          >
-            <span className={styles.icon} style={{ color: "#7c3aed" }}>
-              {link.icon}
-            </span>
-            {link.name}
-          </Link>
-        ))}
+      <div style={{ padding: "8px 12px", color: "#cbd5e1", fontSize: "0.78rem", lineHeight: 1.6 }}>
+        <div><FaChartLine style={{ marginRight: 7, color: "#38bdf8" }} />Isolation Forest · 40%</div>
+        <div><FaChartLine style={{ marginRight: 7, color: "#c084fc" }} />LSTM Autoencoder · 60%</div>
       </div>
 
       <div className={styles.spacer}>

@@ -16,6 +16,7 @@ export const useUltimaEvaluacion = (dominio) => useQuery({
 export const useEvaluarModelo = () => {
   const cliente = useQueryClient();
   return useMutation({
+    mutationKey: ["evaluacion_eventos"],
     mutationFn: async ({ archivo, dominio, etiquetasVerificadas }) => {
       const datos = new FormData();
       datos.append("archivo", archivo);
@@ -27,6 +28,42 @@ export const useEvaluarModelo = () => {
     },
     onSuccess: (resultado) => {
       cliente.setQueryData(["evaluacion", resultado.dominio], resultado);
+      cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+    },
+  });
+};
+
+export const useReentrenarEventos = () => {
+  const cliente = useQueryClient();
+  return useMutation({
+    mutationKey: ["evaluacion_eventos"],
+    mutationFn: async () => (await api.post("/evaluacion/eventos/reentrenar", {}, { timeout: 1_800_000 })).data,
+    onSuccess: () => {
+      cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+      cliente.invalidateQueries({ queryKey: ["evaluacion", "eventos"] });
+    },
+  });
+};
+
+export const useCalibrarEventos = () => {
+  const cliente = useQueryClient();
+  return useMutation({
+    mutationKey: ["evaluacion_eventos"],
+    mutationFn: async () => (await api.post("/evaluacion/eventos/calibrar", {}, { timeout: 600_000 })).data,
+    onSuccess: () => {
+      cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+      cliente.invalidateQueries({ queryKey: ["evaluacion", "eventos"] });
+    },
+  });
+};
+
+export const useEvaluarDatasetEventos = () => {
+  const cliente = useQueryClient();
+  return useMutation({
+    mutationKey: ["evaluacion_eventos"],
+    mutationFn: async () => (await api.post("/evaluacion/eventos/evaluar-dataset", {}, { timeout: 600_000 })).data,
+    onSuccess: (resultado) => {
+      cliente.setQueryData(["evaluacion", "eventos"], resultado);
       cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
     },
   });

@@ -74,7 +74,7 @@ export default function ControlSimulador({
     simuladorEstado.archivo_nombre ||
     (simuladorEstado.archivo
       ? simuladorEstado.archivo.split(/[/\\]/).pop().replace(/^sim_/, "")
-      : "dt_eventos_5000.csv");
+      : "dt_eventos_etiquetados_5000.csv");
 
   const esTesting =
     nombreArchivoRaw.toLowerCase().includes("test") ||
@@ -143,14 +143,14 @@ export default function ControlSimulador({
             </>
           )}
 
-          <button
+          {onInyectarPrueba && <button
             onClick={onInyectarPrueba}
             className={styles.btnInyectar}
             title="Inyecta aleatoriamente 1 evento de prueba (5 casos críticos y 3 de nivel alto) para evaluar la respuesta del motor en tiempo real"
             disabled={cargandoAccion}
           >
             <FaBolt className={styles.iconBolt} /> Inyectar Evento Crítico / Alto
-          </button>
+          </button>}
         </div>
 
          {/* FILA INFERIOR: INPUT DE CARGA CSV PARA DATASET DE TESTING / INFERENCIA ONLINE */}

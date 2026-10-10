@@ -234,7 +234,9 @@ export default function Dashboard2Usuarios() {
         clasificacion: Math.min(Math.round(d2User.pct_secreto || 0), 100),
         cambio_comportamiento: Math.min(Math.round((d2User.score_riesgo || 0) * 2), 100),
         acciones_criticas: Math.min(Math.round(((d2User.n_descargas || 0) / n) * 100), 100),
-        score_if: Math.min(Math.round((d2User.score_riesgo || 0) * 10), 100),
+        score_if: Math.min(Math.round((d2User.score_if_norm || 0) * 100), 100),
+        score_lstm: Math.min(Math.round((d2User.score_lstm_norm || 0) * 100), 100),
+        score_final: Math.min(Math.round((d2User.score_final || 0) * 100), 100),
         score_riesgo: d2User.score_riesgo || 0,
         nivel_riesgo: d2User.nivel_riesgo || "bajo",
       };
@@ -255,7 +257,9 @@ export default function Dashboard2Usuarios() {
       <header className={styles.pageHeader}>
         <p className={styles.eyebrow}>Análisis de actividad</p>
         <h1>Comportamiento por usuario</h1>
-       
+        <p className={styles.sectionDescription}>
+          Riesgo calculado con Isolation Forest 40% y LSTM Autoencoder 60% sobre secuencias de eventos.
+        </p>
       </header>
 
       {d2Q.isLoading && !data && (

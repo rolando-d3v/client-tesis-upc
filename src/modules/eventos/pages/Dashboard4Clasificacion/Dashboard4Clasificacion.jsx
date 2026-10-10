@@ -88,7 +88,10 @@ export default function Dashboard4Clasificacion() {
       <header className={styles.pageHeader}>
         <p className={styles.eyebrow}>Seguridad de la información</p>
         <h1>Clasificación documental y volumen</h1>
-       
+        <p className={styles.sectionDescription}>
+          Score de anomalía para eventos: Isolation Forest 40% + LSTM Autoencoder 60%.
+          Todos los indicadores de esta página provienen del dataset de eventos.
+        </p>
       </header>
 
       {loading && !data && (

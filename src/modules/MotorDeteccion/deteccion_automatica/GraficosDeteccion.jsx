@@ -24,7 +24,7 @@ function TooltipScore({ active, payload }) {
   );
 }
 
-export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltros }) {
+export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltros, umbralAnomalia = 0.25 }) {
   const [ventana, setVentana] = useState(50);
   const gradientId = useId().replace(/:/g, "");
   const puntos = useMemo(() => eventos.slice(0, ventana).reverse().map((evento, indice) => {
@@ -59,7 +59,7 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
             <span className={styles.chartIcon}><FaChartLine aria-hidden="true" /></span>
             <div>
               <h3 id={`${gradientId}-title`}>Evolución del score</h3>
-              <p>Riesgo por evento · en orden de recepción</p>
+              <p>Score combinado IF 40% + LSTM 60% · orden de recepción</p>
             </div>
           </div>
           <div className={styles.rangeControl} role="group" aria-label="Cantidad de eventos en el gráfico">
@@ -97,8 +97,10 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
                   tick={{ fill: "#64748b", fontSize: 11 }} tickMargin={12} />
                 <YAxis domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} axisLine={false} tickLine={false}
                   tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(valor) => formatoScore(valor)} />
+                <ReferenceLine y={0.25} stroke="#a16207" strokeDasharray="5 5" strokeOpacity={0.6} />
                 <ReferenceLine y={0.5} stroke="#d97706" strokeDasharray="5 5" strokeOpacity={0.6} />
                 <ReferenceLine y={0.75} stroke="#dc2626" strokeDasharray="5 5" strokeOpacity={0.6} />
+                <ReferenceLine y={umbralAnomalia} stroke="#7c3aed" strokeWidth={2} label="Umbral de anomalía" />
                 <Tooltip content={<TooltipScore />} cursor={{ stroke: "#94a3b8", strokeDasharray: "3 3" }} />
                 <Area type="linear" dataKey="score" name="Score de riesgo" stroke="#2563eb" strokeWidth={2.5}
                   fill={`url(#${gradientId})`} isAnimationActive={false}
@@ -115,7 +117,7 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
           )}
         </div>
         <div className={styles.chartFooter}>
-          <span><i className={styles.legendBlue} />Score de riesgo</span>
+          <span><i className={styles.legendBlue} />Score combinado · anomalía ≥ {formatoScore(umbralAnomalia)}</span>
           <span><i className={styles.legendAmber} />Alto ≥ {formatoScore(0.5)}</span>
           <span><i className={styles.legendRed} />Crítico ≥ {formatoScore(0.75)}</span>
         </div>

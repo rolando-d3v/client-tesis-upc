@@ -17,7 +17,9 @@ const formatoNumero = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
-  const scoreIF = Number(d.score_if);
+  const scoreIF = Number(d.score_if_norm ?? d.score_if);
+  const scoreLSTM = Number(d.score_lstm_norm);
+  const scoreFinal = Number(d.score_final);
   const volumen = Number(d.total_mb);
 
   return (
@@ -30,8 +32,16 @@ const CustomTooltip = ({ active, payload }) => {
       )}
       <dl className={styles.tooltipData}>
         <div>
-          <dt>Score IF</dt>
+          <dt>Isolation Forest · 40%</dt>
           <dd>{Number.isFinite(scoreIF) ? scoreIF.toFixed(4) : "N/D"}</dd>
+        </div>
+        <div>
+          <dt>LSTM Autoencoder · 60%</dt>
+          <dd>{Number.isFinite(scoreLSTM) ? scoreLSTM.toFixed(4) : "N/D"}</dd>
+        </div>
+        <div>
+          <dt>Score combinado</dt>
+          <dd>{Number.isFinite(scoreFinal) ? scoreFinal.toFixed(4) : "N/D"}</dd>
         </div>
         <div>
           <dt>Volumen</dt>
@@ -75,13 +85,13 @@ export default function ScatterDeteccion({ data = [] }) {
           <CartesianGrid stroke="#e9eef5" />
           <XAxis
             type="number"
-            dataKey="score_if"
-            name="Score IF"
+            dataKey="score_final"
+            name="Score combinado"
             tickFormatter={(value) => Number(value).toFixed(2)}
             tick={{ fill: "#64748b", fontSize: 10 }}
             tickLine={false}
             axisLine={{ stroke: "#cbd5e1" }}
-            label={{ value: "Score de Isolation Forest", position: "insideBottom", offset: -10, fill: "#475569", fontSize: 10 }}
+            label={{ value: "Score combinado (IF 40% + LSTM 60%)", position: "insideBottom", offset: -10, fill: "#475569", fontSize: 10 }}
           />
           <YAxis
             type="number"
@@ -114,7 +124,7 @@ export default function ScatterDeteccion({ data = [] }) {
           ))}
         </ScatterChart>
       </ResponsiveContainer>
-      <p className={styles.chartNote}>El color representa el nivel de riesgo; el tamaño del punto, la cantidad de eventos.</p>
+      <p className={styles.chartNote}>El score del eje X combina Isolation Forest (40%) y LSTM Autoencoder (60%); el color indica el riesgo y el tamaño, la cantidad de eventos.</p>
     </div>
   );
 }

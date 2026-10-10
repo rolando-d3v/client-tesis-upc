@@ -123,14 +123,16 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
 
   if (!usuarios || usuarios.length === 0) return <p className={styles.empty}>Sin datos</p>;
 
-  const dimensiones = ["horario", "volumen", "clasificacion", "cambio_comportamiento", "acciones_criticas", "score_if"];
+  const dimensiones = ["horario", "volumen", "clasificacion", "cambio_comportamiento", "acciones_criticas", "score_if", "score_lstm", "score_final"];
   const labels = {
     horario: "Horario",
     volumen: "Volumen",
     clasificacion: "Clasificación",
     cambio_comportamiento: "Cambio de conducta",
     acciones_criticas: "Acciones Críticas",
-    score_if: "Score IF",
+    score_if: "Isolation Forest · 40%",
+    score_lstm: "LSTM Autoencoder · 60%",
+    score_final: "Ensemble final",
   };
 
   const radarData = dimensiones.map((dim) => {

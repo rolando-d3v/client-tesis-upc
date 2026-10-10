@@ -1,0 +1,19 @@
+.page { padding: 24px 16px; display: flex; flex-direction: column; gap: 24px; min-width: 0; color: #0f172a; }
+.header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.header h1 { display: flex; align-items: center; gap: 10px; font-size: 27px; margin: 0; }
+.header h1 svg { color: #7c3aed; }
+.header h2 { font-size: 18px; margin: 0; }
+.header p { font-size: 13px; color: #64748b; margin: 8px 0 0; line-height: 1.6; }
+.estado, .conectado { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; background: #fff7ed; color: #9a3412; }
+.conectado { background: #ecfdf5; color: #047857; }
+.modelo { background: #f5f3ff; border: 1px solid #ddd6fe; padding: 16px; border-radius: 12px; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.error { margin: 0; color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; padding: 14px; border-radius: 9px; }
+.panel { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; min-width: 0; }
+.panel input { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; min-width: 240px; }
+.panel button { cursor: pointer; border: 1px solid #ddd6fe; border-radius: 7px; background: #f5f3ff; color: #6d28d9; padding: 7px 10px; }
+.tablaScroll { overflow: auto; max-height: 500px; margin-top: 20px; }
+.tablaScroll table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+.tablaScroll th { background: #f8fafc; color: #475569; position: sticky; top: 0; }
+.tablaScroll th, .tablaScroll td { padding: 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+.vacio { color: #64748b; text-align: center; padding: 20px; }
+@media (max-width: 600px) { .page { padding: 16px 8px; } .header h1 { font-size: 21px; } .panel { padding: 16px; } .panel input { min-width: 0; width: 100%; } }

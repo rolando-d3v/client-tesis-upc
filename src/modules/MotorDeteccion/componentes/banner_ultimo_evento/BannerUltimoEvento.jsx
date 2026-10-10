@@ -31,7 +31,7 @@ export default function BannerUltimoEvento({
         </div>
         <h4 className={styles.emptyTitle}>En espera de actividad</h4>
         <p className={styles.emptyDesc}>
-          Inicia la simulación o inyecta un evento de prueba para ver aquí la detección más reciente.
+          Inicia la simulación de eventos para ver aquí la detección más reciente.
         </p>
       </div>
     );
@@ -154,8 +154,8 @@ export default function BannerUltimoEvento({
         <div className={styles.colInfo}>
           <h5>Componentes de evaluación</h5>
           <p className={styles.modelScores}>
-            <span><small>Isolation Forest</small><strong>{evento.score_if ?? "0.00"}</strong></span>
-            <span><small>Reglas</small><strong>{evento.score_reglas ?? "0.00"}</strong></span>
+            <span><small>Isolation Forest · 40%</small><strong>{evento.score_if_norm ?? "—"}</strong></span>
+            <span><small>LSTM Autoencoder · 60%</small><strong>{evento.score_lstm_norm ?? "—"}</strong></span>
           </p>
         </div>
       </div>
@@ -164,7 +164,7 @@ export default function BannerUltimoEvento({
       <div className={styles.motivosRow}>
         <span className={styles.chipBaseLine}>
           <FaChartLine aria-hidden="true" />
-          <span>Línea base · {evento.perfil_actualizado?.fuente_linea_base || "164K"}</span>
+          <span>Línea base · {evento.perfil_usuario_actualizado?.fuente_linea_base || "dt_eventos.csv"}</span>
         </span>
 
         {evento.motivos && evento.motivos.length > 0 && (
