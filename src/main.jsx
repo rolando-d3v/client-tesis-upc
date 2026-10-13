@@ -8,6 +8,9 @@ import { Toaster } from "sonner";
 import { RouterProvider } from "react-router/dom";
 import { router } from "./config/routes";
 import "./styles/index.css";
+import { aplicarColoresRiesgo } from "./config/nivelesRiesgo";
+
+aplicarColoresRiesgo();
 
 
 const queryClient = new QueryClient();

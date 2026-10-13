@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FaChartLine, FaFileCsv } from "react-icons/fa6";
 import { useEstadoEvaluacion, useEvaluarDatasetEventos, useEvaluarModelo, useUltimaEvaluacion } from "../../../../api/apiEvaluacion";
+import DeteccionPorTipo from "../deteccion_por_tipo/DeteccionPorTipo";
 import styles from "./EvaluacionModelo.module.css";
 
 const INDICADORES = [
@@ -53,12 +54,12 @@ export default function EvaluacionModelo({ ocupado = false }) {
       <div className={styles.encabezado}>
         <div><span className={styles.eyebrow}>TESTING CON ETIQUETAS</span>
           <h2><FaChartLine /> Desempeño de los modelos de eventos</h2>
-          <p>Score combinado = 0.40 × Isolation Forest + 0.60 × LSTM Autoencoder, con componentes normalizados entre 0 y 1.</p>
+          <p>Score combinado = escala(0.40 × rareza Isolation Forest + 0.60 × rareza LSTM Autoencoder), en [0, 1].</p>
         </div>
         <span className={styles.estado}>{resultado ? "Evaluación disponible" : "Pendiente de evaluación"}</span>
       </div>
       <div className={styles.formulario + " " + styles.formularioEventos}>
-        <div><strong>dt_eventos_etiquetados_5000.csv</strong><p className={styles.ayuda}>Compara cada predicción con <code>etiqueta_real</code>. Excluye de las métricas los eventos usados para calibrar. La clase positiva agrupa anomalía y crítico.</p></div>
+        <div><strong>{modelo?.dataset_prueba ?? "Dataset de prueba"}</strong><p className={styles.ayuda}>Compara cada predicción con <code>etiqueta_real</code> en las filas <code>split = test</code>. Excluye de las métricas los eventos usados para calibrar. La clase positiva agrupa anomalía y crítico.</p></div>
         <button type="button" className={styles.boton} onClick={() => evaluar()} disabled={ocupado || !modelo?.disponible || !modelo?.dataset_prueba_disponible}>
           <FaFileCsv /> {evaluarDataset.isPending ? "Evaluando dataset…" : "Evaluar eventos reservados"}
         </button>
@@ -67,7 +68,7 @@ export default function EvaluacionModelo({ ocupado = false }) {
       </div>
       {pendiente && <p role="status" className={styles.aviso}>Procesando eventos en orden temporal y calculando métricas sobre sus etiquetas.</p>}
       {(errorLocal || consulta.isError || estado.isError) && <p role="alert" className={styles.error}>{errorLocal || errorTexto(consulta.error || estado.error)}</p>}
-      {modelo && !modelo.dataset_prueba_disponible && <p role="alert" className={styles.error}>Falta dt_eventos_etiquetados_5000.csv en el directorio dataset del backend.</p>}
+      {modelo && !modelo.dataset_prueba_disponible && <p role="alert" className={styles.error}>Falta {modelo.dataset_prueba} en el directorio dataset del backend.</p>}
       {consulta.isPending && <p role="status">Cargando última evaluación…</p>}
       <div className={styles.kpis}>
         {INDICADORES.map(({ key, label, formula }) => <article key={key} className={styles.kpi} title={formula}>
@@ -104,18 +105,21 @@ export default function EvaluacionModelo({ ocupado = false }) {
               <caption>Scores en escala [0, 1]. Std es la desviación estándar poblacional entre los eventos de prueba: una menor dispersión no demuestra mejor detección ni estabilidad entre reentrenamientos.</caption>
               <thead><tr><th scope="col">Modelo</th><th scope="col">Score medio</th>
                 {INDICADORES.map(({ key, label }) => <th scope="col" key={key}>{label}</th>)}
+                <th scope="col">AUC-PR</th><th scope="col">AUC-ROC</th>
                 <th scope="col">Dispersión<br />(Std ↓)</th><th scope="col">Observaciones</th>
               </tr></thead>
               <tbody>{variantes.map((v) => <tr key={v.id} className={v.id === "ensemble" ? styles.filaEnsemble : ""}>
                 <th scope="row">{MODELOS.find((m) => m.id === v.id).nombre}{v.id === "ensemble" && <small>IF 0.40 + LSTM 0.60</small>}</th>
                 <td>{decimal(v.score_medio)}</td>
                 {INDICADORES.map(({ key }) => <td key={key}>{porcentaje(v[key]?.valor)}</td>)}
+                <td>{decimal(v.pr_auc?.valor)}</td><td>{decimal(v.auc_roc?.valor)}</td>
                 <td>{decimal(v.score_std)}</td><td>{v.descripcion}</td>
               </tr>)}</tbody>
             </table>
           </div> : <p className={styles.aviso}>Ejecuta la evaluación para obtener la comparación de los tres modelos.</p>}
           {variantes.some((v) => v.score_medio == null || v.score_std == null) && <p className={styles.aviso}>Vuelve a evaluar para calcular el score medio y su desviación estándar.</p>}
         </section>
+        <DeteccionPorTipo ranking={resultado.ranking} />
         <div className={styles.graficos}>
           <article className={styles.panel}><h3>Métricas por modelo</h3><div className={styles.chart}>
             <ResponsiveContainer width="100%" height="100%"><BarChart data={grafico} margin={{ top: 20, right: 15, bottom: 10, left: 0 }}>

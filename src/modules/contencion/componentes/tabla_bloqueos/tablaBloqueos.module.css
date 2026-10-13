@@ -1,0 +1,19 @@
+.panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; min-width: 0; color: #0f172a; }
+.cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.cabecera h2 { display: flex; align-items: center; gap: 8px; font-size: 18px; margin: 0; }
+.cabecera h2 svg { color: var(--riesgo-critico); }
+.cabecera p { font-size: 13px; color: #64748b; margin: 8px 0 0; line-height: 1.6; }
+.contador, .contadorAlerta { min-width: 34px; text-align: center; padding: 6px 10px; border-radius: 20px; font-weight: 800; background: #f1f5f9; color: #334155; }
+.contadorAlerta { background: var(--riesgo-critico-fondo); color: var(--riesgo-critico-texto); }
+.vacio { color: #64748b; text-align: center; padding: 20px; margin: 0; }
+.scroll { overflow: auto; max-height: 560px; margin-top: 16px; }
+.scroll table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+.scroll th { background: #f8fafc; color: #475569; position: sticky; top: 0; z-index: 1; }
+.scroll th, .scroll td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+.scroll td small { display: block; color: #64748b; font-size: 11px; margin-top: 2px; }
+.motivos { min-width: 220px; }
+.motivos span { display: inline-block; margin: 0 4px 4px 0; background: #fff7ed; color: #9a3412; border-radius: 10px; padding: 2px 8px; font-size: 11px; }
+.acciones { white-space: nowrap; }
+.acciones button { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid #ddd6fe; border-radius: 7px; background: #f5f3ff; color: #6d28d9; padding: 6px 10px; font-size: 12px; margin: 0 6px 6px 0; }
+.acciones .desbloquear { border-color: #a7f3d0; background: #ecfdf5; color: #047857; }
+@media (max-width: 600px) { .panel { padding: 16px; } }

@@ -12,6 +12,7 @@ import {
   FaShieldHalved,
   FaBrain,
   FaBolt,
+  FaUserLock,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -23,6 +24,7 @@ export default function SidebarAdmin() {
   const eventosLinks = [
     { id: 6, url: "/entrenamiento", name: "Entrenamiento de eventos", icon: <FaBrain /> },
     { id: 7, url: "/eventos/motor-deteccion", name: "Detección en tiempo real", icon: <FaBolt /> },
+    { id: 8, url: "/eventos/cuentas-bloqueadas", name: "Cuentas bloqueadas", icon: <FaUserLock /> },
     {
       id: 1,
       url: "/carga_eventos",

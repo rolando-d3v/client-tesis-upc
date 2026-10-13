@@ -1,0 +1,17 @@
+.panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; color: #0f172a; min-width: 0; }
+.panel h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; }
+.panel h2 svg { color: #7c3aed; }
+.panel header p { margin: 8px 0 16px; font-size: 13px; color: #64748b; line-height: 1.6; }
+.niveles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.nivel { border: 1px solid #e2e8f0; border-left-width: 5px; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.alto { border-left-color: var(--riesgo-alto); background: var(--riesgo-alto-fondo); }
+.critico { border-left-color: var(--riesgo-critico); background: var(--riesgo-critico-fondo); }
+.boton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 8px; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; }
+.alto .boton { background: var(--riesgo-alto); }
+.critico .boton { background: var(--riesgo-critico); }
+.boton:disabled { opacity: .5; cursor: not-allowed; }
+.nivel small { color: #64748b; }
+.nivel ol { margin: 0; padding-left: 20px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 3px; }
+.nivel .siguiente { font-weight: 700; color: #0f172a; }
+.estado { margin: 12px 0 0; font-size: 13px; color: #6d28d9; }
+@media (max-width: 600px) { .panel { padding: 16px; } }

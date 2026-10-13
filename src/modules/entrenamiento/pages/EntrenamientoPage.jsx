@@ -3,6 +3,7 @@ import { FaBrain, FaArrowsRotate } from "react-icons/fa6";
 import { toast } from "sonner";
 import { useEstadoEvaluacion, useReentrenarEventos, useCalibrarEventos } from "../../../api/apiEvaluacion";
 import EvaluacionModelo from "../componentes/evaluacion_modelo/EvaluacionModelo";
+import ModelosEntrenados from "../componentes/modelos_entrenados/ModelosEntrenados";
 import styles from "./EntrenamientoPage.module.css";
 
 export default function EntrenamientoPage() {
@@ -39,7 +40,7 @@ export default function EntrenamientoPage() {
         <div className={styles.trainingTop}>
           <div className={styles.trainingHeaderLeft}>
             <h3>Dataset de entrenamiento: dt_eventos.csv</h3>
-            <p>Ambos modelos aprenden de dt_eventos.csv. El último 15% temporal se reserva para seleccionar la mejor época del LSTM.</p>
+            <p>Ambos modelos aprenden de dt_eventos.csv, sin el periodo del dataset de prueba. El último 15% temporal se reserva para seleccionar la mejor época del LSTM.</p>
             <p>El CSV etiquetado se separa temporalmente: primer 40% para calibrar el umbral y eventos posteriores para evaluar. Las etiquetas no entrenan Isolation Forest ni LSTM.</p>
           </div>
           <button type="button" className={styles.btnTrainExecute} onClick={ejecutar} disabled={ocupado}>
@@ -59,6 +60,7 @@ export default function EntrenamientoPage() {
         <p>Selección por F1, con un máximo de {(modelo.calibracion.fpr_maximo_validacion * 100).toFixed(0)}% de falsos positivos en validación. Este límite no garantiza el resultado futuro.</p>
         {modelo.historial_lstm?.length > 0 && <p>LSTM: {modelo.historial_lstm.length} épocas ejecutadas; se conserva la de menor pérdida de validación.</p>}
       </div>}
+      <ModelosEntrenados modelo={modelo} />
       {entrenar.isPending && <p role="status">Entrenando Isolation Forest y las secuencias temporales del LSTM Autoencoder. Esta operación puede tardar varios minutos.</p>}
       <EvaluacionModelo ocupado={ocupado} />
     </div>

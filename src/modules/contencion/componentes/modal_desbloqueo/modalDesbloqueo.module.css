@@ -1,0 +1,12 @@
+.fondo { position: fixed; inset: 0; z-index: 10000; background: rgba(15, 23, 42, .5); display: grid; place-items: center; padding: 16px; }
+.modal { background: #fff; color: #0f172a; width: min(520px, 100%); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 20px 50px rgba(15, 23, 42, .3); }
+.modal h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; color: #047857; }
+.modal p { margin: 0; font-size: 14px; color: #334155; line-height: 1.5; }
+.modal label { font-size: 13px; font-weight: 600; margin-top: 6px; }
+.modal textarea { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; font-size: 14px; resize: vertical; }
+.modal textarea:focus { outline: 2px solid #a7f3d0; border-color: #047857; }
+.modal small { color: #64748b; }
+.acciones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.acciones button { border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; padding: 9px 14px; cursor: pointer; font-size: 14px; }
+.acciones .confirmar { background: #047857; border-color: #047857; color: #fff; }
+.acciones button:disabled { opacity: .55; cursor: not-allowed; }

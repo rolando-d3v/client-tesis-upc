@@ -1,0 +1,19 @@
+.panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; color: #0f172a; min-width: 0; }
+.panel h2 { margin: 0; font-size: 18px; }
+.sub { margin: 8px 0 18px; font-size: 13px; color: #64748b; line-height: 1.6; }
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.tarjeta { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #f8fafc; }
+.tarjeta h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; flex-wrap: wrap; }
+.tarjeta h3 svg { color: #7c3aed; }
+.tarjeta h3 span { margin-left: auto; font-size: 11px; font-weight: 700; color: #6d28d9; background: #f5f3ff; border-radius: 10px; padding: 2px 8px; }
+.tarjeta p { font-size: 13px; color: #475569; line-height: 1.5; margin: 8px 0 12px; }
+.tarjeta dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tarjeta dt { font-size: 11px; color: #64748b; text-transform: uppercase; }
+.tarjeta dd { margin: 0; font-weight: 700; }
+.features { margin-top: 16px; font-size: 13px; }
+.features summary { cursor: pointer; color: #6d28d9; font-weight: 600; }
+.features ul { margin: 10px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px 16px; }
+.features li { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed #e2e8f0; padding: 4px 0; }
+.features code { font-size: 11px; color: #64748b; }
+@media (max-width: 600px) { .panel { padding: 16px; } }
+.subtitulo { margin: 18px 0 8px; font-size: 14px; }

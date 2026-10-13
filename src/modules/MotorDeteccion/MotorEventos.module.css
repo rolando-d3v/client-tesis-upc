@@ -17,3 +17,9 @@
 .tablaScroll th, .tablaScroll td { padding: 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
 .vacio { color: #64748b; text-align: center; padding: 20px; }
 @media (max-width: 600px) { .page { padding: 16px 8px; } .header h1 { font-size: 21px; } .panel { padding: 16px; } .panel input { min-width: 0; width: 100%; } }
+.candado { color: var(--riesgo-critico); vertical-align: -2px; }
+.alertaBloqueo { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: var(--riesgo-critico-fondo); border: 1px solid var(--riesgo-critico-borde); border-left: 6px solid var(--riesgo-critico); border-radius: 12px; padding: 14px 18px; color: var(--riesgo-critico-texto); }
+.alertaBloqueo > svg { font-size: 22px; flex-shrink: 0; }
+.alertaBloqueo > div { display: flex; flex-direction: column; flex: 1; min-width: 220px; }
+.alertaBloqueo span { font-size: 13px; color: #7f1d1d; }
+.alertaBloqueo button { cursor: pointer; border: 1px solid #fca5a5; background: #fff; color: #991b1b; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600; }

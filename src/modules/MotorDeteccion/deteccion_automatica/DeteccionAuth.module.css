@@ -180,14 +180,6 @@
 .legendBlue {
   color: #2563eb;
 }
-.chartFooter .legendAmber {
-  color: #d97706;
-  border-top-style: dashed;
-}
-.chartFooter .legendRed {
-  color: #dc2626;
-  border-top-style: dashed;
-}
 
 .chartTooltip {
   display: flex;

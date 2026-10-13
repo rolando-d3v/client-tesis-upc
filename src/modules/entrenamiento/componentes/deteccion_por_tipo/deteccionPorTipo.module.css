@@ -1,0 +1,11 @@
+.panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; color: #0f172a; min-width: 0; }
+.panel h3 { margin: 0; font-size: 17px; }
+.panel > p { font-size: 13px; color: #64748b; line-height: 1.6; margin: 8px 0 16px; }
+.scroll { overflow-x: auto; }
+.scroll table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.scroll th, .scroll td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+.scroll thead th { background: #f8fafc; color: #475569; }
+.scroll tbody th small, .scroll td small { display: block; font-size: 11px; color: #64748b; font-weight: 400; }
+.alto strong { color: #047857; } .medio strong { color: #b45309; } .bajo strong { color: #b91c1c; }
+.resumen th, .resumen td { background: #f5f3ff; }
+@media (max-width: 600px) { .panel { padding: 16px; } }

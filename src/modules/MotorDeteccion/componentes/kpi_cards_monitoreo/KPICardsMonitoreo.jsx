@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./KPICardsMonitoreo.module.css";
+import { infoNivel, nivelDeScore } from "../../../../config/nivelesRiesgo";
 import {
   FaShieldHalved,
   FaTriangleExclamation,
@@ -50,7 +51,7 @@ export default function KPICardsMonitoreo({
         </div>
         <div className={styles.info}>
           <span className={styles.label}>Amenazas Críticas</span>
-          <span className={styles.value} style={{ color: "#dc2626" }}>
+          <span className={styles.value} style={{ color: infoNivel("critico").color }}>
             {totalCriticos.toLocaleString()}
           </span>
           <span className={styles.subtext}>
@@ -71,7 +72,7 @@ export default function KPICardsMonitoreo({
         </div>
         <div className={styles.info}>
           <span className={styles.label}>Anomalías Detectadas</span>
-          <span className={styles.value} style={{ color: "#ea580c" }}>
+          <span className={styles.value} style={{ color: infoNivel("alto").color }}>
             {totalAnomalias.toLocaleString()}
           </span>
           <span className={styles.subtext}>
@@ -87,7 +88,7 @@ export default function KPICardsMonitoreo({
         </div>
         <div className={styles.info}>
           <span className={styles.label}>Score Combinado Promedio</span>
-          <span className={styles.value} style={{ color: "#16a34a" }}>
+          <span className={styles.value} style={{ color: infoNivel(nivelDeScore(scorePromedio)).color }}>
             {scorePromedio}
           </span>
           <span className={styles.subtext}>Isolation Forest 40% + LSTM 60%</span>

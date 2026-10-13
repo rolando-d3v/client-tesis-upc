@@ -268,6 +268,16 @@ export const useCargarCSVSimulador = () => {
   return useMutation({ mutationFn: cargarCSVSimuladorAPI });
 };
 
+export const getCatalogoInyeccionAPI = async () => {
+  const response = await api.get("/eventos/simulador/inyeccion/catalogo");
+  return response.data;
+};
+
+export const inyectarCasoAPI = async (nivel) => {
+  const response = await api.post("/eventos/simulador/inyectar", { nivel });
+  return response.data;
+};
+
 export const limpiarSimuladorAPI = async () => {
   const response = await api.post("/eventos/simulador/limpiar");
   return response.data;

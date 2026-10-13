@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import styles from "./ScatterDeteccion.module.css";
 import RoleBadge from "../../../../components/RoleBadge";
+import { NIVELES_RIESGO } from "../../../../config/nivelesRiesgo";
 
 const formatoNumero = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 });
 
@@ -60,12 +61,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-const NIVELES = [
-  { key: "bajo", label: "Bajo", color: "#16a34a" },
-  { key: "medio", label: "Medio", color: "#ca8a04" },
-  { key: "alto", label: "Alto", color: "#ea580c" },
-  { key: "critico", label: "Crítico", color: "#dc2626" },
-];
+const NIVELES = NIVELES_RIESGO.map((n) => ({ key: n.id, label: n.etiqueta, color: n.color }));
 
 export default function ScatterDeteccion({ data = [] }) {
   if (!data || data.length === 0) {

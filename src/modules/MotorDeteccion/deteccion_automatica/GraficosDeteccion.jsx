@@ -1,14 +1,10 @@
 import { useId, useMemo, useState } from "react";
-import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { FaChartLine, FaLayerGroup, FaArrowRight, FaWaveSquare } from "react-icons/fa6";
+import { NIVELES_RIESGO } from "../../../config/nivelesRiesgo";
 import styles from "./DeteccionAuth.module.css";
 
-const RIESGOS = [
-  { id: "critico", label: "Crítico", color: "#dc2626", fondo: "#fef2f2" },
-  { id: "alto", label: "Alto", color: "#c2410c", fondo: "#fff7ed" },
-  { id: "medio", label: "Medio", color: "#a16207", fondo: "#fefce8" },
-  { id: "bajo", label: "Bajo", color: "#047857", fondo: "#ecfdf5" },
-];
+const RIESGOS = [...NIVELES_RIESGO].reverse().map((n) => ({ id: n.id, label: n.etiqueta, color: n.color, fondo: n.fondo }));
 const formatoScore = (score) => score.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function TooltipScore({ active, payload }) {
@@ -97,9 +93,8 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
                   tick={{ fill: "#64748b", fontSize: 11 }} tickMargin={12} />
                 <YAxis domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} axisLine={false} tickLine={false}
                   tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(valor) => formatoScore(valor)} />
-                <ReferenceLine y={0.25} stroke="#a16207" strokeDasharray="5 5" strokeOpacity={0.6} />
-                <ReferenceLine y={0.5} stroke="#d97706" strokeDasharray="5 5" strokeOpacity={0.6} />
-                <ReferenceLine y={0.75} stroke="#dc2626" strokeDasharray="5 5" strokeOpacity={0.6} />
+                {NIVELES_RIESGO.map((n) => <ReferenceArea key={`banda-${n.id}`} y1={n.desde} y2={n.hasta} fill={n.color} fillOpacity={0.07} ifOverflow="hidden" />)}
+                {NIVELES_RIESGO.slice(1).map((n) => <ReferenceLine key={n.id} y={n.desde} stroke={n.color} strokeDasharray="5 5" strokeOpacity={0.8} />)}
                 <ReferenceLine y={umbralAnomalia} stroke="#7c3aed" strokeWidth={2} label="Umbral de anomalía" />
                 <Tooltip content={<TooltipScore />} cursor={{ stroke: "#94a3b8", strokeDasharray: "3 3" }} />
                 <Area type="linear" dataKey="score" name="Score de riesgo" stroke="#2563eb" strokeWidth={2.5}
@@ -118,8 +113,7 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
         </div>
         <div className={styles.chartFooter}>
           <span><i className={styles.legendBlue} />Score combinado · anomalía ≥ {formatoScore(umbralAnomalia)}</span>
-          <span><i className={styles.legendAmber} />Alto ≥ {formatoScore(0.5)}</span>
-          <span><i className={styles.legendRed} />Crítico ≥ {formatoScore(0.75)}</span>
+          {NIVELES_RIESGO.slice(1).map((n) => <span key={n.id}><i style={{ color: n.color, borderTopStyle: "dashed" }} />{n.etiqueta} ≥ {formatoScore(n.desde)}</span>)}
         </div>
       </section>
 
