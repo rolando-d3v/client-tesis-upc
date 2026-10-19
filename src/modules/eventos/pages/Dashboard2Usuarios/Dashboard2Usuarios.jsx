@@ -176,9 +176,9 @@ export default function Dashboard2Usuarios() {
   const resumen = useMemo(() => {
     const totalEventos = usuarios.reduce((total, user) => total + (Number(user.n_eventos) || 0), 0);
     const totalMb = usuarios.reduce((total, user) => total + (Number(user.total_mb) || 0), 0);
-    const usuariosRiesgo = usuarios.filter((user) => ["alto", "critico"].includes(user.nivel_riesgo)).length;
-    return { totalEventos, totalMb, usuariosRiesgo };
-  }, [usuarios]);
+    const riesgoEventos = data?.resumen_riesgo_eventos;
+    return { totalEventos, totalMb, riesgoEventos };
+  }, [usuarios, data?.resumen_riesgo_eventos]);
 
   const cambiarMes = (key, mes) => {
     setMesesRanking((actual) => ({ ...actual, [key]: mes }));
@@ -319,9 +319,11 @@ export default function Dashboard2Usuarios() {
               />
               <CardResumenEventos
                 icon="anomalos"
-                label="Riesgo alto o crítico"
-                value={formatoEntero.format(resumen.usuariosRiesgo)}
-                sub="Usuarios que requieren revisión"
+                label="Eventos de riesgo alto o crítico"
+                value={resumen.riesgoEventos ? formatoEntero.format(resumen.riesgoEventos.eventos_riesgo) : "—"}
+                sub={resumen.riesgoEventos
+                  ? `${formatoEntero.format(resumen.riesgoEventos.eventos_altos)} altos · ${formatoEntero.format(resumen.riesgoEventos.eventos_criticos)} críticos · ${formatoEntero.format(resumen.riesgoEventos.usuarios_con_eventos_riesgo)} usuarios`
+                  : "Conteo de eventos pendiente de actualización"}
               />
             </div>
           </section>
@@ -373,7 +375,7 @@ export default function Dashboard2Usuarios() {
                       {(selectedUserRadar.rol || selectedUserRadar.role) && (
                         <RoleBadge role={selectedUserRadar.rol || selectedUserRadar.role} size="small" />
                       )}
-                      <span>Seis dimensiones normalizadas de 0 a 100</span>
+                      <span>Cinco indicadores de actividad y tres puntajes de detección, de 0 a 100</span>
                     </p>
                   </div>
                 </div>

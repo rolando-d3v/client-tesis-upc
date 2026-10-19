@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FaCircleCheck, FaDownload, FaLock, FaLockOpen, FaTriangleExclamation, FaXmark } from "react-icons/fa6";
+import { FaCircleCheck, FaDownload, FaFileShield, FaLock, FaLockOpen, FaTriangleExclamation, FaXmark } from "react-icons/fa6";
 import { useReporteBloqueo } from "../../../../api/apiContencion";
 import { exportarElementoPDF } from "../../../../tools/exportarPDF";
 import ModalDesbloqueo from "../modal_desbloqueo/ModalDesbloqueo";
@@ -7,6 +7,7 @@ import { fechaHora, porcentaje } from "../../formato";
 import BadgeNivel from "../../../../components/nivel_riesgo/BadgeNivel";
 import { infoNivel } from "../../../../config/nivelesRiesgo";
 import styles from "./reporteForense.module.css";
+import RadarComportamientoForense from "./RadarComportamientoForense";
 
 const ETIQUETA_ACCION = { VISTA: "Vista", DESCARGAR: "Descarga", EDITAR: "Edición", ELIMINAR: "Eliminación", GUARDAR_COPIA: "Copia" };
 
@@ -33,8 +34,9 @@ function BarraModelo({ nombre, datos }) {
   );
 }
 
-export default function ReporteForense({ idBloqueo, onClose }) {
-  const { data, isLoading, isError } = useReporteBloqueo(idBloqueo);
+export default function ReporteForense({ idBloqueo, informeConsulta, onClose }) {
+  const { data: reporteBloqueo, isLoading, isError } = useReporteBloqueo(informeConsulta ? null : idBloqueo);
+  const data = informeConsulta ?? reporteBloqueo;
   const hojaRef = useRef(null);
   const [generando, setGenerando] = useState(false);
   const [desbloqueando, setDesbloqueando] = useState(false);
@@ -60,6 +62,7 @@ export default function ReporteForense({ idBloqueo, onClose }) {
   };
 
   const r = data?.reporte;
+  const esConsulta = r?.metadata?.tipo_reporte === "consulta";
   return (
     <div className={styles.fondo} onClick={() => !desbloqueando && onClose()}>
       <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Reporte forense" onClick={(e) => e.stopPropagation()}>
@@ -90,9 +93,11 @@ export default function ReporteForense({ idBloqueo, onClose }) {
                 </dl>
               </div>
 
-              <div className={data.activo ? styles.estadoBloqueada : styles.estadoLiberada} data-pdf-section="keep">
-                {data.activo ? <FaLock /> : <FaLockOpen />}
-                {data.activo
+              <div className={esConsulta ? styles.estadoConsulta : data.activo ? styles.estadoBloqueada : styles.estadoLiberada} data-pdf-section="keep">
+                {esConsulta ? <FaFileShield /> : data.activo ? <FaLock /> : <FaLockOpen />}
+                {esConsulta
+                  ? <div><strong>Informe de consulta del usuario</strong><span>Actividad y evaluación del evento registrado. Consultar este informe no bloquea ni desbloquea la cuenta.</span></div>
+                  : data.activo
                   ? <div><strong>Cuenta bloqueada</strong><span>Desde el {fechaHora(data.fecha_bloqueo)}. Pendiente de revisión por un analista.</span></div>
                   : <div><strong>Cuenta desbloqueada el {fechaHora(data.fecha_desbloqueo)} por {data.desbloqueado_por}</strong>
                       <span>Justificación: {data.justificacion_desbloqueo}</span></div>}
@@ -103,7 +108,7 @@ export default function ReporteForense({ idBloqueo, onClose }) {
               <Seccion numero="2" titulo="Identificación">
                 <div className={styles.dosColumnas}>
                   <div>
-                    <h4>Usuario investigado</h4>
+                    <h4>{esConsulta ? "Usuario analizado" : "Usuario investigado"}</h4>
                     <dl className={styles.grilla}>
                       <Dato etiqueta="Nombre" valor={r.usuario.nombre} />
                       <Dato etiqueta="ID usuario" valor={r.usuario.id_user} />
@@ -112,7 +117,7 @@ export default function ReporteForense({ idBloqueo, onClose }) {
                     </dl>
                   </div>
                   <div>
-                    <h4>Evento que disparó el bloqueo</h4>
+                    <h4>{esConsulta ? "Evento analizado" : "Evento que disparó el bloqueo"}</h4>
                     <dl className={styles.grilla}>
                       <Dato etiqueta="Fecha" valor={r.evento_detonante.fecha} />
                       <Dato etiqueta="Acción" valor={r.evento_detonante.accion} />
@@ -142,7 +147,12 @@ export default function ReporteForense({ idBloqueo, onClose }) {
                 </div>
               </Seccion>
 
-              <Seccion numero="4" titulo="Motivos del bloqueo">
+              <Seccion numero="4" titulo={esConsulta ? "Radar del comportamiento del usuario" : "Radar del comportamiento al bloqueo"}>
+                <RadarComportamientoForense reporte={r} />
+              </Seccion>
+
+              <Seccion numero="5" titulo={esConsulta ? "Análisis del evento" : "Motivos del bloqueo"}>
+                {esConsulta && !r.motivos_comportamiento.length && <p className={styles.nota}>El registro conserva las puntuaciones y las reglas del evento. No se guardaron variables de comportamiento detalladas para reconstruir motivos adicionales.</p>}
                 <ul className={styles.motivos}>
                   {r.motivos_comportamiento.map((m) => (
                     <li key={m.codigo} className={styles[`sev_${m.severidad}`]}>
@@ -159,7 +169,7 @@ export default function ReporteForense({ idBloqueo, onClose }) {
                 </>}
               </Seccion>
 
-              <Seccion numero="5" titulo={`Actividad en las ${r.actividad_reciente.ventana}`}>
+              <Seccion numero="6" titulo={`Actividad en las ${r.actividad_reciente.ventana}`}>
                 <div className={styles.kpis}>
                   <Dato etiqueta="Eventos" valor={r.actividad_reciente.total_eventos} />
                   <Dato etiqueta="Acciones de alto impacto" valor={r.actividad_reciente.acciones_alto_impacto} />
@@ -184,7 +194,7 @@ export default function ReporteForense({ idBloqueo, onClose }) {
                 </table>
               </Seccion>
 
-              <Seccion numero="6" titulo="Perfil habitual del usuario">
+              <Seccion numero="7" titulo="Perfil habitual del usuario">
                 {r.perfil_habitual.disponible ? (
                   <dl className={styles.grilla}>
                     <Dato etiqueta="Eventos históricos" valor={r.perfil_habitual.eventos_historicos} />
@@ -202,17 +212,18 @@ export default function ReporteForense({ idBloqueo, onClose }) {
                 </>}
               </Seccion>
 
-              <Seccion numero="7" titulo="Acción de contención y recomendaciones">
+              <Seccion numero="8" titulo={esConsulta ? "Conclusiones y recomendaciones" : "Acción de contención y recomendaciones"}>
                 <p className={styles.nota}><strong>{r.accion_contencion.accion.replaceAll("_", " ")}</strong> · {fechaHora(r.accion_contencion.fecha)} · {r.accion_contencion.alcance}</p>
                 <ol className={styles.recomendaciones}>{r.recomendaciones.map((texto) => <li key={texto}>{texto}</li>)}</ol>
               </Seccion>
 
-              <Seccion numero="8" titulo="Cadena de custodia">
+              <Seccion numero="9" titulo={esConsulta ? "Huella del informe de consulta" : "Cadena de custodia"}>
                 <div className={styles.custodia}>
                   <div><span>Hash SHA-256 del reporte</span><code>{data.hash_reporte}</code></div>
-                  <p className={data.integridad_verificada ? styles.integro : styles.alterado}>
-                    {data.integridad_verificada ? <FaCircleCheck /> : <FaTriangleExclamation />}
-                    {data.integridad_verificada ? "Integridad verificada: el contenido coincide con el generado al bloquear." : "El contenido no coincide con el hash registrado."}
+                  <p className={esConsulta ? styles.nota : data.integridad_verificada ? styles.integro : styles.alterado}>
+                    {!esConsulta && (data.integridad_verificada ? <FaCircleCheck /> : <FaTriangleExclamation />)}
+                    {esConsulta ? "Huella calculada para el contenido de esta consulta. No corresponde a un reporte de bloqueo registrado."
+                      : data.integridad_verificada ? "Integridad verificada: el contenido coincide con el generado al bloquear." : "El contenido no coincide con el hash registrado."}
                   </p>
                 </div>
               </Seccion>

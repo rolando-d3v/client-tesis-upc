@@ -36,7 +36,7 @@ export default function EntrenamientoPage() {
           <p className={styles.subtitle}>Isolation Forest 0.40 + LSTM Autoencoder 0.60 · suma de pesos = 1.00</p>
         </div>
       </div>
-      <div className={styles.trainingPanel}>
+      {/* <div className={styles.trainingPanel}>
         <div className={styles.trainingTop}>
           <div className={styles.trainingHeaderLeft}>
             <h3>Dataset de entrenamiento: dt_eventos.csv</h3>
@@ -53,13 +53,13 @@ export default function EntrenamientoPage() {
             {modelo?.disponible ? "Ensemble disponible" : "Modelo pendiente de inicialización"}
           </div>
         </div>
-      </div>
-      {modelo?.calibracion && <div className={styles.trainingPanel}>
+      </div> */}
+      {/* {modelo?.calibracion && <div className={styles.trainingPanel}>
         <h3>Umbral activo: {Number(modelo.umbral).toFixed(3)}</h3>
         <p>{modelo.calibracion.eventos_validacion.toLocaleString()} eventos de validación · {modelo.calibracion.eventos_reservados.toLocaleString()} eventos reservados para evaluación.</p>
         <p>Selección por F1, con un máximo de {(modelo.calibracion.fpr_maximo_validacion * 100).toFixed(0)}% de falsos positivos en validación. Este límite no garantiza el resultado futuro.</p>
         {modelo.historial_lstm?.length > 0 && <p>LSTM: {modelo.historial_lstm.length} épocas ejecutadas; se conserva la de menor pérdida de validación.</p>}
-      </div>}
+      </div>} */}
       <ModelosEntrenados modelo={modelo} />
       {entrenar.isPending && <p role="status">Entrenando Isolation Forest y las secuencias temporales del LSTM Autoencoder. Esta operación puede tardar varios minutos.</p>}
       <EvaluacionModelo ocupado={ocupado} />

@@ -3,6 +3,12 @@ import api from "./apiRestMachine";
 
 export const CLAVE_BLOQUEOS = "contencion_bloqueos";
 
+export const getUltimoBloqueoUsuarioAPI = async (idUser) =>
+  (await api.get(`/contencion/cuentas/${idUser}/ultimo-bloqueo`)).data;
+
+export const getInformeEventoAPI = async (idRegistro) =>
+  (await api.get(`/contencion/eventos/${idRegistro}/informe`)).data;
+
 export const useBloqueos = (estado = "activos") => useQuery({
   queryKey: [CLAVE_BLOQUEOS, estado],
   queryFn: async () => (await api.get("/contencion/bloqueos", { params: { estado } })).data.bloqueos,

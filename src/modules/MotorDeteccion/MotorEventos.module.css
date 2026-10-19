@@ -15,6 +15,10 @@
 .tablaScroll table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
 .tablaScroll th { background: #f8fafc; color: #475569; position: sticky; top: 0; }
 .tablaScroll th, .tablaScroll td { padding: 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+.panel .botonReporte { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; }
+.panel .botonReporte:hover:not(:disabled) { background: #ede9fe; border-color: #a78bfa; }
+.panel .botonReporte:focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; }
+.panel .botonReporte:disabled { opacity: .6; cursor: wait; }
 .vacio { color: #64748b; text-align: center; padding: 20px; }
 @media (max-width: 600px) { .page { padding: 16px 8px; } .header h1 { font-size: 21px; } .panel { padding: 16px; } .panel input { min-width: 0; width: 100%; } }
 .candado { color: var(--riesgo-critico); vertical-align: -2px; }

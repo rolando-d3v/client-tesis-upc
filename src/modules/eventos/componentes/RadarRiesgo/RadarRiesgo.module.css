@@ -5,6 +5,13 @@
   gap: 1rem;
 }
 
+.radarNote {
+  margin: 0;
+  color: var(--text, #4b5563);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 /* Multi-select Section */
 .multiSelectSection {
   position: relative;

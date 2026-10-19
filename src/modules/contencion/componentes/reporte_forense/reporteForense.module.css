@@ -16,11 +16,12 @@
 .membrete dl { margin: 0; display: grid; gap: 6px; min-width: 240px; }
 .confidencial { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 2px; color: #b91c1c; border: 2px solid #b91c1c; padding: 2px 8px; }
 
-.estadoBloqueada, .estadoLiberada { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 8px; }
+.estadoBloqueada, .estadoLiberada, .estadoConsulta { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 8px; }
+.estadoConsulta { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
 .estadoBloqueada { background: var(--riesgo-critico-fondo); border: 1px solid var(--riesgo-critico-borde); color: var(--riesgo-critico-texto); }
 .estadoLiberada { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
-.estadoBloqueada svg, .estadoLiberada svg { font-size: 22px; flex-shrink: 0; }
-.estadoBloqueada div, .estadoLiberada div { display: flex; flex-direction: column; }
+.estadoBloqueada svg, .estadoLiberada svg, .estadoConsulta svg { font-size: 22px; flex-shrink: 0; }
+.estadoBloqueada div, .estadoLiberada div, .estadoConsulta div { display: flex; flex-direction: column; }
 
 .seccion h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 15px; text-transform: uppercase; letter-spacing: .6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; }
 .seccion h3 span { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #0f172a; color: #fff; font-size: 12px; }
@@ -44,6 +45,18 @@
 .barra { height: 10px; border-radius: 6px; background: #e2e8f0; overflow: hidden; margin: 4px 0; }
 .barra i { display: block; height: 100%; background: linear-gradient(90deg, var(--riesgo-bajo), var(--riesgo-medio) 33%, var(--riesgo-alto) 66%, var(--riesgo-critico)); }
 .nota { margin: 0; color: #475569; font-size: 12px; }
+
+.radarBloque { display: flex; flex-direction: column; gap: 12px; }
+.radarContenido { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(220px, 1fr); gap: 16px; align-items: center; }
+.radarFigura { margin: 0; min-width: 0; }
+.radarFigura svg { display: block; width: 100%; height: auto; }
+.radarFigura figcaption { display: flex; justify-content: center; align-items: center; gap: 7px; color: #475569; font-size: 11px; }
+.radarFigura figcaption i { display: inline-block; width: 10px; height: 10px; background: #2563eb; border-radius: 2px; }
+.radarDatos { margin: 0; display: flex; flex-direction: column; }
+.radarDatos > div { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+.radarDatos dt { color: #0f172a; font-weight: 600; font-size: 12px; }
+.radarDatos small { display: block; margin-top: 2px; color: #64748b; font-size: 10px; font-weight: 400; line-height: 1.45; }
+.radarDatos dd { margin: 0; color: #1d4ed8; font-size: 12px; font-weight: 700; white-space: nowrap; }
 
 .motivos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .motivos li { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #e2e8f0; border-left-width: 5px; border-radius: 6px; padding: 10px 12px; }
@@ -80,5 +93,6 @@
   .cuerpo { padding: 8px; }
   .hoja { padding: 20px 16px; }
   .evaluacion { grid-template-columns: 1fr; }
+  .radarContenido { grid-template-columns: 1fr; }
   .tabla { display: block; overflow-x: auto; white-space: nowrap; }
 }

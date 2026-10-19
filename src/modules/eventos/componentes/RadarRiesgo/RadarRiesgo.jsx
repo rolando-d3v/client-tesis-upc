@@ -130,8 +130,8 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
     clasificacion: "Clasificación",
     cambio_comportamiento: "Cambio de conducta",
     acciones_criticas: "Acciones Críticas",
-    score_if: "Isolation Forest · 40%",
-    score_lstm: "LSTM Autoencoder · 60%",
+    score_if: "Isolation Forest",
+    score_lstm: "LSTM Autoencoder",
     score_final: "Ensemble final",
   };
 
@@ -363,6 +363,9 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
           />
         </RadarChart>
       </ResponsiveContainer>
+      <p className={styles.radarNote}>
+        Isolation Forest aporta 40 % y LSTM Autoencoder 60 % al cálculo del puntaje final. Los ejes muestran los puntajes del usuario, no esos pesos.
+      </p>
     </div>
   );
 }

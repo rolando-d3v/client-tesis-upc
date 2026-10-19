@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FaBolt, FaLock } from "react-icons/fa6";
+import { FaBolt, FaFileShield, FaLock } from "react-icons/fa6";
 import { API_MACHINE } from "../../api/apiRestMachine";
 import { useEstadoEvaluacion } from "../../api/apiEvaluacion";
 import { cargarCSVSimuladorAPI, detenerSimuladorAPI, getEstadoSimuladorAPI, iniciarSimuladorAPI, limpiarSimuladorAPI, pausarSimuladorAPI, reanudarSimuladorAPI } from "../../api/apiEventos";
-import { CLAVE_BLOQUEOS } from "../../api/apiContencion";
+import { CLAVE_BLOQUEOS, getInformeEventoAPI, getUltimoBloqueoUsuarioAPI } from "../../api/apiContencion";
 import TablaBloqueos from "../contencion/componentes/tabla_bloqueos/TablaBloqueos";
 import ReporteForense from "../contencion/componentes/reporte_forense/ReporteForense";
 import ControlSimulador from "./componentes/control_simulador/ControlSimulador";
@@ -16,6 +16,7 @@ import BadgeNivel from "../../components/nivel_riesgo/BadgeNivel";
 import LeyendaNiveles from "../../components/nivel_riesgo/LeyendaNiveles";
 import GraficosDeteccion from "./deteccion_automatica/GraficosDeteccion";
 import styles from "./MotorEventos.module.css";
+import { resolverInformeUsuario } from "./reporteUsuario";
 
 const MAX_FEED = 300;
 const ARCHIVO_SIMULACION = "dataset/sim_eventos_demo_20.csv";
@@ -26,6 +27,9 @@ export default function MotorEventos() {
   const estadoModelo = useEstadoEvaluacion();
   const queryClient = useQueryClient();
   const [reporte, setReporte] = useState(null);
+  const [informeConsulta, setInformeConsulta] = useState(null);
+  const [usuarioReporteCargando, setUsuarioReporteCargando] = useState(null);
+  const consultaReportePendiente = useRef(false);
   const [alertaBloqueo, setAlertaBloqueo] = useState(null);
   const [inyectando, setInyectando] = useState(false);
   const [eventos, setEventos] = useState([]);
@@ -116,6 +120,25 @@ export default function MotorEventos() {
     try { return await ejecutar(() => cargarCSVSimuladorAPI({ file, intervalo, autoIniciar: true })); }
     finally { setSubiendo(false); }
   };
+  const verReporteUsuario = async (evento) => {
+    if (consultaReportePendiente.current) return;
+    consultaReportePendiente.current = true;
+    setUsuarioReporteCargando(String(evento.id_user));
+    try {
+      const resultado = await resolverInformeUsuario(evento, getUltimoBloqueoUsuarioAPI, getInformeEventoAPI);
+      setReporte(resultado.idBloqueo ?? null);
+      setInformeConsulta(resultado.informeConsulta ?? null);
+    } catch (e) {
+      if (e.code === "SIN_EVIDENCIA_PERSISTIDA") {
+        toast.info(e.message);
+      } else {
+        toast.error("No se pudo abrir el reporte forense del usuario. Inténtalo nuevamente.");
+      }
+    } finally {
+      consultaReportePendiente.current = false;
+      setUsuarioReporteCargando(null);
+    }
+  };
   const visibles = eventos.filter((e) => {
     const riesgo = filtros.nivel_riesgo;
     const cumpleRiesgo = !riesgo || (riesgo === "anomalia" ? e.es_anomalia : e.nivel_riesgo === riesgo);
@@ -171,15 +194,24 @@ export default function MotorEventos() {
           <input aria-label="Buscar eventos" placeholder="Buscar usuario, oficina o acción…" value={filtros.busqueda} onChange={(e) => setFiltros((prev) => ({ ...prev, busqueda: e.target.value }))} />
           {filtros.nivel_riesgo && <button type="button" onClick={() => setFiltros((prev) => ({ ...prev, nivel_riesgo: "" }))}>Quitar filtro: {filtros.nivel_riesgo}</button>}
         </div>
-        <div className={styles.tablaScroll}><table><thead><tr><th>Evento</th><th>Fecha</th><th>Usuario</th><th>Acción</th><th>IF · 40%</th><th>LSTM · 60%</th><th>Score combinado</th><th>Riesgo</th><th>Predicción</th></tr></thead>
+        <div className={styles.tablaScroll}><table><thead><tr><th>Evento</th><th>Fecha</th><th>Usuario</th><th>Acción</th><th>IF · 40%</th><th>LSTM · 60%</th><th>Score combinado</th><th>Riesgo</th><th>Predicción</th><th>Informe</th></tr></thead>
           <tbody>{visibles.map((e, i) => <tr key={(e.evento_registro_id || e.id_evento) + "-" + i}>
             <td><button type="button" onClick={() => setSeleccionado(e)}>#{e.id_evento}</button></td><td>{e.fecha_evento}</td><td>{e.cuenta_bloqueada && <FaLock title="Cuenta bloqueada" className={styles.candado} />} {e.name_user}</td><td>{e.name_tipo_evento}</td>
             <td>{score(e.score_if_norm)}</td><td>{score(e.score_lstm_norm)}</td><td><strong>{score(e.score_final)}</strong></td><td><BadgeNivel nivel={e.nivel_riesgo} /></td><td>{e.es_anomalia ? "Anomalía" : "Normal"}</td>
+            <td><button type="button" className={styles.botonReporte}
+              disabled={usuarioReporteCargando !== null}
+              aria-label={`Ver reporte forense de ${e.name_user || `usuario ${e.id_user}`}`}
+              aria-busy={usuarioReporteCargando === String(e.id_user)}
+              title="Ver el informe forense del usuario y el evento registrado"
+              onClick={(click) => { click.stopPropagation(); verReporteUsuario(e); }}>
+              <FaFileShield aria-hidden="true" /> {usuarioReporteCargando === String(e.id_user) ? "Buscando…" : "Reporte forense"}
+            </button></td>
           </tr>)}</tbody></table></div>
         {!visibles.length && <p className={styles.vacio}>Sin eventos para mostrar. Inicia la simulación o ajusta los filtros.</p>}
         {seleccionado && <button type="button" onClick={() => setSeleccionado(null)}>Volver al último evento</button>}
       </section>
       {reporte && <ReporteForense idBloqueo={reporte} onClose={() => setReporte(null)} />}
+      {informeConsulta && <ReporteForense informeConsulta={informeConsulta} onClose={() => setInformeConsulta(null)} />}
     </div>
   );
 }
