@@ -135,11 +135,25 @@ export default function EvaluacionModelo({ ocupado = false }) {
             <strong className={styles.kpiValor}>{porcentaje(resultado?.metricas?.[key]?.valor)}</strong>
             <small>{formula}</small>
             <span className={styles.pendiente}>
-              {resultado ? "Resultado del ensemble · IF 0.4 + LSTM 0.6" : "Ensemble pendiente de evaluación"}
+              {resultado ? "Resultado del ensemble · IF 0.40 + LSTM 0.60" : "Ensemble pendiente de evaluación"}
             </span>
           </article>
         ))}
       </div>
+      {resultado?.ranking?.modelos?.ensemble?.incidentes?.total > 0 && (
+        <div className={styles.proveniencia}>
+          <strong>
+            Incidentes detectados: {resultado.ranking.modelos.ensemble.incidentes.detectados} de{" "}
+            {resultado.ranking.modelos.ensemble.incidentes.total} (
+            {porcentaje(resultado.ranking.modelos.ensemble.incidentes.recall)})
+          </strong>
+          <span>
+            Un incidente cuenta como detectado si el ensemble alerta al menos un evento suyo con el umbral actual. El
+            Recall de arriba cuenta cada evento por separado: un incidente de 40 eventos pesa 40 veces, aunque los primeros
+            aún no se vean anómalos.
+          </span>
+        </div>
+      )}
       {resultado && (
         <>
           {/* <div className={styles.proveniencia}>

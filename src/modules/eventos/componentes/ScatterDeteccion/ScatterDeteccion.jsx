@@ -33,11 +33,11 @@ const CustomTooltip = ({ active, payload }) => {
       )}
       <dl className={styles.tooltipData}>
         <div>
-          <dt>Isolation Forest · 40%</dt>
+          <dt>Isolation Forest · 50%</dt>
           <dd>{Number.isFinite(scoreIF) ? scoreIF.toFixed(4) : "N/D"}</dd>
         </div>
         <div>
-          <dt>LSTM Autoencoder · 60%</dt>
+          <dt>LSTM Autoencoder · 50%</dt>
           <dd>{Number.isFinite(scoreLSTM) ? scoreLSTM.toFixed(4) : "N/D"}</dd>
         </div>
         <div>
@@ -87,7 +87,7 @@ export default function ScatterDeteccion({ data = [] }) {
             tick={{ fill: "#64748b", fontSize: 10 }}
             tickLine={false}
             axisLine={{ stroke: "#cbd5e1" }}
-            label={{ value: "Score combinado (IF 40% + LSTM 60%)", position: "insideBottom", offset: -10, fill: "#475569", fontSize: 10 }}
+            label={{ value: "Score combinado (IF 50% + LSTM 50%)", position: "insideBottom", offset: -10, fill: "#475569", fontSize: 10 }}
           />
           <YAxis
             type="number"
@@ -120,7 +120,7 @@ export default function ScatterDeteccion({ data = [] }) {
           ))}
         </ScatterChart>
       </ResponsiveContainer>
-      <p className={styles.chartNote}>El score del eje X combina Isolation Forest (40%) y LSTM Autoencoder (60%); el color indica el riesgo y el tamaño, la cantidad de eventos.</p>
+      <p className={styles.chartNote}>El score del eje X combina Isolation Forest (50%) y LSTM Autoencoder (50%); el color indica el riesgo y el tamaño, la cantidad de eventos.</p>
     </div>
   );
 }

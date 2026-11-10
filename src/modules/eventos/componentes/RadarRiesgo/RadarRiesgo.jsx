@@ -364,7 +364,7 @@ export default function RadarRiesgo({ usuarios = [], activeUserId = null }) {
         </RadarChart>
       </ResponsiveContainer>
       <p className={styles.radarNote}>
-        Isolation Forest aporta 40 % y LSTM Autoencoder 60 % al cálculo del puntaje final. Los ejes muestran los puntajes del usuario, no esos pesos.
+        Isolation Forest aporta 50 % y LSTM Autoencoder 50 % al cálculo del puntaje final. Los ejes muestran los puntajes del usuario, no esos pesos.
       </p>
     </div>
   );

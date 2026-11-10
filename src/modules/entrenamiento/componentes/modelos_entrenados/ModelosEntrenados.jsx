@@ -10,6 +10,9 @@ const ETIQUETA_FEATURE = {
   ritmo_relativo: "Ritmo frente a su habitual", dia_relativo: "Volumen del día frente a su habitual",
   proporcion_criticas_10min: "Acumulación de acciones de alto impacto", peso_accion: "Peso de la acción",
   accion_clasificacion: "Acción × clasificación",
+  log_descargas_10min: "Descargas y copias en 10 min", log_eliminaciones_10min: "Eliminaciones en 10 min",
+  acciones_distintas_10min: "Tipos de acción distintos en 10 min", ritmo_descargas: "Descargas frente a su habitual",
+  ritmo_eliminaciones: "Eliminaciones frente a su habitual", rareza_accion: "Acción inusual para el usuario",
 };
 
 export default function ModelosEntrenados({ modelo }) {

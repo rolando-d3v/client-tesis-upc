@@ -7,8 +7,8 @@ function reporte() {
   return {
     actividad_reciente: { total_eventos: 20, fuera_de_horario: 8, acciones_alto_impacto: 5,
       por_clasificacion: { SECRETO: 10, RESERVADO: 10 } },
-    evaluacion_modelos: { score_final: 0.82, isolation_forest: { score: 0.3, peso: 0.4 },
-      lstm_autoencoder: { score: 0.9, peso: 0.6 } },
+    evaluacion_modelos: { score_final: 0.82, isolation_forest: { score: 0.3, peso: 0.5 },
+      lstm_autoencoder: { score: 0.9, peso: 0.5 } },
   };
 }
 
