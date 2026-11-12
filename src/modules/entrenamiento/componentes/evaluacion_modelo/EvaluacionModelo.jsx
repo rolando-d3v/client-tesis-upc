@@ -16,14 +16,90 @@ const INDICADORES = [
   { key: "recall_general", label: "Recall", formula: "TP / (TP + FN)" },
   { key: "f1", label: "F1-Score", formula: "2TP / (2TP + FP + FN)" },
 ];
-const MODELOS = [
-  { id: "isolation_forest", nombre: "Isolation Forest", color: "#0284c7" },
-  { id: "lstm_autoencoder", nombre: "LSTM Autoencoder", color: "#0d9488" },
-  { id: "ensemble", nombre: "Ensemble", color: "#7c3aed" },
+// Cada modelo se evalúa con su propio umbral (calibrado en validación). Bloque "politica": score del
+// modelo con el piso 0.90 de la política institucional; bloque "ml": score del modelo solo.
+const BLOQUES = [
+  {
+    id: "politica",
+    titulo: "Sistema con política institucional",
+    detalle: "Cada modelo con la regla institucional (piso 0.90) y su propio umbral.",
+    filas: [
+      { id: "isolation_forest_politica", nombre: "Isolation Forest", color: "#0284c7" },
+      { id: "lstm_autoencoder_politica", nombre: "LSTM Autoencoder", color: "#0d9488" },
+      { id: "ensemble", nombre: "Ensemble", color: "#7c3aed", destacado: true },
+    ],
+  },
+  {
+    id: "ml",
+    titulo: "Solo ML (sin regla institucional)",
+    detalle: "Lo que detecta cada modelo por sí mismo, con su propio umbral.",
+    filas: [
+      { id: "isolation_forest", nombre: "Isolation Forest" },
+      { id: "lstm_autoencoder", nombre: "LSTM Autoencoder" },
+      { id: "ml_sin_politica", nombre: "Ensemble", destacado: true },
+    ],
+  },
 ];
+const MODELOS = BLOQUES[0].filas;
 const porcentaje = (valor) => (valor == null ? "—" : (valor * 100).toFixed(2) + "%");
 const decimal = (valor) =>
   valor == null ? "—" : Number(valor).toLocaleString("es-ES", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+const umbralTexto = (valor) => (valor == null ? "—" : Number(valor).toFixed(3));
+
+function TablaBloque({ bloque, variantes }) {
+  return (
+    <div className={styles.tablaScroll}>
+      <table className={styles.tablaComparacion}>
+        <caption>
+          <strong>{bloque.titulo}.</strong> {bloque.detalle}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Modelo</th>
+            <th scope="col">Umbral</th>
+            <th scope="col">Score medio</th>
+            {INDICADORES.map(({ key, label }) => (
+              <th scope="col" key={key}>
+                {label}
+              </th>
+            ))}
+            <th scope="col">AUC-PR</th>
+            <th scope="col">AUC-ROC</th>
+            <th scope="col">
+              Dispersión
+              <br />
+              (Std ↓)
+            </th>
+            <th scope="col">Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {bloque.filas.map((fila) => {
+            const v = variantes[fila.id];
+            return (
+              <tr key={fila.id} className={fila.destacado ? styles.filaEnsemble : ""}>
+                <th scope="row">
+                  {fila.nombre}
+                  {fila.destacado && <small>IF 0.40 + LSTM 0.60</small>}
+                </th>
+                <td>{umbralTexto(v.umbral)}</td>
+                <td>{decimal(v.score_medio)}</td>
+                {INDICADORES.map(({ key }) => (
+                  <td key={key}>{porcentaje(v[key]?.valor)}</td>
+                ))}
+                <td>{decimal(v.pr_auc?.valor)}</td>
+                <td>{decimal(v.auc_roc?.valor)}</td>
+                <td>{decimal(v.score_std)}</td>
+                <td>{v.descripcion}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 const errorTexto = (error) =>
   typeof error?.response?.data?.detail === "string"
     ? error.response.data.detail
@@ -52,9 +128,10 @@ export default function EvaluacionModelo({ ocupado = false }) {
       setErrorLocal(errorTexto(error));
     }
   };
-  const variantes = MODELOS.map((modelo) => resultado?.ablacion?.variantes?.find((v) => v.id === modelo.id)).filter(
-    Boolean,
-  );
+  const porId = Object.fromEntries((resultado?.ablacion?.variantes ?? []).map((v) => [v.id, v]));
+  const bloquesCompletos = BLOQUES.filter((b) => b.filas.every((f) => porId[f.id]));
+  const umbralPropio = Boolean(resultado?.ablacion?.umbral_propio);
+  const variantes = MODELOS.map((modelo) => porId[modelo.id]).filter(Boolean);
   const grafico = INDICADORES.map(({ key, label }) => ({
     nombre: label,
     ...Object.fromEntries(
@@ -198,7 +275,8 @@ export default function EvaluacionModelo({ ocupado = false }) {
             <div className={styles.panelHeader}>
               <h3 id="comparacion-modelos-titulo">Comparación de modelos</h3>
               <span className={styles.meta}>
-                {resultado.muestra.total.toLocaleString()} eventos · mismo umbral: {resultado.umbral}
+                {resultado.muestra.total.toLocaleString()} eventos ·{" "}
+                {umbralPropio ? "umbral propio por modelo, calibrado en validación" : `mismo umbral: ${resultado.umbral}`}
               </span>
             </div>
             {/* <p>
@@ -206,57 +284,23 @@ export default function EvaluacionModelo({ ocupado = false }) {
               pesos 0.40 y 0.60. El umbral común se selecciona para el ensemble; no se optimiza por separado para cada
               modelo.
             </p> */}
-            {variantes.length === 3 ? (
-              <div className={styles.tablaScroll}>
-                <table className={styles.tablaComparacion}>
-                  <caption>
-                    Scores en escala [0, 1]. Std es la desviación estándar poblacional entre los eventos de prueba: una
-                    menor dispersión no demuestra mejor detección ni estabilidad entre reentrenamientos.
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Modelo</th>
-                      <th scope="col">Score medio</th>
-                      {INDICADORES.map(({ key, label }) => (
-                        <th scope="col" key={key}>
-                          {label}
-                        </th>
-                      ))}
-                      <th scope="col">AUC-PR</th>
-                      <th scope="col">AUC-ROC</th>
-                      <th scope="col">
-                        Dispersión
-                        <br />
-                        (Std ↓)
-                      </th>
-                      <th scope="col">Observaciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {variantes.map((v) => (
-                      <tr key={v.id} className={v.id === "ensemble" ? styles.filaEnsemble : ""}>
-                        <th scope="row">
-                          {MODELOS.find((m) => m.id === v.id).nombre}
-                          {v.id === "ensemble" && <small>IF 0.40 + LSTM 0.60</small>}
-                        </th>
-                        <td>{decimal(v.score_medio)}</td>
-                        {INDICADORES.map(({ key }) => (
-                          <td key={key}>{porcentaje(v[key]?.valor)}</td>
-                        ))}
-                        <td>{decimal(v.pr_auc?.valor)}</td>
-                        <td>{decimal(v.auc_roc?.valor)}</td>
-                        <td>{decimal(v.score_std)}</td>
-                        <td>{v.descripcion}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            {umbralPropio && bloquesCompletos.length === BLOQUES.length ? (
+              <>
+                <p className={styles.ayuda}>
+                  Cada modelo usa su propio umbral, elegido en el periodo de validación con el mismo criterio que el
+                  sistema (máximo F1 con FPR ≤ 35%). Scores en escala [0, 1]; Std es la desviación estándar poblacional
+                  entre los eventos de prueba: una menor dispersión no demuestra mejor detección.
+                </p>
+                {BLOQUES.map((bloque) => (
+                  <TablaBloque key={bloque.id} bloque={bloque} variantes={porId} />
+                ))}
+              </>
             ) : (
-              <p className={styles.aviso}>Ejecuta la evaluación para obtener la comparación de los tres modelos.</p>
-            )}
-            {variantes.some((v) => v.score_medio == null || v.score_std == null) && (
-              <p className={styles.aviso}>Vuelve a evaluar para calcular el score medio y su desviación estándar.</p>
+              <p className={styles.aviso}>
+                {resultado.ablacion
+                  ? "Vuelve a evaluar para obtener la comparación con umbral propio por modelo."
+                  : "Ejecuta la evaluación para obtener la comparación de los tres modelos."}
+              </p>
             )}
           </section>
           {/* <DeteccionPorTipo ranking={resultado.ranking} /> */}
@@ -264,6 +308,7 @@ export default function EvaluacionModelo({ ocupado = false }) {
           <div className={styles.graficos}>
             <article className={styles.panel}>
               <h3>Métricas por modelo</h3>
+              <p>Sistema con política institucional · umbral propio por modelo</p>
               <div className={styles.chart}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={grafico} margin={{ top: 20, right: 15, bottom: 10, left: 0 }}>

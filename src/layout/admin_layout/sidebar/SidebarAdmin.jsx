@@ -13,7 +13,6 @@ import {
   FaBrain,
   FaBolt,
   FaUserLock,
-  FaClipboardCheck,
 } from "react-icons/fa6";
 
 export default function SidebarAdmin() {
@@ -26,7 +25,6 @@ export default function SidebarAdmin() {
     { id: 6, url: "/entrenamiento", name: "Entrenamiento de eventos", icon: <FaBrain /> },
     { id: 7, url: "/eventos/motor-deteccion", name: "Detección en tiempo real", icon: <FaBolt /> },
     { id: 8, url: "/eventos/cuentas-bloqueadas", name: "Cuentas bloqueadas", icon: <FaUserLock /> },
-    { id: 9, url: "/revision-oficial", name: "Revisión del oficial", icon: <FaClipboardCheck /> },
     {
       id: 1,
       url: "/carga_eventos",
@@ -91,8 +89,8 @@ export default function SidebarAdmin() {
         Ensemble de modelos
       </div>
       <div style={{ padding: "8px 12px", color: "#cbd5e1", fontSize: "0.78rem", lineHeight: 1.6 }}>
-        <div><FaChartLine style={{ marginRight: 7, color: "#38bdf8" }} />Isolation Forest · 50%</div>
-        <div><FaChartLine style={{ marginRight: 7, color: "#c084fc" }} />LSTM Autoencoder · 50%</div>
+        <div><FaChartLine style={{ marginRight: 7, color: "#38bdf8" }} />Isolation Forest · 40%</div>
+        <div><FaChartLine style={{ marginRight: 7, color: "#c084fc" }} />LSTM Autoencoder · 60%</div>
       </div>
 
       <div className={styles.spacer}>

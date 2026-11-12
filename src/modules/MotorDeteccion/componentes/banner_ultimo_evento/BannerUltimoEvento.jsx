@@ -154,8 +154,8 @@ export default function BannerUltimoEvento({
         <div className={styles.colInfo}>
           <h5>Componentes de evaluación</h5>
           <p className={styles.modelScores}>
-            <span><small>Isolation Forest · 50%</small><strong>{evento.score_if_norm ?? "—"}</strong></span>
-            <span><small>LSTM Autoencoder · 50%</small><strong>{evento.score_lstm_norm ?? "—"}</strong></span>
+            <span><small>Isolation Forest · 40%</small><strong>{evento.score_if_norm ?? "—"}</strong></span>
+            <span><small>LSTM Autoencoder · 60%</small><strong>{evento.score_lstm_norm ?? "—"}</strong></span>
           </p>
         </div>
       </div>

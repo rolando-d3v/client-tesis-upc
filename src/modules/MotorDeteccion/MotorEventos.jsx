@@ -194,7 +194,7 @@ export default function MotorEventos() {
           <input aria-label="Buscar eventos" placeholder="Buscar usuario, oficina o acción…" value={filtros.busqueda} onChange={(e) => setFiltros((prev) => ({ ...prev, busqueda: e.target.value }))} />
           {filtros.nivel_riesgo && <button type="button" onClick={() => setFiltros((prev) => ({ ...prev, nivel_riesgo: "" }))}>Quitar filtro: {filtros.nivel_riesgo}</button>}
         </div>
-        <div className={styles.tablaScroll}><table><thead><tr><th>Evento</th><th>Fecha</th><th>Usuario</th><th>Acción</th><th>IF · 50%</th><th>LSTM · 50%</th><th>Score combinado</th><th>Riesgo</th><th>Predicción</th><th>Informe</th></tr></thead>
+        <div className={styles.tablaScroll}><table><thead><tr><th>Evento</th><th>Fecha</th><th>Usuario</th><th>Acción</th><th>IF · 40%</th><th>LSTM · 60%</th><th>Score combinado</th><th>Riesgo</th><th>Predicción</th><th>Informe</th></tr></thead>
           <tbody>{visibles.map((e, i) => <tr key={(e.evento_registro_id || e.id_evento) + "-" + i}>
             <td><button type="button" onClick={() => setSeleccionado(e)}>#{e.id_evento}</button></td><td>{e.fecha_evento}</td><td>{e.cuenta_bloqueada && <FaLock title="Cuenta bloqueada" className={styles.candado} />} {e.name_user}</td><td>{e.name_tipo_evento}</td>
             <td>{score(e.score_if_norm)}</td><td>{score(e.score_lstm_norm)}</td><td><strong>{score(e.score_final)}</strong></td><td><BadgeNivel nivel={e.nivel_riesgo} /></td><td>{e.es_anomalia ? "Anomalía" : "Normal"}</td>

@@ -11,7 +11,7 @@ export default function CargaCSVEventos() {
   const { mutate: subirCSV, isPending: loading } = useSubirCSVEventos();
 
   const handleUpload = (file) => {
-    toast.info("Analizando eventos con Isolation Forest (50%) + LSTM Autoencoder (50%)...");
+    toast.info("Analizando eventos con Isolation Forest (40%) + LSTM Autoencoder (60%)...");
     subirCSV(file, {
       onSuccess: (resultado) => {
         // Pre-poblar caché de React Query para navegación instantánea sin refetch
@@ -64,7 +64,7 @@ export default function CargaCSVEventos() {
       <h1>Carga de Dataset de Eventos</h1>
       <p className={styles.subtitle}>
         Sube el archivo CSV de eventos de usuarios para ejecutar el pipeline de detección de riesgo
-        (ETL → secuencias por usuario → Isolation Forest 50% + LSTM Autoencoder 50%)
+        (ETL → secuencias por usuario → Isolation Forest 40% + LSTM Autoencoder 60%)
       </p>
       <div className={styles.animateIn} style={{ animationDelay: "0.1s" }}>
         <UploadCSVEventos onUpload={handleUpload} loading={loading} />
@@ -73,7 +73,7 @@ export default function CargaCSVEventos() {
         <div className={styles.overlay}>
           <div className={styles.spinner} />
           <p>Entrenando el análisis de eventos</p>
-          <p className={styles.overlaySub}>Isolation Forest 50%, LSTM Autoencoder 50% y gráficos del dataset...</p>
+          <p className={styles.overlaySub}>Isolation Forest 40%, LSTM Autoencoder 60% y gráficos del dataset...</p>
         </div>
       )}
     </div>

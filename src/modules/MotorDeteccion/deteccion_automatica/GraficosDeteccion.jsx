@@ -55,7 +55,7 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
             <span className={styles.chartIcon}><FaChartLine aria-hidden="true" /></span>
             <div>
               <h3 id={`${gradientId}-title`}>Evolución del score</h3>
-              <p>Score combinado IF 50% + LSTM 50% · orden de recepción</p>
+              <p>Score combinado IF 40% + LSTM 60% · orden de recepción</p>
             </div>
           </div>
           <div className={styles.rangeControl} role="group" aria-label="Cantidad de eventos en el gráfico">

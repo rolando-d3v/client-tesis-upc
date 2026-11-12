@@ -91,7 +91,7 @@ export default function KPICardsMonitoreo({
           <span className={styles.value} style={{ color: infoNivel(nivelDeScore(scorePromedio)).color }}>
             {scorePromedio}
           </span>
-          <span className={styles.subtext}>Isolation Forest 50% + LSTM 50%</span>
+          <span className={styles.subtext}>Isolation Forest 40% + LSTM 60%</span>
         </div>
       </div>
     </div>

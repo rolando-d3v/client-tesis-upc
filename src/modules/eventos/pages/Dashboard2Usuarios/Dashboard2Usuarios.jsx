@@ -258,7 +258,7 @@ export default function Dashboard2Usuarios() {
         <p className={styles.eyebrow}>Análisis de actividad</p>
         <h1>Comportamiento por usuario</h1>
         <p className={styles.sectionDescription}>
-          Riesgo calculado con Isolation Forest 50% y LSTM Autoencoder 50% sobre secuencias de eventos.
+          Riesgo calculado con Isolation Forest 40% y LSTM Autoencoder 60% sobre secuencias de eventos.
         </p>
       </header>
 
