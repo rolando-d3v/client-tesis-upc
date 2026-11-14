@@ -1,0 +1,149 @@
+.panel {
+  background: #fff;
+  border: 1px solid var(--riesgo-critico-borde, #fecaca);
+  border-left: 6px solid var(--riesgo-critico, #dc2626);
+  border-radius: 16px;
+  padding: 24px;
+  min-width: 0;
+}
+
+.cabecera {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.cabecera h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.cabecera p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: var(--riesgo-critico-fondo, #fef2f2);
+  color: var(--riesgo-critico, #dc2626);
+}
+
+.lista {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.item {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--riesgo-critico-borde, #fecaca);
+  border-radius: 12px;
+  background: var(--riesgo-critico-fondo, #fef2f2);
+  color: #334155;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  border-color: var(--riesgo-critico, #dc2626);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--riesgo-critico, #dc2626);
+  outline-offset: 2px;
+}
+
+.fila {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.fila strong {
+  color: var(--riesgo-critico-texto, #991b1b);
+}
+
+.usuario {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.fecha {
+  margin-top: -4px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.tipo {
+  color: #475569;
+}
+
+.score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: baseline;
+  color: #475569;
+}
+
+.score b {
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.motivos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.motivos span {
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #fecaca;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.vacio {
+  margin: 18px 0 0;
+  color: #64748b;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .panel {
+    padding: 16px;
+  }
+
+  .lista {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

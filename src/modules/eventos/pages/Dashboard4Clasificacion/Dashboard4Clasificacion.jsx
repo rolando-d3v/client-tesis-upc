@@ -218,14 +218,14 @@ export default function Dashboard4Clasificacion() {
                 title="Volumen por oficina"
                 description="Dependencias con mayor volumen transferido; desplázate para revisar el listado completo."
               >
-                <MbPorOficina mbPorOficina={data?.mb_por_oficina} />
+                <MbPorOficina mbPorOficina={data?.mb_por_oficina} mbPorOficinaMes={data?.mb_por_oficina_mes} />
               </ChartCard>
               <ChartCard
                 icon={FaFileLines}
                 title="Tipos de documento más consultados"
                 description="Frecuencia de acceso por tipo de documento o extensión."
               >
-                <TopTiposDocumento porTipoDocumento={data?.por_tipo_documento} />
+                <TopTiposDocumento porTipoDocumento={data?.por_tipo_documento} porTipoDocumentoMes={data?.por_tipo_documento_mes} />
               </ChartCard>
             </div>
           </section>

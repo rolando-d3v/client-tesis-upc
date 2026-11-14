@@ -29,16 +29,16 @@ const BLOQUES = [
       { id: "ensemble", nombre: "Ensemble", color: "#7c3aed", destacado: true },
     ],
   },
-  {
-    id: "ml",
-    titulo: "Solo ML (sin regla institucional)",
-    detalle: "Lo que detecta cada modelo por sí mismo, con su propio umbral.",
-    filas: [
-      { id: "isolation_forest", nombre: "Isolation Forest" },
-      { id: "lstm_autoencoder", nombre: "LSTM Autoencoder" },
-      { id: "ml_sin_politica", nombre: "Ensemble", destacado: true },
-    ],
-  },
+  // {
+  //   id: "ml",
+  //   titulo: "Solo ML (sin regla institucional)",
+  //   detalle: "Lo que detecta cada modelo por sí mismo, con su propio umbral.",
+  //   filas: [
+  //     { id: "isolation_forest", nombre: "Isolation Forest" },
+  //     { id: "lstm_autoencoder", nombre: "LSTM Autoencoder" },
+  //     { id: "ml_sin_politica", nombre: "Ensemble", destacado: true },
+  //   ],
+  // },
 ];
 const MODELOS = BLOQUES[0].filas;
 const porcentaje = (valor) => (valor == null ? "—" : (valor * 100).toFixed(2) + "%");
@@ -217,6 +217,7 @@ export default function EvaluacionModelo({ ocupado = false }) {
           </article>
         ))}
       </div>
+      {/* Oculto: cuenta solo los incidentes con id_incidente (secuencias de comportamiento), no los de la política institucional.
       {resultado?.ranking?.modelos?.ensemble?.incidentes?.total > 0 && (
         <div className={styles.proveniencia}>
           <strong>
@@ -228,6 +229,22 @@ export default function EvaluacionModelo({ ocupado = false }) {
             Un incidente cuenta como detectado si el ensemble alerta al menos un evento suyo con el umbral actual. El
             Recall de arriba cuenta cada evento por separado: un incidente de 40 eventos pesa 40 veces, aunque los primeros
             aún no se vean anómalos.
+          </span>
+        </div>
+      )} */}
+      {resultado?.muestra?.criticos > 0 && (
+        <div className={styles.proveniencia}>
+          <strong>
+            Eventos críticos detectados: {Number(resultado.muestra.criticos_detectados).toLocaleString("es-PE")} de{" "}
+            {Number(resultado.muestra.criticos).toLocaleString("es-PE")} (
+            {porcentaje(resultado.metricas?.recall_critico?.valor)})
+          </strong>
+          <span>
+            Son los eventos de mayor gravedad, los que pueden terminar en una fuga de información y en el bloqueo de la
+            cuenta. Omitidos: {Number(resultado.matriz?.fn_criticos ?? 0).toLocaleString("es-PE")}
+            {resultado.intervalo_recall_critico &&
+              ` · Intervalo de confianza 95 %: ${porcentaje(resultado.intervalo_recall_critico.inferior)} a ${porcentaje(resultado.intervalo_recall_critico.superior)}`}
+            . Este dato se mide por evento, igual que el Recall.
           </span>
         </div>
       )}

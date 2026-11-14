@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import styles from "./VolumenMB.module.css";
 
-const MONTHS = [
+export const MONTHS = [
   { value: "Todos", label: "Todos los meses" },
   { value: "01", label: "Enero" },
   { value: "02", label: "Febrero" },
@@ -174,11 +174,75 @@ export function MbPorDia({ mbPorDia = [] }) {
   );
 }
 
-export function MbPorOficina({ mbPorOficina = [] }) {
+/** Selector de mes (Todos + enero a diciembre) compartido por los gráficos que se filtran por periodo. */
+export function FiltroMes({ value, onChange, ariaLabel, resumen }) {
+  return (
+    <div className={styles.chartControls}>
+      <label className={styles.filter}>
+        <span>Periodo</span>
+        <select value={value} onChange={(event) => onChange(event.target.value)} aria-label={ariaLabel}>
+          {MONTHS.map((month) => (
+            <option key={month.value} value={month.value}>
+              {month.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {resumen && (
+        <span className={styles.chartSummary} aria-live="polite">
+          {resumen}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Lista a mostrar según el mes elegido: "Todos" usa el ranking general; un mes usa su ranking (vacío si no hubo datos). */
+export function filasDelMes(filasGenerales, filasPorMes, mes) {
+  if (mes === "Todos") return Array.isArray(filasGenerales) ? filasGenerales : [];
+  return Array.isArray(filasPorMes?.[mes]) ? filasPorMes[mes] : [];
+}
+
+export function MbPorOficina({ mbPorOficina = [], mbPorOficinaMes }) {
+  const [monthFilter, setMonthFilter] = useState("Todos");
+  // El selector solo aparece si el análisis guardado ya trae los datos por mes (hay que reprocesar los eventos una vez).
+  const hayFiltroMes = Boolean(mbPorOficinaMes) && Object.keys(mbPorOficinaMes).length > 0;
+  const filas = filasDelMes(mbPorOficina, mbPorOficinaMes, hayFiltroMes ? monthFilter : "Todos");
+  const mesSeleccionado = MONTHS.find((month) => month.value === monthFilter)?.label.toLowerCase();
+
   if (!mbPorOficina || mbPorOficina.length === 0) {
     return <p className={styles.empty}>No hay datos de volumen por oficina para mostrar.</p>;
   }
 
+  const filtro = hayFiltroMes && (
+    <FiltroMes
+      value={monthFilter}
+      onChange={setMonthFilter}
+      ariaLabel="Filtrar el volumen por oficina por mes"
+      resumen={`${filas.length} ${filas.length === 1 ? "oficina" : "oficinas"}${monthFilter !== "Todos" ? ` · ${mesSeleccionado}` : ""}`}
+    />
+  );
+
+  if (filas.length === 0) {
+    return (
+      <div>
+        {filtro}
+        <div className={styles.noResults} role="status">
+          No se encontraron transferencias para {mesSeleccionado}.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {filtro}
+      <MbPorOficinaGrafico mbPorOficina={filas} />
+    </div>
+  );
+}
+
+function MbPorOficinaGrafico({ mbPorOficina }) {
   return (
     <div className={styles.officeScroll} role="region" aria-label="Volumen transferido por oficina">
       <ResponsiveContainer width="100%" height={Math.max(mbPorOficina.length * 34, 280)}>
@@ -223,7 +287,7 @@ export function MbPorOficina({ mbPorOficina = [] }) {
   );
 }
 
-export default function VolumenMB({ mbPorDia = [], mbPorOficina = [] }) {
+export default function VolumenMB({ mbPorDia = [], mbPorOficina = [], mbPorOficinaMes }) {
   return (
     <div className={styles.container}>
       {mbPorDia.length > 0 && (
@@ -235,7 +299,7 @@ export default function VolumenMB({ mbPorDia = [], mbPorOficina = [] }) {
       {mbPorOficina.length > 0 && (
         <section className={styles.section}>
           <h4 className={styles.subtitle}>Volumen por oficina (Top 15)</h4>
-          <MbPorOficina mbPorOficina={mbPorOficina} />
+          <MbPorOficina mbPorOficina={mbPorOficina} mbPorOficinaMes={mbPorOficinaMes} />
         </section>
       )}
     </div>

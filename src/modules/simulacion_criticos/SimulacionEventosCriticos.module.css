@@ -1,0 +1,87 @@
+.resultado {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid #a7f3d0;
+  border-left: 6px solid #059669;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.resultado > svg {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.resultado > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.resultado span {
+  font-size: 13px;
+  color: #047857;
+}
+
+.aviso {
+  margin: 0;
+  color: #475569;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px;
+  border: 1px dashed #c4b5fd;
+  border-radius: 16px;
+  background: #faf9ff;
+  text-align: center;
+}
+
+.vacio h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.vacio p {
+  margin: 0;
+  max-width: 560px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #7c3aed;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.boton:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

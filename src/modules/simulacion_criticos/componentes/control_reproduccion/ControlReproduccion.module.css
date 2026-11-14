@@ -1,0 +1,26 @@
+/* El select base mide 85px (pensado para "1 seg"); aquí las opciones son más largas. */
+.selectVelocidad {
+  width: auto;
+  min-width: 8.5rem;
+}
+
+.progreso {
+  height: 6px;
+  border-radius: 999px;
+  background: #ede9fe;
+  overflow: hidden;
+}
+
+.progreso span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c3aed, #dc2626);
+  transition: width 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progreso span {
+    transition: none;
+  }
+}

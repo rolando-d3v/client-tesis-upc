@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { FiltroMes, filasDelMes, MONTHS } from "../VolumenMB/VolumenMB";
 import {
   Tooltip,
   ResponsiveContainer,
@@ -113,11 +115,44 @@ export function CruceClasificacionHorario({ cruce = [] }) {
   );
 }
 
-export function TopTiposDocumento({ porTipoDocumento = [] }) {
+export function TopTiposDocumento({ porTipoDocumento = [], porTipoDocumentoMes }) {
+  const [monthFilter, setMonthFilter] = useState("Todos");
+  // El selector solo aparece si el análisis guardado ya trae los datos por mes (hay que reprocesar los eventos una vez).
+  const hayFiltroMes = Boolean(porTipoDocumentoMes) && Object.keys(porTipoDocumentoMes).length > 0;
+  const filas = filasDelMes(porTipoDocumento, porTipoDocumentoMes, hayFiltroMes ? monthFilter : "Todos");
+  const mesSeleccionado = MONTHS.find((month) => month.value === monthFilter)?.label.toLowerCase();
+
   if (!porTipoDocumento || porTipoDocumento.length === 0) {
     return <p className={styles.empty}>Sin datos de tipos de documento</p>;
   }
 
+  const filtro = hayFiltroMes && (
+    <FiltroMes
+      value={monthFilter}
+      onChange={setMonthFilter}
+      ariaLabel="Filtrar los tipos de documento por mes"
+      resumen={`${filas.length} ${filas.length === 1 ? "tipo" : "tipos"}${monthFilter !== "Todos" ? ` · ${mesSeleccionado}` : ""}`}
+    />
+  );
+
+  if (filas.length === 0) {
+    return (
+      <div>
+        {filtro}
+        <p className={styles.empty}>No se encontraron consultas para {mesSeleccionado}.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {filtro}
+      <TiposDocumentoGrafico porTipoDocumento={filas} />
+    </div>
+  );
+}
+
+function TiposDocumentoGrafico({ porTipoDocumento }) {
   return (
     <div className={styles.scrollWrapper}>
       <ResponsiveContainer width="100%" height={Math.max(porTipoDocumento.length * 34, 270)}>

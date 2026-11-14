@@ -13,6 +13,16 @@ export const useUltimaEvaluacion = (dominio) => useQuery({
   staleTime: 30_000,
 });
 
+// Eventos críticos de la última evaluación (orden cronológico), para /simulacion-eventos-criticos.
+// Se regeneran en cada evaluación, así que toda mutación que evalúa o cambia el modelo invalida esta clave.
+export const CLAVE_CRITICOS = "evaluacion_criticos";
+
+export const useEventosCriticos = (dominio = "eventos") => useQuery({
+  queryKey: [CLAVE_CRITICOS, dominio],
+  queryFn: async () => (await api.get("/evaluacion/criticos", { params: { dominio } })).data,
+  staleTime: 60_000,
+});
+
 export const useEvaluarModelo = () => {
   const cliente = useQueryClient();
   return useMutation({
@@ -29,6 +39,7 @@ export const useEvaluarModelo = () => {
     onSuccess: (resultado) => {
       cliente.setQueryData(["evaluacion", resultado.dominio], resultado);
       cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+      cliente.invalidateQueries({ queryKey: [CLAVE_CRITICOS] });
     },
   });
 };
@@ -40,6 +51,7 @@ export const useReentrenarEventos = () => {
     mutationFn: async () => (await api.post("/evaluacion/eventos/reentrenar", {}, { timeout: 1_800_000 })).data,
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+      cliente.invalidateQueries({ queryKey: [CLAVE_CRITICOS] });
       cliente.invalidateQueries({ queryKey: ["evaluacion", "eventos"] });
     },
   });
@@ -52,6 +64,7 @@ export const useCalibrarEventos = () => {
     mutationFn: async () => (await api.post("/evaluacion/eventos/calibrar", {}, { timeout: 600_000 })).data,
     onSuccess: () => {
       cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+      cliente.invalidateQueries({ queryKey: [CLAVE_CRITICOS] });
       cliente.invalidateQueries({ queryKey: ["evaluacion", "eventos"] });
     },
   });
@@ -65,6 +78,7 @@ export const useEvaluarDatasetEventos = () => {
     onSuccess: (resultado) => {
       cliente.setQueryData(["evaluacion", "eventos"], resultado);
       cliente.invalidateQueries({ queryKey: ["evaluacion_estado"] });
+      cliente.invalidateQueries({ queryKey: [CLAVE_CRITICOS] });
     },
   });
 };
@@ -75,6 +89,7 @@ export const useBorrarUltimaEvaluacion = () => {
     mutationFn: async (dominio) => (await api.delete("/evaluacion/ultima", { params: { dominio } })).data,
     onSuccess: (_resultado, dominio) => {
       cliente.setQueryData(["evaluacion", dominio], null);
+      cliente.invalidateQueries({ queryKey: [CLAVE_CRITICOS, dominio] });
     },
   });
 };

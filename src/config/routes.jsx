@@ -12,6 +12,7 @@ import ComingSoon from "../components/ComingSoon";
 import EntrenamientoPage from "../modules/entrenamiento/pages/EntrenamientoPage";
 import MotorEventos from "../modules/MotorDeteccion/MotorEventos";
 import CuentasBloqueadasPage from "../modules/contencion/pages/CuentasBloqueadasPage";
+import SimulacionEventosCriticos from "../modules/simulacion_criticos/SimulacionEventosCriticos";
 
 
 export const router = createBrowserRouter([
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
           { path: "/eventos/motor-deteccion", element: <MotorEventos /> },
           { path: "/eventos/monitoreo-vivo", element: <MotorEventos /> },
           { path: "/eventos/cuentas-bloqueadas", element: <CuentasBloqueadasPage /> },
+          { path: "/simulacion-eventos-criticos", element: <SimulacionEventosCriticos /> },
         ],
       },
     ],

@@ -1,0 +1,28 @@
+.contenedor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  min-width: 0;
+}
+
+.ancho {
+  grid-column: 1 / -1;
+}
+
+/* Los botones base son cuadrados (20 / 50 / 100); estos llevan texto. */
+.contenedor .alcanceBoton {
+  padding: 0 12px;
+  min-height: 34px;
+}
+
+.grafico {
+  height: 280px;
+  min-width: 0;
+  margin-top: 18px;
+}
+
+@media (max-width: 1100px) {
+  .contenedor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

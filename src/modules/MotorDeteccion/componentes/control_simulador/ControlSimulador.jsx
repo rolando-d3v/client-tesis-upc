@@ -96,9 +96,7 @@ export default function ControlSimulador({
             >
               <option value={1}>1 seg </option>
               <option value={2}>2 seg</option>
-              <option value={3}>3 seg</option>
-              <option value={5}>5 seg</option>
-              <option value={10}>10 seg</option>
+         
             </select>
           </div>
 

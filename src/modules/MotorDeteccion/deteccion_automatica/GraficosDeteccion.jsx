@@ -6,7 +6,10 @@ import styles from "./DeteccionAuth.module.css";
 
 const RIESGOS = [...NIVELES_RIESGO].reverse().map((n) => ({ id: n.id, label: n.etiqueta, color: n.color, fondo: n.fondo }));
 const formatoScore = (score) => score.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
+// El umbral calibrado tiene 3 decimales (p. ej. 0.725): con 2 se mostraría 0.73, un valor que el modelo no usa.
+const formatoUmbral = (umbral) => Number(umbral).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+// Porcentaje de la distribución: un nivel con eventos nunca se muestra como "0%".
+const formatoPorcentaje = (porcentaje, cantidad) => (cantidad > 0 && porcentaje < 1 ? "<1%" : `${porcentaje.toFixed(0)}%`);
 function TooltipScore({ active, payload }) {
   if (!active || !payload?.length) return null;
   const punto = payload[0].payload;
@@ -95,7 +98,9 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
                   tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(valor) => formatoScore(valor)} />
                 {NIVELES_RIESGO.map((n) => <ReferenceArea key={`banda-${n.id}`} y1={n.desde} y2={n.hasta} fill={n.color} fillOpacity={0.07} ifOverflow="hidden" />)}
                 {NIVELES_RIESGO.slice(1).map((n) => <ReferenceLine key={n.id} y={n.desde} stroke={n.color} strokeDasharray="5 5" strokeOpacity={0.8} />)}
-                <ReferenceLine y={umbralAnomalia} stroke="#7c3aed" strokeWidth={2} label="Umbral de anomalía" />
+                {/* Sin etiqueta dentro del gráfico: el umbral suele quedar pegado a la línea de "Crítico" (0.75) y
+                    el texto tapaba la serie. Se identifica en la leyenda inferior. */}
+                <ReferenceLine y={umbralAnomalia} stroke="#7c3aed" strokeWidth={2} />
                 <Tooltip content={<TooltipScore />} cursor={{ stroke: "#94a3b8", strokeDasharray: "3 3" }} />
                 <Area type="linear" dataKey="score" name="Score de riesgo" stroke="#2563eb" strokeWidth={2.5}
                   fill={`url(#${gradientId})`} isAnimationActive={false}
@@ -112,7 +117,8 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
           )}
         </div>
         <div className={styles.chartFooter}>
-          <span><i className={styles.legendBlue} />Score combinado · anomalía ≥ {formatoScore(umbralAnomalia)}</span>
+          <span><i className={styles.legendBlue} />Score combinado</span>
+          <span><i style={{ color: "#7c3aed" }} />Umbral de anomalía ≥ {formatoUmbral(umbralAnomalia)}</span>
           {NIVELES_RIESGO.slice(1).map((n) => <span key={n.id}><i style={{ color: n.color, borderTopStyle: "dashed" }} />{n.etiqueta} ≥ {formatoScore(n.desde)}</span>)}
         </div>
       </section>
@@ -138,12 +144,13 @@ export default function GraficosDeteccion({ eventos = [], filtros = {}, setFiltr
             return (
               <button key={riesgo.id} type="button" className={`${styles.riskRow} ${activo ? styles.riskRowActive : ""}`}
                 aria-pressed={activo} disabled={!setFiltros || !clasificados}
-                aria-label={`${riesgo.label}: ${riesgo.cantidad} eventos, ${porcentaje.toFixed(0)} por ciento. ${activo ? "Quitar" : "Aplicar"} filtro`}
+                aria-label={`${riesgo.label}: ${riesgo.cantidad} eventos, ${formatoPorcentaje(porcentaje, riesgo.cantidad)}. ${activo ? "Quitar" : "Aplicar"} filtro`}
                 onClick={() => filtrarRiesgo(riesgo.id)} style={{ "--risk-color": riesgo.color, "--risk-bg": riesgo.fondo }}>
                 <span className={styles.riskRowTop}><span className={styles.riskName}><i />{riesgo.label}</span>
-                  <span className={styles.riskValues}><strong>{riesgo.cantidad}</strong><small>{porcentaje.toFixed(0)}%</small></span>
+                  <span className={styles.riskValues}><strong>{riesgo.cantidad}</strong><small>{formatoPorcentaje(porcentaje, riesgo.cantidad)}</small></span>
                 </span>
-                <span className={styles.riskTrack}><span style={{ width: `${porcentaje}%` }} /></span>
+                {/* Un nivel con eventos conserva una barra mínima visible aunque su proporción sea muy pequeña. */}
+                <span className={styles.riskTrack}><span style={{ width: riesgo.cantidad ? `max(${porcentaje}%, 4px)` : 0 }} /></span>
               </button>
             );
           })}
